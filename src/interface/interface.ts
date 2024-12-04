@@ -7,11 +7,12 @@ export interface Client {
   address: string;
   post_number: string;
   created_at: Date;
+  tire_state_id: number; //これはTireの外部キーである
+  inspection_id: number; //これはInspection_Itemの外部キーである
 }
 
 export interface Tire {
   id: number;
-  client_id: number; //これはClientの外部キーである
   tire_maker: string;
   tire_pattern: string;
   tire_size: string;
@@ -22,8 +23,7 @@ export interface Tire {
 
 export interface Inspection_Item {
   id: number;
-  tire_id: number; //これはTireの外部キーである
-  tire: Inspection;
+  tire: Tire_state;
   oil: Inspection;
   battery: Inspection;
   wiper: Inspection;
@@ -32,13 +32,13 @@ export interface Inspection_Item {
   memo: Memo;
 }
 
-interface Inspection {
+export interface Inspection {
   state: string;
   exchange: boolean;
   note: string;
 }
 
-interface Memo {
+export interface Memo {
   inspection_date: Date;
   distance: number;
   next_theme: string;
@@ -48,4 +48,9 @@ export interface Task {
   id: number;
   client_id: number; //これはClientの外部キーである
   state: number;
+}
+
+interface Tire_state {
+  state: string;
+  note: string;
 }

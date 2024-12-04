@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,14 +15,14 @@ interface Props {
 }
 
 const TaskBox: React.FC<Props> = ({ state, tasks }) => {
-  const getButtonClass = (taskState: number) => {
+  const getButtonColor = (taskState: number) => {
     switch (taskState) {
       case 1:
-        return "bg-blue-500 text-white py-2 px-4 rounded-md";
+        return "bg-blue-500";
       case 2:
-        return "bg-yellow-500 text-white py-2 px-4 rounded-md";
+        return "bg-yellow-500";
       case 3:
-        return "bg-green-500 text-white py-2 px-4 rounded-md";
+        return "bg-green-500";
     }
   };
 
@@ -41,7 +40,11 @@ const TaskBox: React.FC<Props> = ({ state, tasks }) => {
   return (
     <div className="flex-1 mb-4">
       <div className=" mb-2">
-        <button className={`${getButtonClass(state)} m-4`}>
+        <button
+          className={`${getButtonColor(
+            state
+          )} text-white py-2 px-4 rounded-md m-4`}
+        >
           {getButtonText(state)}
         </button>
         <div className="w-full bg-black h-1 mt-4"></div>

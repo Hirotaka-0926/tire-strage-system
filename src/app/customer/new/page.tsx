@@ -1,10 +1,10 @@
-import FormNewCustomer from "@/features/customer/FormNewCustomer";
+import FormCustomer from "@/features/customer/FormCustomer";
 
 const NewCustomer = () => {
   return (
     <div>
       <h1>New Customer</h1>
-      <FormNewCustomer />
+      <FormCustomer />
     </div>
   );
 };

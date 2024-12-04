@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const FormNewCustomer = () => {
+const FormCustomer = () => {
   const [newClient, setNewClient] = useState<Client>({
     id: 0,
     client_name: "",
@@ -15,6 +15,8 @@ const FormNewCustomer = () => {
     car_number: "",
     address: "",
     post_number: "",
+    tire_state_id: 0,
+    inspection_id: 0,
     created_at: new Date(),
   });
 
@@ -141,4 +143,4 @@ const FormNewCustomer = () => {
   );
 };
 
-export default FormNewCustomer;
+export default FormCustomer;
