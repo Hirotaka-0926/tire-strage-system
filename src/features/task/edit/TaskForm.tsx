@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Tire, Inspection_Item } from "@/interface/interface";
@@ -13,7 +13,7 @@ import {
 const TaskForm = () => {
   const searchParams = useSearchParams();
   const taskId = searchParams.get("task_id");
-  console.log(`taskId ${taskId}`);
+
   const {
     register: registerTireState,
     handleSubmit: handleSubmitTireState,
@@ -30,16 +30,19 @@ const TaskForm = () => {
 
   useEffect(() => {
     const setClient = async (taskId: number): Promise<number> => {
+      if (taskId === null) return 1;
       const client = await getClientFromTask(taskId);
       return client.id; //未完成
     };
     const setTireStateDefault = async (clientId: number) => {
-      const tireDefault = await getTire_StateFromClient(clientId);
+      const tireDefault: Tire = await getTire_StateFromClient(clientId);
+      console.log("tire id" + tireDefault.id);
       resetTireState(tireDefault);
     };
 
     const setInspectionDefault = async (clientId: number) => {
       const inspection_default = await getInspectionFromClient(clientId);
+      console.log("inspection " + inspection_default);
       resetInspection(inspection_default);
     };
 
