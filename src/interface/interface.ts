@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
 export interface Client {
-  id: number;
+  id?: number;
   client_name: string;
   client_name_kana: string;
   car_model: string;
@@ -9,8 +9,8 @@ export interface Client {
   address: string;
   post_number: string;
   created_at: Date;
-  tire_state_id: number; //これはTireの外部キーである
-  inspection_id: number; //これはInspection_Itemの外部キーである
+  tire_state_id?: number; //これはTireの外部キーである
+  inspection_id?: number; //これはInspection_Itemの外部キーである
 }
 
 export interface Tire {
@@ -47,7 +47,7 @@ export interface Memo {
 }
 
 export interface Task {
-  id: number;
+  id?: number;
   client_id: number; //これはClientの外部キーである
   state: number;
 }

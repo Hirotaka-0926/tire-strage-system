@@ -10,12 +10,14 @@ import {
 import { Client } from "@/interface/interface";
 import React, { useEffect } from "react";
 import { getAllClients } from "@/utils/supabaseFunction";
+import { useRouter } from "next/navigation";
 
 interface Props {
   clients: Client[];
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
 }
 const CustomerList: React.FC<Props> = ({ clients, setClients }) => {
+  const router = useRouter();
   useEffect(() => {
     const getClients = async () => {
       const data = await getAllClients();
@@ -43,7 +45,10 @@ const CustomerList: React.FC<Props> = ({ clients, setClients }) => {
       </TableHeader>
       <TableBody>
         {clients.map((client) => (
-          <TableRow key={client.id}>
+          <TableRow
+            key={client.id}
+            onClick={() => router.push(`/customer/edit/${client.id}`)}
+          >
             <TableCell className="font-medium">{client.id}</TableCell>
             <TableCell>{client.created_at.toLocaleDateString()}</TableCell>
             <TableCell>{client.client_name}</TableCell>

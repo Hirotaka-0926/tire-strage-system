@@ -1,17 +1,21 @@
 "use client";
-
+import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Client, FormSchema, Task } from "@/interface/interface";
+import { Client, Task } from "@/interface/interface";
 import { useForm } from "react-hook-form";
-import { upsertClient, upsertTask } from "@/utils/supabaseFunction";
+import {
+  upsertClient,
+  upsertTask,
+  getSpecificClient,
+} from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 
-const NewCustomer = () => {
+const ClientEditPage = () => {
+  const clientId = useParams().client_id;
   const form = useForm<Client>();
   const router = useRouter();
 
-  const schema: FormSchema<Client> = {
-    //以下formの設定
+  const schema = {
     form: form,
     fields: [
       { key: "client_name", label: "顧客名", type: "text", required: true },
@@ -42,16 +46,18 @@ const NewCustomer = () => {
         console.error("Unexpected error", e);
       }
     }, // Add appropriate submit function
-    title: "New Customer",
-    setDefault: () => {}, // Add appropriate setDefault function
+    title: "Edit Customer",
+    setDefault: async () => {
+      const client: Client[] = await getSpecificClient("id", clientId);
+      form.reset(client[0]);
+    }, // Add appropriate setDefault function
   };
 
   return (
-    <div className="w-full  flex-col items-center justify-center h-screen  flex grow">
-      <h1>New Customer</h1>
+    <div>
       <FormCustomer schema={schema} />
     </div>
   );
 };
 
-export default NewCustomer;
+export default ClientEditPage;

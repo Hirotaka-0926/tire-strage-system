@@ -124,3 +124,51 @@ export const insertTireState = async (tireData: Tire): Promise<void> => {
 
   console.log(data);
 };
+
+export const upsertClient = async (client: Client) => {
+  try {
+    console.log("Upserting client:", client);
+    const { data, error } = await supabase
+      .from("ClientData")
+      .upsert(client)
+      .select();
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (e) {
+    console.error("Unexpected error:", e);
+    return [];
+  }
+};
+
+export const upsertTask = async (task: Task) => {
+  try {
+    console.log("Upserting task:", task);
+    const { data, error } = await supabase
+      .from("TaskList")
+      .upsert(task)
+      .select();
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (e) {
+    console.error("Unexpected error:", e);
+    return [];
+  }
+};
+
+export const getSpecificClient = async <T>(
+  key: string,
+  value: T
+): Promise<Client[]> => {
+  const { data, error } = await supabase
+    .from("ClientData")
+    .select("*")
+    .eq(key, value);
+  if (error) {
+    throw error;
+  }
+  return data;
+};
