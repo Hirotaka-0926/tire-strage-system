@@ -1,3 +1,5 @@
+import { UseFormReturn } from "react-hook-form";
+
 export interface Client {
   id: number;
   client_name: string;
@@ -53,4 +55,21 @@ export interface Task {
 interface Tire_state {
   state: string;
   note: string;
+}
+
+import { FieldValues } from "react-hook-form";
+
+export interface FormSchema<T extends FieldValues> {
+  fields: FormField[];
+  submit: (data: T) => void;
+  title: string;
+  form: UseFormReturn<T>;
+  setDefault: () => void;
+}
+
+interface FormField {
+  type: string;
+  key: string;
+  label: string;
+  required: boolean;
 }

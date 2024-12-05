@@ -51,7 +51,10 @@ export const getClientFromTask = async (taskId: number): Promise<Client> => {
       throw error;
     }
 
-    const clientData: Client = data.ClientData[0];
+    const clientData: Client = {
+      ...data.ClientData,
+      created_at: new Date(data.created_at),
+    };
     return clientData;
   } catch (e) {
     console.error("Unexpected error:", e);

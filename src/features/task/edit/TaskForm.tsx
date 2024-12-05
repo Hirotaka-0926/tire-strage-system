@@ -64,7 +64,7 @@ const TaskForm = () => {
   };
 
   return (
-    <div className="h-full ">
+    <div className="h-full mb-10">
       <form onSubmit={handleSubmitTireState(submit_TireState)}>
         <h2 className="text-xl font-bold">Task Form</h2>
         <div className="my-2">
