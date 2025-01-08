@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Tire, Inspection_Item } from "@/interface/interface";
@@ -11,9 +11,9 @@ import {
 } from "@/utils/supabaseFunction";
 
 const TaskForm = () => {
-  const searchParams = useSearchParams();
-  const taskId = searchParams.get("task_id");
-
+  const searchParams = useParams();
+  const taskId = searchParams.task_id;
+  console.log("task_id : " + taskId);
   const {
     register: registerTireState,
     handleSubmit: handleSubmitTireState,

@@ -48,16 +48,15 @@ const ClientEditPage = () => {
     }, // Add appropriate submit function
     title: "Edit Customer",
     setDefault: async () => {
-      const client: Client[] = await getSpecificClient("id", clientId);
+      const client: Client[] = await getSpecificClient(
+        "id",
+        clientId as string
+      );
       form.reset(client[0]);
     }, // Add appropriate setDefault function
   };
 
-  return (
-    <div>
-      <FormCustomer schema={schema} />
-    </div>
-  );
+  return <FormCustomer schema={schema} />;
 };
 
 export default ClientEditPage;

@@ -28,7 +28,6 @@ const NewCustomer = () => {
     ],
     submit: async (data: Client) => {
       try {
-        console.log(data);
         const newRow = await upsertClient(data);
 
         const newTask: Task = {

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -8,27 +10,53 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Client } from "@/interface/interface";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { getAllClients } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 
 interface Props {
-  clients: Client[];
-  setClients: React.Dispatch<React.SetStateAction<Client[]>>;
+  searchKey: string;
+  searchValue: string;
 }
-const CustomerList: React.FC<Props> = ({ clients, setClients }) => {
+
+const CustomerList = ({ searchKey, searchValue }: Props) => {
   const router = useRouter();
+  const [allClients, setAllClients] = useState<Client[]>([]);
+  const [clientsList, setClientsList] = useState<Client[]>([]);
+
   useEffect(() => {
-    const getClients = async () => {
+    const fetchAllClients = async () => {
       const data = await getAllClients();
 
-      setClients(data);
+      setAllClients(data);
       console.log(data);
     };
-    getClients();
 
-    console.log(clients);
+    fetchAllClients();
   }, []);
+  useEffect(() => {
+    const extractClients = (key: string, value: string) => {
+      const data = allClients.filter((client: Client) => {
+        const clientValue = client[key as keyof Client];
+        if (typeof clientValue === "string") {
+          return clientValue.includes(value);
+        } else if (typeof clientValue === "number") {
+          return clientValue.toString().includes(value);
+        }
+      });
+
+      return data;
+    };
+
+    if (searchValue != "") {
+      const extracted = extractClients(searchKey, searchValue);
+      setClientsList(extracted);
+    } else {
+      setClientsList(allClients);
+    }
+
+    console.log(allClients);
+  }, [searchKey, searchValue, allClients]);
   return (
     <Table>
       <TableCaption></TableCaption>
@@ -44,7 +72,7 @@ const CustomerList: React.FC<Props> = ({ clients, setClients }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {clients.map((client) => (
+        {clientsList.map((client) => (
           <TableRow
             key={client.id}
             onClick={() => router.push(`/customer/edit/${client.id}`)}

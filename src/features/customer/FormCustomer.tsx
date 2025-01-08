@@ -27,7 +27,7 @@ const FormCustomer = <T extends FieldValues>({
   return (
     <form
       onSubmit={schema.form.handleSubmit(submitForm)}
-      className="h-full mb-10   flex-col items-center justify-center"
+      className="h-full mb-10 flex-col items-center justify-center"
     >
       {schema.fields.map((field) => (
         <React.Fragment key={field.key}>

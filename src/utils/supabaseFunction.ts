@@ -3,7 +3,10 @@ import { Task, Client, Tire, Inspection_Item } from "@/interface/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
-    const { data, error } = await supabase.from("ClientData").select("*");
+    const { data, error } = await supabase
+      .from("ClientData")
+      .select("*")
+      .order("id", { ascending: true });
     if (error) {
       throw error;
     }
@@ -159,9 +162,9 @@ export const upsertTask = async (task: Task) => {
   }
 };
 
-export const getSpecificClient = async <T>(
+export const getSpecificClient = async (
   key: string,
-  value: T
+  value: string
 ): Promise<Client[]> => {
   const { data, error } = await supabase
     .from("ClientData")

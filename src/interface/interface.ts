@@ -9,6 +9,7 @@ export interface Client {
   address: string;
   post_number: string;
   created_at: Date;
+  storage_number?: string;
   tire_state_id?: number; //これはTireの外部キーである
   inspection_id?: number; //これはInspection_Itemの外部キーである
 }
@@ -47,7 +48,7 @@ export interface Memo {
 }
 
 export interface Task {
-  id?: number;
+  id?: string;
   client_id: number; //これはClientの外部キーである
   state: number;
 }
