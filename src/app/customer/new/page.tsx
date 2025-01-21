@@ -45,12 +45,7 @@ const NewCustomer = () => {
     setDefault: () => {}, // Add appropriate setDefault function
   };
 
-  return (
-    <div className="w-full  flex-col items-center justify-center h-screen  flex grow">
-      <h1>New Customer</h1>
-      <FormCustomer schema={schema} />
-    </div>
-  );
+  return <FormCustomer schema={schema} />;
 };
 
 export default NewCustomer;

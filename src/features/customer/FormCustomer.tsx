@@ -34,6 +34,7 @@ const FormCustomer = <T extends FieldValues>({
           <Label htmlFor={field.key}>{field.label}</Label>
 
           <Input
+            type={field.type}
             {...schema.form.register(field.key as Path<T>, {
               required: field.required,
             })}

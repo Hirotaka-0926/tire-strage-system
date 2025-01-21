@@ -9,9 +9,6 @@ export interface Client {
   address: string;
   post_number: string;
   created_at: Date;
-  storage_number?: string;
-  tire_state_id?: number; //これはTireの外部キーである
-  inspection_id?: number; //これはInspection_Itemの外部キーである
 }
 
 export interface Tire {
@@ -21,12 +18,7 @@ export interface Tire {
   tire_size: string;
   manufacture_year: number;
   air_pressure: number;
-  tire_state: string;
-}
-
-export interface Inspection_Item {
-  id: number;
-  tire: Tire_state;
+  tire_state: Tire_state;
   oil: Inspection;
   battery: Inspection;
   wiper: Inspection;
