@@ -58,36 +58,37 @@ const CustomerList = ({ searchKey, searchValue }: Props) => {
     console.log(allClients);
   }, [searchKey, searchValue, allClients]);
   return (
-    <Table>
-      <TableCaption></TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[50px]">id</TableHead>
-          <TableHead>更新日</TableHead>
-          <TableHead>顧客名</TableHead>
-          <TableHead>顧客名（カナ）</TableHead>
-          <TableHead>郵便番号</TableHead>
-          <TableHead>住所</TableHead>
-          <TableHead>車ナンバー</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {clientsList.map((client) => (
-          <TableRow
-            key={client.id}
-            onClick={() => router.push(`/customer/edit/${client.id}`)}
-          >
-            <TableCell className="font-medium">{client.id}</TableCell>
-            <TableCell>{client.created_at.toLocaleDateString()}</TableCell>
-            <TableCell>{client.client_name}</TableCell>
-            <TableCell>{client.client_name_kana}</TableCell>
-            <TableCell>{client.post_number}</TableCell>
-            <TableCell>{client.address}</TableCell>
-            <TableCell>{client.car_number}</TableCell>
+    <div className="overflow-x-auto">
+      <Table className="min-w-full bg-white">
+        <TableCaption></TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">id</TableHead>
+            <TableHead>更新日</TableHead>
+            <TableHead>顧客名</TableHead>
+            <TableHead>顧客名（カナ）</TableHead>
+            <TableHead>郵便番号</TableHead>
+            <TableHead>住所</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {clientsList.map((client) => (
+            <TableRow
+              key={client.id}
+              onClick={() => router.push(`/customer/edit/${client.id}`)}
+              className="cursor-pointer hover:bg-gray-100"
+            >
+              <TableCell className="font-medium">{client.id}</TableCell>
+              <TableCell>{client.created_at.toLocaleDateString()}</TableCell>
+              <TableCell>{client.client_name}</TableCell>
+              <TableCell>{client.client_name_kana}</TableCell>
+              <TableCell>{client.post_number}</TableCell>
+              <TableCell>{client.address}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 export default CustomerList;

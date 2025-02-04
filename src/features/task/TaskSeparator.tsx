@@ -10,7 +10,6 @@ const TaskSeparator = async () => {
 
   return (
     <div>
-      <h1>Task Window</h1>
       <div className="flex w-full">
         <TaskBox state={1} tasks={incomplete} />
         <TaskBox state={2} tasks={inprogress} />

@@ -25,8 +25,7 @@ const ClientEditPage = () => {
         type: "text",
         required: true,
       },
-      { key: "car_model", label: "車種", type: "text", required: true },
-      { key: "car_number", label: "ナンバー", type: "text", required: true },
+
       { key: "address", label: "住所", type: "text", required: true },
       { key: "post_number", label: "郵便番号", type: "text", required: true },
     ],
@@ -46,7 +45,7 @@ const ClientEditPage = () => {
         console.error("Unexpected error", e);
       }
     }, // Add appropriate submit function
-    title: "Edit Customer",
+    title: "顧客情報の編集",
     setDefault: async () => {
       const client: Client[] = await getSpecificClient(
         "id",
@@ -56,7 +55,12 @@ const ClientEditPage = () => {
     }, // Add appropriate setDefault function
   };
 
-  return <FormCustomer schema={schema} />;
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">{schema.title}</h1>
+      <FormCustomer schema={schema} />
+    </div>
+  );
 };
 
 export default ClientEditPage;

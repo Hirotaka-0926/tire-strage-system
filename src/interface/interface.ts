@@ -4,8 +4,6 @@ export interface Client {
   id?: number;
   client_name: string;
   client_name_kana: string;
-  car_model: string;
-  car_number: string;
   address: string;
   post_number: string;
   created_at: Date;
@@ -40,9 +38,26 @@ export interface Memo {
 }
 
 export interface Task {
-  id?: string;
+  id?: number;
   client_id: number; //これはClientの外部キーである
+  tire_state_id?: number;
+  car_id?: number;
   state: number;
+}
+
+export interface Storage {
+  id?: number;
+  client_id: number;
+  tire_state_id: number;
+  car_id: number;
+  storage_id: number;
+  type: "A" | "B";
+}
+
+export interface Car {
+  id?: number;
+  car_model: string;
+  car_number: string;
 }
 
 interface Tire_state {

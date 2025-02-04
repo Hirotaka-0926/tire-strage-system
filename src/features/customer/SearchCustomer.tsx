@@ -24,9 +24,9 @@ const SearchCustomer: React.FC<Props> = ({
   setValue,
 }) => {
   return (
-    <React.Fragment>
+    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full p-4">
       <Input
-        className="m-4 w-1/3 focus: border-gray-700"
+        className="w-full md:w-1/3 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         placeholder="検索"
         value={value}
         onChange={(e) => {
@@ -34,7 +34,7 @@ const SearchCustomer: React.FC<Props> = ({
         }}
       />
       <Select value={searchKey} onValueChange={setKey}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px] p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <SelectValue placeholder="検索項目" />
         </SelectTrigger>
         <SelectContent>
@@ -50,7 +50,7 @@ const SearchCustomer: React.FC<Props> = ({
           </SelectGroup>
         </SelectContent>
       </Select>
-    </React.Fragment>
+    </div>
   );
 };
 

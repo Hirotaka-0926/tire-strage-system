@@ -17,19 +17,21 @@ const Customer = () => {
 
   return (
     <React.Fragment>
-      <div className="flex items-center">
-        <SearchCustomer
-          searchKey={key}
-          setKey={setKey}
-          value={value}
-          setValue={setValue}
-        />
-        <Button className="m-4" onClick={() => router.push("/customer/new")}>
-          新しい顧客を作成
-        </Button>
-      </div>
+      <div className="container mx-auto p-4">
+        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+          <SearchCustomer
+            searchKey={key}
+            setKey={setKey}
+            value={value}
+            setValue={setValue}
+          />
+          <Button className="m-4" onClick={() => router.push("/customer/new")}>
+            新しい顧客を作成
+          </Button>
+        </div>
 
-      <CustomerList searchKey={key} searchValue={value} />
+        <CustomerList searchKey={key} searchValue={value} />
+      </div>
     </React.Fragment>
   );
 };

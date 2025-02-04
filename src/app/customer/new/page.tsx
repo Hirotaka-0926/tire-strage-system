@@ -21,8 +21,7 @@ const NewCustomer = () => {
         type: "text",
         required: true,
       },
-      { key: "car_model", label: "車種", type: "text", required: true },
-      { key: "car_number", label: "ナンバー", type: "text", required: true },
+
       { key: "address", label: "住所", type: "text", required: true },
       { key: "post_number", label: "郵便番号", type: "text", required: true },
     ],
