@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Task, Client, Tire, Inspection_Item } from "@/interface/interface";
+import { Task, Client, Tire, Car } from "@/interface/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -62,6 +62,43 @@ export const getClientFromTask = async (taskId: number): Promise<Client> => {
   } catch (e) {
     console.error("Unexpected error:", e);
     throw e;
+  }
+};
+
+export const getCarFromStorage = async (
+  clientId: number
+): Promise<Car[] | undefined> => {
+  try {
+    const { data, error } = await supabase
+      .from("storage")
+      .select("car:CarTable(*)")
+      .eq("client_id", clientId);
+    if (error) {
+      throw error;
+    }
+
+    const result: Car[] = data.flatMap((d) => d.car);
+    return result;
+  } catch (e) {
+    console.error("Unexpected error:", e);
+  }
+};
+
+export const getCarFromExchangeLogs = async (
+  clientId: number
+): Promise<Car[] | undefined> => {
+  try {
+    const { data, error } = await supabase
+      .from("ExchangeLogs")
+      .select("car:CarTable(*)")
+      .eq("client_id", clientId);
+    if (error) {
+      throw error;
+    }
+    return data.flatMap((log) => log.car);
+  } catch (e) {
+    console.error("Unexpected error:", e);
+    return [];
   }
 };
 

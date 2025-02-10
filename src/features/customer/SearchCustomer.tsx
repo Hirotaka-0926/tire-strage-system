@@ -45,8 +45,6 @@ const SearchCustomer: React.FC<Props> = ({
             <SelectItem value="client_name">顧客名</SelectItem>
             <SelectItem value="post_number">郵便番号</SelectItem>
             <SelectItem value="address">住所</SelectItem>
-            <SelectItem value="car_number">車ナンバー</SelectItem>
-            <SelectItem value="storage_number">保管庫ID</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
