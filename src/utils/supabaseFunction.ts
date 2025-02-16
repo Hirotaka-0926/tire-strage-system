@@ -65,41 +65,34 @@ export const getClientFromTask = async (taskId: number): Promise<Client> => {
   }
 };
 
-export const getCarFromStorage = async (
-  clientId: number
-): Promise<Car[] | undefined> => {
-  try {
-    const { data, error } = await supabase
-      .from("storage")
-      .select("car:CarTable(*)")
-      .eq("client_id", clientId);
-    if (error) {
-      throw error;
-    }
-
-    const result: Car[] = data.flatMap((d) => d.car);
-    return result;
-  } catch (e) {
-    console.error("Unexpected error:", e);
+export const getCarFromStorage = async (clientId: number): Promise<Car[]> => {
+  const { data, error } = await supabase
+    .from("StorageDB")
+    .select("car:CarTable(*)")
+    .eq("client_id", clientId);
+  if (error) {
+    throw error;
   }
+  if (!data[0].car) return [];
+  if (!data.length) return [];
+  const result = data.flatMap((d) => d.car);
+  return result;
 };
 
 export const getCarFromExchangeLogs = async (
   clientId: number
-): Promise<Car[] | undefined> => {
-  try {
-    const { data, error } = await supabase
-      .from("ExchangeLogs")
-      .select("car:CarTable(*)")
-      .eq("client_id", clientId);
-    if (error) {
-      throw error;
-    }
-    return data.flatMap((log) => log.car);
-  } catch (e) {
-    console.error("Unexpected error:", e);
-    return [];
+): Promise<Car[]> => {
+  const { data, error } = await supabase
+    .from("ExchangeLogs")
+    .select("car:CarTable(*)")
+    .eq("client_id", clientId);
+  if (error) {
+    throw error;
   }
+  if (!data.length) return [];
+  if (!data[0].car) return [];
+
+  return data.flatMap((log) => log.car);
 };
 
 export const getTire_StateFromClient = async (
@@ -108,7 +101,7 @@ export const getTire_StateFromClient = async (
   const { data, error } = await supabase
     .from("ClientData")
     .select("Tire_State(*)")
-    .eq("id", clientId)
+    .eq("client_id", clientId)
     .single();
   if (error) {
     throw error;

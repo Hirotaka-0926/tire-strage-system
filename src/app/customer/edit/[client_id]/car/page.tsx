@@ -33,7 +33,7 @@ const ClientEditCarPage = () => {
   const form = useForm<Car>();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(true);
-  const [candidateCars, setCandidateCars] = useState<Car[]>([]);
+  const [candidateCars, setCandidateCars] = useState<Car[]>(() => []);
   const [defaultValue, setDefaultValue] = useState<Car | null>();
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const ClientEditCarPage = () => {
       form.reset(defaultValue!);
     }, // Add appropriate setDefault function
   };
-
+  console.log(candidateCars);
   return (
     <div className="container mx-auto p-4">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -89,22 +89,29 @@ const ClientEditCarPage = () => {
             整備する車は以下の候補ですか？ 無ければ新しく入力してください
           </DialogDescription>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {candidateCars.map((car) => (
-              <Card
-                key={car.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow duration-300"
-                onClick={() => setDefaultValue(car)}
-              >
-                <CardHeader>
-                  <CardTitle>{car.car_model}</CardTitle>
-                  <CardDescription>{car.car_number}</CardDescription>
-                </CardHeader>
-                <CardContent></CardContent>
-              </Card>
-            ))}
+            {candidateCars.length &&
+              candidateCars.map((car) => (
+                <Card
+                  key={car.id}
+                  className={`cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                    defaultValue?.id === car.id
+                      ? "border-2 border-blue-500"
+                      : ""
+                  }`}
+                  onClick={() => setDefaultValue(car)}
+                >
+                  <CardHeader>
+                    <CardTitle>{car.car_model}</CardTitle>
+                    <CardDescription>{car.car_number}</CardDescription>
+                  </CardHeader>
+                  <CardContent></CardContent>
+                </Card>
+              ))}
             <Card
               key="null"
-              className="cursor-pointer hover:shadow-lg transition-shadow duration-300"
+              className={`cursor-pointer hover:shadow-lg transition-shadow duration-300 ${
+                !defaultValue ? "border-2 border-blue-500" : ""
+              }`}
               onClick={() => setDefaultValue(null)}
             >
               <CardHeader>
