@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Task, Client } from "@/interface/interface";
+import { Task, Client, Car } from "@/interface/interface";
 
 interface Props {
   state: 1 | 2 | 3;
-  tasks: (Task & { client: Client })[];
+  tasks: (Task & { client: Client } & { car: Car })[];
 }
 
 const TaskBox: React.FC<Props> = ({ state, tasks }) => {
@@ -25,7 +25,7 @@ const TaskBox: React.FC<Props> = ({ state, tasks }) => {
         return "bg-green-500";
     }
   };
-
+  console.log(tasks);
   const getButtonText = (taskState: number) => {
     switch (taskState) {
       case 1:
@@ -59,8 +59,8 @@ const TaskBox: React.FC<Props> = ({ state, tasks }) => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CardTitle>{task.client.car_model}</CardTitle>
-                <CardTitle>{task.client.car_number}</CardTitle>
+                <CardTitle>{task.car.car_model}</CardTitle>
+                <CardTitle>{task.car.car_number}</CardTitle>
               </CardContent>
             </Card>
           </Link>

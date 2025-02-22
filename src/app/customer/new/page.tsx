@@ -1,9 +1,9 @@
 "use client";
 
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Client, FormSchema, Task } from "@/interface/interface";
+import { Client, FormSchema } from "@/interface/interface";
 import { useForm } from "react-hook-form";
-import { upsertClient, upsertTask } from "@/utils/supabaseFunction";
+import { upsertClient } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 
 const NewCustomer = () => {
@@ -28,14 +28,8 @@ const NewCustomer = () => {
     submit: async (data: Client) => {
       try {
         const newRow = await upsertClient(data);
-
-        const newTask: Task = {
-          client_id: newRow[0].id,
-          state: 1,
-        };
-
-        await upsertTask(newTask);
-        router.push("/customer");
+        const clientId = newRow[0].id;
+        router.push(`/customer/edit/${clientId}/car`);
       } catch (e) {
         console.error("Unexpected error", e);
       }

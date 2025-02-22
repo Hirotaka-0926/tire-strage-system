@@ -21,11 +21,13 @@ export const getAllClients = async (): Promise<Client[]> => {
   }
 };
 
-export const getAllTasks = async (): Promise<(Task & { client: Client })[]> => {
+export const getAllTasks = async (): Promise<
+  (Task & { client: Client } & { car: Car })[]
+> => {
   try {
     const { data, error } = await supabase
       .from("TaskList")
-      .select(`*,client:ClientData(*)`);
+      .select(`*,client:ClientData(*),car:CarTable(*)`);
     if (error) {
       throw error;
     }
@@ -73,8 +75,8 @@ export const getCarFromStorage = async (clientId: number): Promise<Car[]> => {
   if (error) {
     throw error;
   }
-  if (!data[0].car) return [];
-  if (!data.length) return [];
+  if (!data.length || !data[0].car) return [];
+
   const result = data.flatMap((d) => d.car);
   return result;
 };
@@ -93,6 +95,15 @@ export const getCarFromExchangeLogs = async (
   if (!data[0].car) return [];
 
   return data.flatMap((log) => log.car);
+};
+
+export const upsertCar = async (car: Car) => {
+  const { data, error } = await supabase.from("CarTable").upsert(car).select();
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
 
 export const getTire_StateFromClient = async (
@@ -205,3 +216,5 @@ export const getSpecificClient = async (
   }
   return data;
 };
+
+export const upsertTire = async (data: Tire) => {};

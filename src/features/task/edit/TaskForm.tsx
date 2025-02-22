@@ -2,19 +2,18 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Tire, FormSchema } from "@/interface/interface";
-import {
-  getClientFromTask,
-  getTire_StateFromClient,
-  getInspectionFromClient,
-} from "@/utils/supabaseFunction";
+import { upsertTire } from "@/utils/supabaseFunction";
+import FormCustomer from "@/features/customer/FormCustomer";
 
 const TaskForm = () => {
   const searchParams = useParams();
   const taskId = searchParams.task_id;
+  const form = useForm<Tire>();
 
   const formSchema: FormSchema<Tire> = {
+    form: form,
     fields: [
       {
         key: "tire_maker",
@@ -47,16 +46,122 @@ const TaskForm = () => {
         required: true,
       },
       {
-        key: "tire_state",
+        key: "tire_state.state",
         label: "タイヤ状態",
         type: "text",
         required: true,
       },
       {
-        key: "",
+        key: "tire_state.note",
+        label: "タイヤ状態メモ",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "oil.state",
+        label: "オイル状態",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "oil.exchange",
+        label: "オイル交換",
+        type: "chechbox",
+        required: true,
+      },
+      {
+        key: "oil.note",
+        label: "オイルメモ",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "battery.state",
+        label: "バッテリー状態",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "battery.exchange",
+        label: "バッテリー交換",
+        type: "chechbox",
+        required: true,
+      },
+      {
+        key: "battery.note",
+        label: "バッテリーメモ",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "wiper.state",
+        label: "ワイパー状態",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "wiper.exchange",
+        label: "ワイパー交換",
+        type: "chechbox",
+        required: true,
+      },
+      {
+        key: "wiper.note",
+        label: "ワイパーメモ",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "other",
+        label: "その他",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "state",
+        label: "状態",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "memo.inspection_date",
+        label: "点検日",
+        type: "date",
+        required: true,
+      },
+      {
+        key: "memo.distance",
+        label: "走行距離",
+        type: "number",
+        required: true,
+      },
+      {
+        key: "memo.next_theme",
+        label: "次回テーマ",
+        type: "text",
+        required: true,
       },
     ],
+    submit: async (data: Tire) => {
+      try {
+        await upsertTire(data);
+      } catch (e) {
+        console.error("Unexpected error", e);
+      }
+    },
+    setDefault: () => {
+      const defaultValues: Partial<Tire> = {
+        id: Number(taskId),
+      };
+      form.reset(defaultValues);
+    },
   };
+
+  return (
+    <>
+      <FormCustomer schema={formSchema} />
+    </>
+  );
 };
 
 export default TaskForm;

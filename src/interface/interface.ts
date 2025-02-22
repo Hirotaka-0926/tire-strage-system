@@ -10,7 +10,7 @@ export interface Client {
 }
 
 export interface Tire {
-  id: number;
+  id?: number;
   tire_maker: string;
   tire_pattern: string;
   tire_size: string;
@@ -22,19 +22,15 @@ export interface Tire {
   wiper: Inspection;
   other: string;
   state: string;
-  memo: Memo;
+  inspection_date: Date;
+  distance: number;
+  next_theme: string;
 }
 
 export interface Inspection {
   state: string;
   exchange: boolean;
   note: string;
-}
-
-export interface Memo {
-  inspection_date: Date;
-  distance: number;
-  next_theme: string;
 }
 
 export interface Task {

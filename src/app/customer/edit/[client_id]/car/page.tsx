@@ -1,10 +1,10 @@
 "use client";
 import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Task, Car } from "@/interface/interface";
+import { Task, Car, FormSchema } from "@/interface/interface";
 import { useForm } from "react-hook-form";
 import {
-  upsertClient,
+  upsertCar,
   upsertTask,
   getCarFromStorage,
   getCarFromExchangeLogs,
@@ -46,7 +46,7 @@ const ClientEditCarPage = () => {
     getCandidate();
   }, []);
 
-  const schema = {
+  const schema: FormSchema<Car> = {
     form: form,
     fields: [
       { key: "car_model", label: "車種名", type: "text", required: true },
@@ -60,11 +60,11 @@ const ClientEditCarPage = () => {
     ],
     submit: async (data: Car) => {
       try {
-        console.log(data);
-        const newRow = await upsertClient(data);
+        const newRow = await upsertCar(data);
 
         const newTask: Task = {
-          client_id: newRow[0].id,
+          client_id: Number(clientId),
+          car_id: newRow[0].id,
           state: 1,
         };
 
