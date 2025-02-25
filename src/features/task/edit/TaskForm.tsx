@@ -1,7 +1,5 @@
-"use client";
-
 import { useParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { Tire, FormSchema } from "@/interface/interface";
 import { upsertTire } from "@/utils/supabaseFunction";
@@ -142,9 +140,10 @@ const TaskForm = () => {
         required: true,
       },
     ],
+    title: "整備データ入力",
     submit: async (data: Tire) => {
       try {
-        await upsertTire(data);
+        await upsertTire(data, Number(taskId));
       } catch (e) {
         console.error("Unexpected error", e);
       }

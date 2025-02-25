@@ -1,13 +1,13 @@
 "use client";
 import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Task, Car, FormSchema } from "@/interface/interface";
+import { Task, Car, FormSchema, State } from "@/interface/interface";
 import { useForm } from "react-hook-form";
 import {
   upsertCar,
   upsertTask,
-  getCarFromStorage,
-  getCarFromExchangeLogs,
+  getCarCandidate,
+  pushNewState,
 } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -38,16 +38,16 @@ const ClientEditCarPage = () => {
 
   useEffect(() => {
     const getCandidate = async () => {
-      const storageCandidate = await getCarFromStorage(Number(clientId));
-      const logsCandidate = await getCarFromExchangeLogs(Number(clientId));
-      const candidate = storageCandidate!.concat(logsCandidate!);
+      const candidate = await getCarCandidate(Number(clientId));
       setCandidateCars(candidate);
     };
+
     getCandidate();
   }, []);
 
   const schema: FormSchema<Car> = {
     form: form,
+    title: "顧客情報の編集",
     fields: [
       { key: "car_model", label: "車種名", type: "text", required: true },
 
@@ -60,11 +60,12 @@ const ClientEditCarPage = () => {
     ],
     submit: async (data: Car) => {
       try {
+        data.client_id = Number(clientId);
         const newRow = await upsertCar(data);
-
+        console.log(newRow);
+        const state = await pushNewState(newRow[0].id);
         const newTask: Task = {
-          client_id: Number(clientId),
-          car_id: newRow[0].id,
+          tire_state_id: state[0].id,
           state: 1,
         };
 
@@ -74,7 +75,7 @@ const ClientEditCarPage = () => {
         console.error("Unexpected error", e);
       }
     }, // Add appropriate submit function
-    title: "顧客情報の編集",
+
     setDefault: async () => {
       form.reset(defaultValue!);
     }, // Add appropriate setDefault function

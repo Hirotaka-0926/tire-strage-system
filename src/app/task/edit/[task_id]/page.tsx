@@ -66,7 +66,7 @@ const TaskForm = () => {
       {
         key: "oil.exchange",
         label: "オイル交換",
-        type: "chechbox",
+        type: "checkbox",
         required: true,
       },
       {
@@ -84,7 +84,7 @@ const TaskForm = () => {
       {
         key: "battery.exchange",
         label: "バッテリー交換",
-        type: "chechbox",
+        type: "checkbox",
         required: true,
       },
       {
@@ -102,7 +102,7 @@ const TaskForm = () => {
       {
         key: "wiper.exchange",
         label: "ワイパー交換",
-        type: "chechbox",
+        type: "checkbox",
         required: true,
       },
       {
@@ -145,17 +145,12 @@ const TaskForm = () => {
     title: "整備データ入力",
     submit: async (data: Tire) => {
       try {
-        await upsertTire(data);
+        await upsertTire(data, Number(taskId));
       } catch (e) {
         console.error("Unexpected error", e);
       }
     },
-    setDefault: () => {
-      const defaultValues: Partial<Tire> = {
-        id: Number(taskId),
-      };
-      form.reset(defaultValues);
-    },
+    setDefault: () => {},
   };
 
   return (

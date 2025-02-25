@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Task, Client, Tire, Car } from "@/interface/interface";
+import { Task, Client, State, Car } from "@/interface/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -22,12 +22,12 @@ export const getAllClients = async (): Promise<Client[]> => {
 };
 
 export const getAllTasks = async (): Promise<
-  (Task & { client: Client } & { car: Car })[]
+  (Task & { car: Car } & { client: Client })[]
 > => {
   try {
     const { data, error } = await supabase
       .from("TaskList")
-      .select(`*,client:ClientData(*),car:CarTable(*)`);
+      .select(`*, car:CarTable(*), client:ClientData(*)`);
     if (error) {
       throw error;
     }
@@ -39,62 +39,17 @@ export const getAllTasks = async (): Promise<
   }
 };
 
-export const getClientFromTask = async (taskId: number): Promise<Client> => {
-  try {
-    const { data, error } = await supabase
-      .from("TaskList")
-      .select(
-        `
-        client_id,
-        ClientData (*)
-      `
-      )
-      .eq("id", taskId)
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    const clientData: Client = {
-      ...data.ClientData,
-      created_at: new Date(data.created_at),
-    };
-    return clientData;
-  } catch (e) {
-    console.error("Unexpected error:", e);
-    throw e;
-  }
-};
-
-export const getCarFromStorage = async (clientId: number): Promise<Car[]> => {
+export const getCarCandidate = async (clientId: number): Promise<Car[]> => {
   const { data, error } = await supabase
-    .from("StorageDB")
-    .select("car:CarTable(*)")
+    .from("CarTable")
+    .select("*")
     .eq("client_id", clientId);
   if (error) {
     throw error;
   }
-  if (!data.length || !data[0].car) return [];
+  if (!data.length || !data[0]) return [];
 
-  const result = data.flatMap((d) => d.car);
-  return result;
-};
-
-export const getCarFromExchangeLogs = async (
-  clientId: number
-): Promise<Car[]> => {
-  const { data, error } = await supabase
-    .from("ExchangeLogs")
-    .select("car:CarTable(*)")
-    .eq("client_id", clientId);
-  if (error) {
-    throw error;
-  }
-  if (!data.length) return [];
-  if (!data[0].car) return [];
-
-  return data.flatMap((log) => log.car);
+  return data;
 };
 
 export const upsertCar = async (car: Car) => {
@@ -106,61 +61,7 @@ export const upsertCar = async (car: Car) => {
   return data;
 };
 
-export const getTire_StateFromClient = async (
-  clientId: number
-): Promise<Tire> => {
-  const { data, error } = await supabase
-    .from("ClientData")
-    .select("Tire_State(*)")
-    .eq("client_id", clientId)
-    .single();
-  if (error) {
-    throw error;
-  }
-
-  const tireData: Tire = {
-    ...data.Tire_State,
-    tire_state: JSON.stringify(data.Tire_State.tire_state),
-  };
-
-  return tireData;
-};
-
-export const getInspectionFromClient = async (
-  clientId: number
-): Promise<Inspection_Item> => {
-  const { data, error } = await supabase
-    .from("ClientData")
-    .select("InspectionDatas(*)")
-    .eq("id", clientId)
-    .single();
-  if (error) {
-    throw error;
-  }
-  const inspectionData: Inspection_Item = {
-    id: data.InspectionDatas[0].id,
-    tire: data.InspectionDatas[0].tire
-      ? JSON.parse(data.InspectionDatas[0].tire)
-      : { state: "", note: "" },
-    oil: data.InspectionDatas[0].oil
-      ? JSON.parse(data.InspectionDatas[0].oil)
-      : { state: "", exchange: false, note: "" },
-    battery: data.InspectionDatas[0].battery
-      ? JSON.parse(data.InspectionDatas[0].battery)
-      : { state: "", exchange: false, note: "" },
-    wiper: data.InspectionDatas[0].wiper
-      ? JSON.parse(data.InspectionDatas[0].wiper)
-      : { state: "", exchange: false, note: "" },
-    other: data.InspectionDatas[0].other || "",
-    state: data.InspectionDatas[0].state || "",
-    memo: data.InspectionDatas[0].memo
-      ? JSON.parse(data.InspectionDatas[0].memo)
-      : { inspection_date: new Date(), distance: 0, next_theme: "" },
-  };
-  return inspectionData;
-};
-
-export const insertTireState = async (tireData: Tire): Promise<void> => {
+export const insertTireState = async (tireData: State): Promise<void> => {
   const { data, error } = await supabase.from("Tire_State").upsert([tireData]);
   if (error) {
     throw error;
@@ -189,6 +90,7 @@ export const upsertClient = async (client: Client) => {
 export const upsertTask = async (task: Task) => {
   try {
     console.log("Upserting task:", task);
+
     const { data, error } = await supabase
       .from("TaskList")
       .upsert(task)
@@ -217,4 +119,46 @@ export const getSpecificClient = async (
   return data;
 };
 
-export const upsertTire = async (data: Tire) => {};
+export const upsertTire = async (data: Tire, taskId: number) => {
+  const { data: tireData, error: tireError } = await supabase
+    .from("Tire_State")
+    .upsert(data)
+    .select();
+  if (tireError) {
+    throw tireError;
+  }
+
+  if (tireData && tireData.length > 0) {
+    const tireId = tireData[0].id;
+    const { error: taskError } = await supabase
+      .from("TaskList")
+      .update({ tire_state_id: tireId })
+      .eq("id", taskId);
+    if (taskError) {
+      throw taskError;
+    }
+  }
+};
+
+export const getTaskById = async (id: number) => {
+  const { data, error } = await supabase
+    .from("TaskList")
+    .select("*, car:CarTable(*), client:ClientData(*), tire:Tire_State(*)")
+    .eq("id", id);
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};
+
+export const pushNewState = async (car_id: number) => {
+  const { data, error } = await supabase
+    .from("Tire_State")
+    .insert([{ car_id: car_id }])
+    .select("*");
+  if (error) {
+    throw error;
+  }
+  return data;
+};
