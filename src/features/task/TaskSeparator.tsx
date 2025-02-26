@@ -7,6 +7,7 @@ const TaskSeparator = async () => {
   const incomplete = masterTasks.filter((task) => task.state === 1);
   const inprogress = masterTasks.filter((task) => task.state === 2);
   const complete = masterTasks.filter((task) => task.state === 3);
+  console.log(masterTasks);
 
   return (
     <div>

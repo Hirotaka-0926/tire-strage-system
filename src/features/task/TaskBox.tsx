@@ -7,11 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Task, Client, Car } from "@/interface/interface";
+import { Task, Client, Car, State } from "@/interface/interface";
 
 interface Props {
   state: 1 | 2 | 3;
-  tasks: (Task & { client: Client } & { car: Car })[];
+  tasks: (Task & { tire_state: State & { car: Car & { client: Client } } })[];
 }
 
 const TaskBox: React.FC<Props> = ({ state, tasks }) => {
@@ -36,6 +36,7 @@ const TaskBox: React.FC<Props> = ({ state, tasks }) => {
         return "完了済み";
     }
   };
+  console.log(tasks);
 
   return (
     <div className="flex-1 mb-4">
@@ -53,14 +54,14 @@ const TaskBox: React.FC<Props> = ({ state, tasks }) => {
           <Link href={`/task/edit/${task.id}`} key={task.id}>
             <Card className="m-4">
               <CardHeader>
-                <CardTitle>{task.client.client_name}</CardTitle>
+                <CardTitle>{task.tire_state.car.client.client_name}</CardTitle>
                 <CardDescription>
-                  {task.client.client_name_kana}
+                  {task.tire_state.car.client?.client_name_kana}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CardTitle>{task.car.car_model}</CardTitle>
-                <CardTitle>{task.car.car_number}</CardTitle>
+                <CardTitle>{task.tire_state.car.car_model}</CardTitle>
+                <CardTitle>{task.tire_state.car.car_number}</CardTitle>
               </CardContent>
             </Card>
           </Link>

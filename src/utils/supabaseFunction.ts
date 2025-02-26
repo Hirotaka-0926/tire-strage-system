@@ -22,12 +22,15 @@ export const getAllClients = async (): Promise<Client[]> => {
 };
 
 export const getAllTasks = async (): Promise<
-  (Task & { car: Car } & { client: Client })[]
+  (Task & { tire_state: State & { car: Car & { client: Client } } })[]
 > => {
   try {
     const { data, error } = await supabase
       .from("TaskList")
-      .select(`*, car:CarTable(*), client:ClientData(*)`);
+      .select(
+        `*, tire_state:Tire_State(*, car:CarTable(*, client:ClientData(*)))`
+      );
+
     if (error) {
       throw error;
     }

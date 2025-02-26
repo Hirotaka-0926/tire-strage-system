@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Task, Car, FormSchema, State } from "@/interface/interface";
+import { Task, Car, FormSchema } from "@/interface/interface";
 import { useForm } from "react-hook-form";
 import {
   upsertCar,
@@ -62,7 +62,7 @@ const ClientEditCarPage = () => {
       try {
         data.client_id = Number(clientId);
         const newRow = await upsertCar(data);
-        console.log(newRow);
+
         const state = await pushNewState(newRow[0].id);
         const newTask: Task = {
           tire_state_id: state[0].id,
