@@ -1,5 +1,6 @@
+import { inspect } from "util";
 import { supabase } from "./supabase";
-import { Task, Client, State, Car } from "@/interface/interface";
+import { Task, Client, State, Car, Inspection } from "@/interface/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -164,4 +165,53 @@ export const pushNewState = async (car_id: number) => {
     throw error;
   }
   return data;
+};
+
+export const getStateByTaskId = async (taskId: number): Promise<State> => {
+  const { data, error } = await supabase
+    .from("TaskList")
+    .select("*, tire_state:Tire_State(*)")
+    .eq("id", taskId)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data || !data.tire_state) {
+    throw new Error("Task or tire state not found");
+  }
+
+  // Get additional inspection data for the tire state
+  const tireStateId = data.tire_state.id;
+  const { data: inspectionData, error: inspectionError } = await supabase
+    .from("Inspection")
+    .select("*")
+    .eq("tire_state_id", tireStateId);
+
+  if (inspectionError) {
+    throw inspectionError;
+  }
+
+  // Merge inspection data with the tire state
+  const result = {
+    ...data.tire_state,
+    tire_state: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "tire_state"
+    ),
+    oil: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "oil"
+    ),
+    battery: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "battery"
+    ),
+    wiper: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "wiper"
+    ),
+    other: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "other"
+    ),
+  };
+
+  return result;
 };

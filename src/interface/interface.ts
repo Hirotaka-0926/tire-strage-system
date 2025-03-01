@@ -17,7 +17,7 @@ export interface State {
   tire_size: string;
   manufacture_year: number;
   air_pressure: number;
-  tire_state: Tire_state;
+  tire_state: Inspection;
   oil: Inspection;
   battery: Inspection;
   wiper: Inspection;
@@ -29,8 +29,10 @@ export interface State {
 }
 
 export interface Inspection {
+  id?: number;
+  type: string;
   state: string;
-  exchange: boolean;
+  isExchange?: boolean;
   note: string;
 }
 
@@ -54,11 +56,6 @@ export interface Car {
   client_id: number;
   car_model: string;
   car_number: string;
-}
-
-interface Tire_state {
-  state: string;
-  note: string;
 }
 
 import { FieldValues } from "react-hook-form";

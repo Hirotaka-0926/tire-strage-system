@@ -3,16 +3,16 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Tire, FormSchema } from "@/interface/interface";
-import { upsertTire } from "@/utils/supabaseFunction";
+import { State, FormSchema } from "@/interface/interface";
+import { upsertTire, getStateByTaskId } from "@/utils/supabaseFunction";
 import FormCustomer from "@/features/customer/FormCustomer";
 
 const TaskForm = () => {
   const searchParams = useParams();
   const taskId = searchParams.task_id;
-  const form = useForm<Tire>();
+  const form = useForm<State>();
 
-  const formSchema: FormSchema<Tire> = {
+  const formSchema: FormSchema<State> = {
     form: form,
     fields: [
       {
@@ -64,7 +64,7 @@ const TaskForm = () => {
         required: true,
       },
       {
-        key: "oil.exchange",
+        key: "oil.isExchange",
         label: "オイル交換",
         type: "checkbox",
         required: true,
@@ -82,7 +82,7 @@ const TaskForm = () => {
         required: true,
       },
       {
-        key: "battery.exchange",
+        key: "battery.isExchange",
         label: "バッテリー交換",
         type: "checkbox",
         required: true,
@@ -100,7 +100,7 @@ const TaskForm = () => {
         required: true,
       },
       {
-        key: "wiper.exchange",
+        key: "wiper.isExchange",
         label: "ワイパー交換",
         type: "checkbox",
         required: true,
@@ -143,14 +143,13 @@ const TaskForm = () => {
       },
     ],
     title: "整備データ入力",
-    submit: async (data: Tire) => {
-      try {
-        await upsertTire(data, Number(taskId));
-      } catch (e) {
-        console.error("Unexpected error", e);
-      }
+    submit: async (data: State) => {
+      await upsertTire(data, Number(taskId));
     },
-    setDefault: () => {},
+    setDefault: async () => {
+      const defaultValue = await getStateByTaskId(Number(taskId));
+      form.reset(defaultValue);
+    },
   };
 
   return (
