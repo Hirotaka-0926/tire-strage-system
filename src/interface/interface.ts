@@ -17,12 +17,12 @@ export interface State {
   tire_size: string;
   manufacture_year: number;
   air_pressure: number;
-  tire_state: Inspection;
-  oil: Inspection;
-  battery: Inspection;
-  wiper: Inspection;
-  other: string;
-  state: string;
+  tire_state?: Inspection;
+  oil?: Inspection;
+  battery?: Inspection;
+  wiper?: Inspection;
+  other_inspection: string;
+  state_inspection: string;
   inspection_date: Date;
   distance: number;
   next_theme: string;
@@ -34,6 +34,7 @@ export interface Inspection {
   state: string;
   isExchange?: boolean;
   note: string;
+  tire_state_id?: number;
 }
 
 export interface Task {

@@ -1,4 +1,3 @@
-import { inspect } from "util";
 import { supabase } from "./supabase";
 import { Task, Client, State, Car, Inspection } from "@/interface/interface";
 
@@ -123,13 +122,27 @@ export const getSpecificClient = async (
   return data;
 };
 
-export const upsertTire = async (data: Tire, taskId: number) => {
+export const upsertTire = async (data: State, taskId: number) => {
+  const { tire_state, oil, battery, wiper } = data;
+  delete data.tire_state;
+  delete data.oil;
+  delete data.battery;
+  delete data.wiper;
+  const inspectionArray = [tire_state, oil, battery, wiper];
+  console.log(data);
   const { data: tireData, error: tireError } = await supabase
     .from("Tire_State")
     .upsert(data)
     .select();
   if (tireError) {
     throw tireError;
+  }
+
+  const { error: inspectionError } = await supabase
+    .from("Inspection")
+    .upsert(inspectionArray);
+  if (inspectionError) {
+    throw inspectionError;
   }
 
   if (tireData && tireData.length > 0) {

@@ -67,7 +67,7 @@ const TaskForm = () => {
         key: "oil.isExchange",
         label: "オイル交換",
         type: "checkbox",
-        required: true,
+        required: false,
       },
       {
         key: "oil.note",
@@ -85,7 +85,7 @@ const TaskForm = () => {
         key: "battery.isExchange",
         label: "バッテリー交換",
         type: "checkbox",
-        required: true,
+        required: false,
       },
       {
         key: "battery.note",
@@ -103,7 +103,7 @@ const TaskForm = () => {
         key: "wiper.isExchange",
         label: "ワイパー交換",
         type: "checkbox",
-        required: true,
+        required: false,
       },
       {
         key: "wiper.note",
@@ -112,31 +112,31 @@ const TaskForm = () => {
         required: true,
       },
       {
-        key: "other",
+        key: "other_inspection",
         label: "その他",
         type: "text",
         required: true,
       },
       {
-        key: "state",
+        key: "state_inspection",
         label: "状態",
         type: "text",
         required: true,
       },
       {
-        key: "memo.inspection_date",
+        key: "inspection_date",
         label: "点検日",
         type: "date",
         required: true,
       },
       {
-        key: "memo.distance",
+        key: "drive_distance",
         label: "走行距離",
         type: "number",
         required: true,
       },
       {
-        key: "memo.next_theme",
+        key: "next_theme",
         label: "次回テーマ",
         type: "text",
         required: true,
