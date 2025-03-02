@@ -47,7 +47,7 @@ const StorageList: React.FC = () => {
           {allStorages.map((storage) => (
             <TableRow
               key={storage.id}
-              onClick={() => router.push(`/customer/edit/${storage.id}`)}
+              onClick={() => router.push(`/storage/${storage.id}`)} // 修正
               className="cursor-pointer hover:bg-gray-100"
             >
               <TableCell>{storage.AorB}</TableCell>

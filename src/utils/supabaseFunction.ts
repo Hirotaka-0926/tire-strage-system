@@ -247,3 +247,24 @@ export const getAllStorages = async (): Promise<StorageDisplay[]> => {
 
   return data;
 };
+
+export const getStorageById = async (
+  storageId: number
+): Promise<StorageDisplay> => {
+  try {
+    const { data, error } = await supabase
+      .from("StorageDB")
+      .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))")
+      .eq("id", storageId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (e) {
+    console.error("Error fetching storage by ID:", e);
+    throw e;
+  }
+};
