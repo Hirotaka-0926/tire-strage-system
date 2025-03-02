@@ -1,6 +1,6 @@
 "use client";
 
-import { FormSchema } from "@/interface/interface";
+import { FormSchema } from "@/utils/interface";
 import { Path } from "react-hook-form";
 
 import React, { useEffect } from "react";

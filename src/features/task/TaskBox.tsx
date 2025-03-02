@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Task, Client, Car, State } from "@/interface/interface";
+import { Task, Client, Car, State } from "@/utils/interface";
 
 interface Props {
   state: 1 | 2 | 3;

@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Client } from "@/interface/interface";
+import { Client } from "@/utils/interface";
 import React, { useEffect, useState } from "react";
 import { getAllClients } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";

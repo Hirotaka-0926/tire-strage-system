@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Task, Car, FormSchema } from "@/interface/interface";
+import { Task, Car, FormSchema } from "@/utils/interface";
 import { useForm } from "react-hook-form";
 import {
   upsertCar,

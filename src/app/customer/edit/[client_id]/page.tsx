@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import FormCustomer from "@/features/customer/FormCustomer";
-import { Client, FormSchema } from "@/interface/interface";
+import { Client, FormSchema } from "@/utils/interface";
 import { useForm } from "react-hook-form";
 import { upsertClient, getSpecificClient } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";

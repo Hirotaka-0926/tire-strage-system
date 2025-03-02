@@ -1,5 +1,12 @@
 import { supabase } from "./supabase";
-import { Task, Client, State, Car, Inspection } from "@/interface/interface";
+import {
+  Task,
+  Client,
+  State,
+  Car,
+  Inspection,
+  StorageDisplay,
+} from "@/utils/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -227,4 +234,16 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   };
 
   return result;
+};
+
+export const getAllStorages = async (): Promise<StorageDisplay[]> => {
+  const { data, error } = await supabase
+    .from("StorageDB")
+    .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))");
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };

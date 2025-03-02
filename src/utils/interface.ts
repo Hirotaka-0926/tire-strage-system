@@ -24,7 +24,7 @@ export interface State {
   other_inspection: string;
   state_inspection: string;
   inspection_date: Date;
-  distance: number;
+  drive_distance: number;
   next_theme: string;
 }
 
@@ -45,7 +45,7 @@ export interface Task {
 
 export interface Storage {
   id?: number;
-  tire_state_id: number;
+  tire_state_id?: number;
   storage_id: number;
   type: "A" | "B";
   year: number;
@@ -75,3 +75,7 @@ interface FormField {
   label: string;
   required: boolean;
 }
+
+export type StorageDisplay = Storage & {
+  state: State & { car: Car & { client: Client } };
+};

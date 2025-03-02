@@ -16,6 +16,9 @@ export const Header = () => {
             <li>
               <Link href="/task">タイヤ交換予約リスト</Link>
             </li>
+            <li>
+              <Link href="/storage">保管庫一覧</Link>
+            </li>
           </ul>
         </nav>
       </div>

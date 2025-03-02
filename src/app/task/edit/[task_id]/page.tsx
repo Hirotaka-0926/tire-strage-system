@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { State, FormSchema } from "@/interface/interface";
+import { State, FormSchema } from "@/utils/interface";
 import { upsertTire, getStateByTaskId } from "@/utils/supabaseFunction";
 import FormCustomer from "@/features/customer/FormCustomer";
 

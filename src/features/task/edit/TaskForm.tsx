@@ -1,7 +1,7 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Tire, FormSchema } from "@/interface/interface";
+import { Tire, FormSchema } from "@/utils/interface";
 import { upsertTire } from "@/utils/supabaseFunction";
 import FormCustomer from "@/features/customer/FormCustomer";
 
