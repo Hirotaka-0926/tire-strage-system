@@ -1,10 +1,21 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import StorageList from "./StorageList";
+import SearchStorage from "./SearchStorage";
 
 const StoragePage: React.FC = () => {
+  const [searchKey, setSearchKey] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string | null>(null);
+
   return (
     <div>
-      Storage Page
+      <SearchStorage
+        searchKey={searchKey}
+        setSearchKey={setSearchKey}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
+      />
       <StorageList />
     </div>
   );

@@ -52,7 +52,6 @@ const StorageList: React.FC = () => {
             >
               <TableCell>{storage.AorB}</TableCell>
               <TableCell>{storage.storage_id}</TableCell>
-
               <TableCell>{storage.state.car.client.client_name}</TableCell>
               <TableCell>{storage.state.car.car_model}</TableCell>
               <TableCell>{storage.state.car.car_number}</TableCell>

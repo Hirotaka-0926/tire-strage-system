@@ -47,9 +47,9 @@ export interface Storage {
   id?: number;
   tire_state_id?: number;
   storage_id: number;
-  type: "A" | "B";
+  location: "A" | "B";
   year: number;
-  summer_or_winter: "summer" | "winter";
+  season: "summer" | "winter";
 }
 
 export interface Car {
