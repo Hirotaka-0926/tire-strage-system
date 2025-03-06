@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,8 +13,8 @@ import {
 interface Props {
   searchKey: string;
   setSearchKey: React.Dispatch<React.SetStateAction<string>>;
-  searchValue: string | null;
-  setSearchValue: React.Dispatch<React.SetStateAction<string | null>>;
+  searchValue: string;
+  setSearchValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const SearchStorage: React.FC<Props> = ({
@@ -40,11 +40,14 @@ const SearchStorage: React.FC<Props> = ({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>保管庫情報</SelectLabel>
-            <SelectItem value="id">ID</SelectItem>
-            <SelectItem value="created_at">更新日</SelectItem>
-            <SelectItem value="client_name">顧客名</SelectItem>
-            <SelectItem value="post_number">郵便番号</SelectItem>
-            <SelectItem value="address">住所</SelectItem>
+            <SelectItem value="location">保管場所</SelectItem>
+            <SelectItem value="storage_id">保管庫ID</SelectItem>
+            <SelectItem value="state.car.client.client_name">顧客名</SelectItem>
+            <SelectItem value="state.car.car_model">車種</SelectItem>
+            <SelectItem value="state.car.car_number">ナンバー</SelectItem>
+            <SelectItem value="state.tire_maker">タイヤメーカー</SelectItem>
+            <SelectItem value="state.tire_size">タイヤサイズ</SelectItem>
+            <SelectItem value="state.tire_pattern">タイヤパターン</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>

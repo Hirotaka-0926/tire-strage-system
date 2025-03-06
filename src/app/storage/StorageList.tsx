@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageDisplay, Storage } from "@/utils/interface";
 import {
   Table,
   TableBody,
@@ -14,18 +14,42 @@ import {
 import { useRouter } from "next/navigation";
 import { getAllStorages } from "@/utils/supabaseFunction";
 
-const StorageList: React.FC = () => {
+interface Props {
+  searchKey: string;
+  searchValue: string;
+}
+
+const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
   const router = useRouter();
   const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
   useEffect(() => {
     const fetchAllStorages = async () => {
       const storages = await getAllStorages();
-      console.log(storages);
       setAllStorages(storages);
+      setStorageList(storages);
     };
+
     fetchAllStorages();
   }, []);
+
+  useEffect(() => {
+    const filterStorageList = () => {
+      const filteredList = allStorages.filter((storage: Storage) => {
+        const fieldValue = storage[searchKey as keyof Storage];
+        if (typeof fieldValue == "string") {
+          return fieldValue.includes(searchValue);
+        } else if (typeof fieldValue == "number") {
+          return fieldValue.toString().includes(searchValue);
+        } else if (typeof fieldValue === "object") {
+          return (fieldValue as Date).toISOString().includes(searchValue);
+        }
+        return false;
+      });
+      setStorageList(filteredList);
+    };
+    filterStorageList();
+  }, [searchKey, searchValue]);
 
   return (
     <div className="overflow-x-auto">
@@ -44,13 +68,13 @@ const StorageList: React.FC = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {allStorages.map((storage) => (
+          {storageList.map((storage) => (
             <TableRow
               key={storage.id}
               onClick={() => router.push(`/storage/${storage.id}`)} // 修正
               className="cursor-pointer hover:bg-gray-100"
             >
-              <TableCell>{storage.AorB}</TableCell>
+              <TableCell>{storage.location}</TableCell>
               <TableCell>{storage.storage_id}</TableCell>
               <TableCell>{storage.state.car.client.client_name}</TableCell>
               <TableCell>{storage.state.car.car_model}</TableCell>

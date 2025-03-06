@@ -5,8 +5,8 @@ import StorageList from "./StorageList";
 import SearchStorage from "./SearchStorage";
 
 const StoragePage: React.FC = () => {
-  const [searchKey, setSearchKey] = useState<string>("");
-  const [searchValue, setSearchValue] = useState<string | null>(null);
+  const [searchKey, setSearchKey] = useState<string>("id");
+  const [searchValue, setSearchValue] = useState<string>("");
 
   return (
     <div>
@@ -16,7 +16,7 @@ const StoragePage: React.FC = () => {
         searchValue={searchValue}
         setSearchValue={setSearchValue}
       />
-      <StorageList />
+      <StorageList searchKey={searchKey} searchValue={searchValue} />
     </div>
   );
 };
