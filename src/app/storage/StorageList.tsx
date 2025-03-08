@@ -19,9 +19,16 @@ interface Props {
   searchValue: string;
   year: number;
   season: "summer" | "winter";
+  isSearchBySeason: boolean;
 }
 
-const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
+const StorageList: React.FC<Props> = ({
+  searchKey,
+  searchValue,
+  year,
+  season,
+  isSearchBySeason,
+}) => {
   const router = useRouter();
   const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
@@ -37,8 +44,9 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
 
   useEffect(() => {
     const filterStorageList = () => {
-      const filteredList = allStorages.filter((storage: Storage) => {
+      const filteredByKey = allStorages.filter((storage: Storage) => {
         const fieldValue = getNestedProperty(storage, searchKey);
+
         if (typeof fieldValue == "string") {
           return fieldValue.includes(searchValue);
         } else if (typeof fieldValue == "number") {
@@ -48,7 +56,16 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
         }
         return false;
       });
-      setStorageList(filteredList);
+      if (isSearchBySeason) {
+        const filteredBySeason = filteredByKey.filter((storage: Storage) => {
+          if (storage.season == season && storage.year == year) {
+            return true;
+          }
+        });
+        setStorageList(filteredBySeason);
+      } else {
+        setStorageList(filteredByKey);
+      }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,8 +74,9 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
         return prev ? prev[curr] : undefined;
       }, obj);
     };
+    console.log(year, season, isSearchBySeason);
     filterStorageList();
-  }, [searchKey, searchValue, allStorages]);
+  }, [searchKey, searchValue, allStorages, year, season, isSearchBySeason]);
 
   return (
     <div className="overflow-x-auto">

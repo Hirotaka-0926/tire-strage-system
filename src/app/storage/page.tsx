@@ -49,6 +49,7 @@ const StoragePage: React.FC = () => {
         searchValue={searchValue}
         year={year}
         season={season}
+        isSearchBySeason={isSearchBySeason}
       />
     </div>
   );
