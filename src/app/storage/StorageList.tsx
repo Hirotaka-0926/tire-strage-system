@@ -17,6 +17,8 @@ import { getAllStorages } from "@/utils/supabaseFunction";
 interface Props {
   searchKey: string;
   searchValue: string;
+  year: number;
+  season: "summer" | "winter";
 }
 
 const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
@@ -56,7 +58,7 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
       }, obj);
     };
     filterStorageList();
-  }, [searchKey, searchValue]);
+  }, [searchKey, searchValue, allStorages]);
 
   return (
     <div className="overflow-x-auto">
