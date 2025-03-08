@@ -36,7 +36,7 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
   useEffect(() => {
     const filterStorageList = () => {
       const filteredList = allStorages.filter((storage: Storage) => {
-        const fieldValue = storage[searchKey as keyof Storage];
+        const fieldValue = getNestedProperty(storage, searchKey);
         if (typeof fieldValue == "string") {
           return fieldValue.includes(searchValue);
         } else if (typeof fieldValue == "number") {
@@ -47,6 +47,13 @@ const StorageList: React.FC<Props> = ({ searchKey, searchValue }) => {
         return false;
       });
       setStorageList(filteredList);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getNestedProperty = (obj: any, path: string) => {
+      return path.split(".").reduce((prev, curr) => {
+        return prev ? prev[curr] : undefined;
+      }, obj);
     };
     filterStorageList();
   }, [searchKey, searchValue]);
