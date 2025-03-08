@@ -12,7 +12,7 @@ const StoragePage: React.FC = () => {
   const [searchValue, setSearchValue] = useState<string>("");
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
-  const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(true);
+  const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
 
   return (
     <div>

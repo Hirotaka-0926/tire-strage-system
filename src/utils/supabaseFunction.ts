@@ -252,17 +252,46 @@ export const getStorageById = async (
   storageId: number
 ): Promise<StorageDisplay> => {
   try {
-    const { data, error } = await supabase
+    const { data: storageData, error: storageError } = await supabase
       .from("StorageDB")
       .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))")
       .eq("id", storageId)
       .single();
 
-    if (error) {
-      throw error;
+    if (storageError) {
+      throw storageError;
     }
 
-    return data;
+    const { data: inspectionData, error: inspectionError } = await supabase
+      .from("Inspection")
+      .select("*")
+      .eq("tire_state_id", storageData.state.id);
+
+    if (inspectionError) {
+      throw inspectionError;
+    }
+    const result: StorageDisplay = {
+      ...storageData,
+      state: {
+        ...storageData.state,
+        tire_state: inspectionData.find(
+          (inspection: Inspection) => inspection.type === "tire_state"
+        ),
+        oil: inspectionData.find(
+          (inspection: Inspection) => inspection.type === "oil"
+        ),
+        battery: inspectionData.find(
+          (inspection: Inspection) => inspection.type === "battery"
+        ),
+        wiper: inspectionData.find(
+          (inspection: Inspection) => inspection.type === "wiper"
+        ),
+        other: inspectionData.find(
+          (inspection: Inspection) => inspection.type === "other"
+        ),
+      },
+    };
+    return result;
   } catch (e) {
     console.error("Error fetching storage by ID:", e);
     throw e;

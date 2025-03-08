@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StorageDisplay } from "@/utils/interface";
-import { getStorageById } from "@/utils/supabaseFunction"; // このような関数を追加する必要があります
+import { getStorageById } from "@/utils/supabaseFunction";
 
 const StorageDetail: React.FC = () => {
   const params = useParams();
@@ -106,13 +106,15 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">保管庫タイプ:</p>
-              <p>{storage.AorB}</p>
+              <p>{storage.location}</p>
 
               <p className="font-semibold">保管庫ID:</p>
               <p>{storage.storage_id}</p>
 
-              <p className="font-semibold">作成日:</p>
-              <p>{new Date(storage.created_at).toLocaleDateString("ja-JP")}</p>
+              <p className="font-semibold">作成年:</p>
+              <p>{storage.year}</p>
+              <p className="font-semibold">シーズン:</p>
+              <p>{storage.season}</p>
             </div>
           </CardContent>
         </Card>
