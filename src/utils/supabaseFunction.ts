@@ -167,11 +167,30 @@ export const upsertTire = async (data: State, taskId: number) => {
 export const getTaskById = async (id: number) => {
   const { data, error } = await supabase
     .from("TaskList")
-    .select("*, car:CarTable(*), client:ClientData(*), tire:Tire_State(*)")
+    .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))")
     .eq("id", id);
   if (error) {
     throw error;
   }
+
+  const result = {
+    ...data.tire_state,
+    tire_state: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "tire_state"
+    ),
+    oil: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "oil"
+    ),
+    battery: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "battery"
+    ),
+    wiper: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "wiper"
+    ),
+    other: inspectionData.find(
+      (inspection: Inspection) => inspection.type === "other"
+    ),
+  };
 
   return data;
 };
