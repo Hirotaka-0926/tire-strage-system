@@ -1,7 +1,19 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
+"use client";
+
+import React, { useState, useEffect } from "react";
+
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getStoragedYear } from "@/utils/supabaseFunction";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   year: number;
@@ -16,9 +28,27 @@ const StoragedSeason: React.FC<Props> = ({
   setYear,
   setSeason,
 }) => {
+  const [years, setYears] = useState<number[]>([]);
+  useEffect(() => {
+    const fetchYear = async () => {
+      const years = await getStoragedYear();
+      setYears(distinctYear(years));
+    };
+
+    const distinctYear = (years: number[]) => {
+      return years.reduce<number[]>((prev, current) => {
+        // 配列が空、または最後の要素と異なる場合に追加
+        if (prev.length === 0 || prev[prev.length - 1] !== current.year) {
+          prev.push(current.year);
+        }
+        return prev;
+      }, []);
+    };
+    fetchYear();
+  }, []);
   return (
     <div className="flex flex-col space-y-4 w-full p-4">
-      <Input
+      {/* <Input
         className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         id="year"
         value={year}
@@ -26,7 +56,23 @@ const StoragedSeason: React.FC<Props> = ({
         onChange={(e) => {
           setYear(Number(e.target.value));
         }}
-      />
+      /> */}
+
+      <Select>
+        <SelectTrigger className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <SelectValue placeholder="年度" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>年度</SelectLabel>
+            {years.map((year) => (
+              <SelectItem key={year} value={year}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
 
       <RadioGroup
         value={season}
