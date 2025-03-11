@@ -58,7 +58,7 @@ const StoragedSeason: React.FC<Props> = ({
         }}
       /> */}
 
-      <Select>
+      <Select value={year} onValueChange={setYear}>
         <SelectTrigger className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <SelectValue placeholder="年度" />
         </SelectTrigger>
