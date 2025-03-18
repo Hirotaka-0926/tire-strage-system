@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { StorageDisplay } from "@/utils/interface";
 import { getStorageById } from "@/utils/supabaseFunction";
+import StorageToPdf from "./StorageToPdf";
 
 const StorageDetail: React.FC = () => {
   const params = useParams();
@@ -94,6 +95,11 @@ const StorageDetail: React.FC = () => {
       <Button onClick={handleReturn} className="mb-4">
         ← 戻る
       </Button>
+      <StorageToPdf
+        storage={storage}
+        setStorage={setStorage}
+        className="flex justify-end"
+      />
 
       <h1 className="text-2xl font-bold mb-6">保管庫詳細</h1>
 

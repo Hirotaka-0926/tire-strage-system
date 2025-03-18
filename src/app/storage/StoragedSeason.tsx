@@ -48,16 +48,6 @@ const StoragedSeason: React.FC<Props> = ({
   }, []);
   return (
     <div className="flex flex-col space-y-4 w-full p-4">
-      {/* <Input
-        className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        id="year"
-        value={year}
-        type="number"
-        onChange={(e) => {
-          setYear(Number(e.target.value));
-        }}
-      /> */}
-
       <Select value={year} onValueChange={setYear}>
         <SelectTrigger className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <SelectValue placeholder="年度" />
