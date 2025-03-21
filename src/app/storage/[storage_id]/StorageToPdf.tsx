@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StorageDisplay } from "@/utils/interface";
 import {
   Document,
@@ -17,37 +17,32 @@ interface Props {
   className?: string;
 }
 
-// フォント登録を useEffect で行う（サーバーサイドでは実行されないようにする）
 const StorageToPdf: React.FC<Props> = ({ storage, className }) => {
-  const [fontsReady, setFontsReady] = useState(false);
+  const [isRoadFont, setIsRoadFont] = useState<boolean>(false);
 
   useEffect(() => {
-    // フォント登録は必ずクライアントサイドで行う
     try {
       Font.register({
         family: "NotoSansJP",
-        format: "truetype",
         src: "https://fonts.gstatic.com/s/notosansjp/v52/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEj75s.ttf",
       });
-      setFontsReady(true);
-    } catch (error) {
-      console.error("フォント登録エラー:", error);
+      setIsRoadFont(true);
+    } catch (err) {
+      console.error("フォント登録エラー:", err);
     }
   }, []);
 
-  // フォントが準備できていない場合のフォールバック
-  if (!fontsReady) {
+  if (!isRoadFont) {
     return <div className={className}>フォントを読み込み中...</div>;
   }
-
   return (
     <div className={className}>
       <BlobProvider document={<PDFDocument storage={storage} />}>
         {({ url, loading, error }) => {
-          if (loading) return "PDFを生成中...";
-          if (error) return `エラーが発生しました: ${error}`;
+          if (loading) return "PDF生成中...";
+          if (error) return "エラーが発生しました : " + error;
           return (
-            <Button onClick={() => window.open(url, "_blank")}>
+            <Button onClick={() => window.open(url!, "_blank")}>
               PDFを表示
             </Button>
           );
@@ -83,7 +78,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   textLarge: {
-    fontSize: 16,
+    fontSite: 20,
     marginBottom: 15,
   },
   tireContainer: {
@@ -99,30 +94,29 @@ const PDFDocument = ({ storage }: { storage: StorageDisplay }) => (
       <View style={styles.section}>
         <Text style={styles.title}>保管庫詳細</Text>
         <Text style={styles.text}>ID: {storage.id}</Text>
-        <Text style={styles.text}>名前: {storage.name || "未設定"}</Text>
-        <Text style={styles.text}>場所: {storage.location || "未設定"}</Text>
-        <Text style={styles.text}>容量: {storage.capacity || "未設定"}</Text>
         <Text style={styles.text}>
-          利用可能スペース: {storage.availableSpace || "未設定"}
+          名前: {storage.state.car.client.client_name || "未設定"}
+        </Text>
+        <Text style={styles.text}>場所: {storage.location || "未設定"}</Text>
+        <Text style={styles.text}>
+          保管庫ID: {storage.storage_id || "未設定"}
         </Text>
         <Text style={styles.textLarge}>
           作成日:{" "}
-          {storage.createdAt
-            ? new Date(storage.createdAt).toLocaleDateString("ja-JP")
+          {storage.state.car.client.created_at
+            ? new Date(storage.state.car.client.created_at).toLocaleDateString(
+                "ja-JP"
+              )
             : "未設定"}
         </Text>
 
         <Text style={styles.subtitle}>保管タイヤ一覧</Text>
-        {storage.tires && storage.tires.length > 0 ? (
-          storage.tires.map((tire) => (
-            <View key={tire.id} style={styles.tireContainer}>
-              <Text>タイヤID: {tire.id}</Text>
-              <Text>顧客名: {tire.customerName}</Text>
-              <Text>車種: {tire.carModel}</Text>
-              <Text>サイズ: {tire.size}</Text>
-              <Text>状態: {tire.condition}</Text>
-            </View>
-          ))
+        {storage.state ? (
+          <View key={storage.state.id} style={styles.tireContainer}>
+            <Text>タイヤID: {storage.state.id}</Text>
+            <Text>車種: {storage.state.car.car_model}</Text>
+            <Text>サイズ: {storage.state.tire_size}</Text>
+          </View>
         ) : (
           <Text>保管タイヤはありません</Text>
         )}
