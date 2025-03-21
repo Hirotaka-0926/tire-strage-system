@@ -6,6 +6,8 @@ import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import StorageToCSV from "./StoragesToCSV";
+import { StorageDisplay } from "@/utils/interface";
 
 const StoragePage: React.FC = () => {
   const [searchKey, setSearchKey] = useState<string>("location");
@@ -13,6 +15,7 @@ const StoragePage: React.FC = () => {
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
+  const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
 
   return (
     <div>
@@ -43,6 +46,7 @@ const StoragePage: React.FC = () => {
             />
           )}
         </div>
+        <StorageToCSV storages={storageList} />
       </div>
       <StorageList
         searchKey={searchKey}
@@ -50,6 +54,8 @@ const StoragePage: React.FC = () => {
         year={year}
         season={season}
         isSearchBySeason={isSearchBySeason}
+        storageList={storageList}
+        setStorageList={setStorageList}
       />
     </div>
   );

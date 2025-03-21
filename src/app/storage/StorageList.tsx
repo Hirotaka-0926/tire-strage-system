@@ -20,6 +20,8 @@ interface Props {
   year: number;
   season: "summer" | "winter";
   isSearchBySeason: boolean;
+  storageList: StorageDisplay[];
+  setStorageList: React.Dispatch<React.SetStateAction<StorageDisplay[]>>;
 }
 
 const StorageList: React.FC<Props> = ({
@@ -28,9 +30,10 @@ const StorageList: React.FC<Props> = ({
   year,
   season,
   isSearchBySeason,
+  storageList,
+  setStorageList,
 }) => {
   const router = useRouter();
-  const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
   useEffect(() => {
     const fetchAllStorages = async () => {
