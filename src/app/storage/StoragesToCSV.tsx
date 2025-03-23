@@ -1,6 +1,7 @@
 import { StorageDisplay } from "@/utils/interface";
 import { CSVLink } from "react-csv";
 import React from "react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   storages: StorageDisplay[];
@@ -48,8 +49,8 @@ const StorageToCSV: React.FC<Props> = ({ storages }) => {
 
   return (
     <div>
-      <CSVLink data={data} headers={headers}>
-        CSVダウンロード
+      <CSVLink data={data} headers={headers} filename={"storages.csv"}>
+        <Button className="m-4">CSVダウンロード</Button>
       </CSVLink>
     </div>
   );
