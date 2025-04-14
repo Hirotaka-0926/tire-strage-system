@@ -97,7 +97,9 @@ const PDFDocument = ({ storage }: { storage: StorageDisplay }) => (
         <Text style={styles.text}>
           名前: {storage.state.car.client.client_name || "未設定"}
         </Text>
-        <Text style={styles.text}>場所: {storage.location || "未設定"}</Text>
+        <Text style={styles.text}>
+          場所: {storage.storage.storage_type || "未設定"}
+        </Text>
         <Text style={styles.text}>
           保管庫ID: {storage.storage.storage_number || "未設定"}
         </Text>

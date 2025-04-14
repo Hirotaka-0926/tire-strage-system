@@ -95,11 +95,7 @@ const StorageDetail: React.FC = () => {
       <Button onClick={handleReturn} className="mb-4">
         ← 戻る
       </Button>
-      <StorageToPdf
-        storage={storage}
-        setStorage={setStorage}
-        className="flex justify-end"
-      />
+      <StorageToPdf storage={storage} className="flex justify-end" />
 
       <h1 className="text-2xl font-bold mb-6">保管庫詳細</h1>
 
@@ -112,10 +108,10 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">保管庫タイプ:</p>
-              <p>{storage.location}</p>
+              <p>{storage.storage.storage_type}</p>
 
               <p className="font-semibold">保管庫ID:</p>
-              <p>{storage.storage_id}</p>
+              <p>{storage.storage.storage_number}</p>
 
               <p className="font-semibold">作成年:</p>
               <p>{storage.year}</p>

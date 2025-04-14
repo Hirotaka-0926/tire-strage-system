@@ -46,7 +46,6 @@ export interface Task {
 export interface StorageLog {
   id?: number;
   tire_state_id?: number;
-  location: "A" | "B";
   year: number;
   season: "summer" | "winter";
 }
