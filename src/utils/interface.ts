@@ -43,13 +43,17 @@ export interface Task {
   state: number;
 }
 
-export interface Storage {
+export interface StorageLog {
   id?: number;
   tire_state_id?: number;
-  storage_id: number;
   location: "A" | "B";
   year: number;
   season: "summer" | "winter";
+}
+export interface Storage {
+  id?: number;
+  storage_number: number;
+  storage_type: string;
 }
 
 export interface Car {
@@ -76,6 +80,6 @@ interface FormField {
   required: boolean;
 }
 
-export type StorageDisplay = Storage & {
+export type StorageDisplay = StorageLog & { storage: Storage } & {
   state: State & { car: Car & { client: Client } };
 };

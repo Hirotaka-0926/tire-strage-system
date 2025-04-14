@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import StorageList from "./StorageList";
 import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
@@ -8,34 +8,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import StorageToCSV from "./StoragesToCSV";
 import { StorageDisplay } from "@/utils/interface";
-import { getAllStorages } from "@/utils/supabaseFunction";
 
-const StoragePage: React.FC = () => {
+interface Props {
+  initialStorages: StorageDisplay[];
+}
+
+const ClientStoragePage: React.FC<Props> = ({ initialStorages }) => {
   const [searchKey, setSearchKey] = useState<string>("location");
   const [searchValue, setSearchValue] = useState<string>("");
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
-  const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // 親コンポーネントでデータを取得
-  useEffect(() => {
-    const fetchStorages = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getAllStorages();
-        console.log("取得したデータ：", data);
-        setStorageList(data);
-      } catch (error) {
-        console.error("データ取得エラー:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStorages();
-  }, []);
+  const [storageList, setStorageList] =
+    useState<StorageDisplay[]>(initialStorages);
 
   return (
     <div>
@@ -68,22 +53,17 @@ const StoragePage: React.FC = () => {
         </div>
         <StorageToCSV storages={storageList} />
       </div>
-
-      {isLoading ? (
-        <div className="text-center p-4">データを読み込み中...</div>
-      ) : (
-        <StorageList
-          searchKey={searchKey}
-          searchValue={searchValue}
-          year={year}
-          season={season}
-          isSearchBySeason={isSearchBySeason}
-          storageList={storageList}
-          setStorageList={setStorageList}
-        />
-      )}
+      <StorageList
+        searchKey={searchKey}
+        searchValue={searchValue}
+        year={year}
+        season={season}
+        isSearchBySeason={isSearchBySeason}
+        storageList={storageList}
+        setStorageList={setStorageList}
+      />
     </div>
   );
 };
 
-export default StoragePage;
+export default ClientStoragePage;

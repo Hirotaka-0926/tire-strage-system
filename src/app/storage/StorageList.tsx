@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { StorageDisplay, Storage } from "@/utils/interface";
+import React, { useState, useEffect, useCallback } from "react";
+import { StorageDisplay } from "@/utils/interface";
 import {
   Table,
   TableBody,
@@ -35,51 +35,125 @@ const StorageList: React.FC<Props> = ({
 }) => {
   const router = useRouter();
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchAllStorages = async () => {
-      const storages = await getAllStorages();
-      setAllStorages(storages);
-      setStorageList(storages);
+      try {
+        console.log("データ取得開始");
+
+        const storages = await getAllStorages();
+        console.log("取得したデータ:", storages);
+        setAllStorages(storages);
+        setStorageList(storages);
+      } catch (err) {
+        console.error("データ取得エラーの詳細:", err);
+        setError("データの取得に失敗しました");
+      }
     };
 
     fetchAllStorages();
   }, []);
 
-  useEffect(() => {
-    const filterStorageList = () => {
-      const filteredByKey = allStorages.filter((storage: Storage) => {
-        const fieldValue = getNestedProperty(storage, searchKey);
+  const filterStorageList = useCallback(() => {
+    if (!allStorages.length) return;
 
-        if (typeof fieldValue == "string") {
-          return fieldValue.includes(searchValue);
-        } else if (typeof fieldValue == "number") {
-          return fieldValue.toString().includes(searchValue);
-        } else if (typeof fieldValue === "object") {
-          return (fieldValue as Date).toISOString().includes(searchValue);
-        }
-        return false;
-      });
+    console.log("フィルタリング開始:", allStorages.length, "件のデータ");
+
+    // 検索語が空の場合は全データを表示
+    if (!searchValue) {
       if (isSearchBySeason) {
-        const filteredBySeason = filteredByKey.filter((storage: Storage) => {
-          if (storage.season == season && storage.year == year) {
-            return true;
-          }
-        });
-        setStorageList(filteredBySeason);
+        // シーズンフィルターが有効な場合
+        const filteredBySeason = allStorages.filter(
+          (storage: StorageDisplay) =>
+            (storage.season === season || storage.season === season) &&
+            (storage.year === year || storage.year === year)
+        );
+        console.log("シーズンでフィルター後:", filteredBySeason.length, "件");
+        setStorageList(
+          filteredBySeason.length ? filteredBySeason : allStorages
+        );
       } else {
-        setStorageList(filteredByKey);
+        // 検索もシーズンフィルターも指定なしの場合は全データ
+        setStorageList(allStorages);
       }
-    };
+      return;
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getNestedProperty = (obj: any, path: string) => {
-      return path.split(".").reduce((prev, curr) => {
-        return prev ? prev[curr] : undefined;
-      }, obj);
-    };
-    console.log(year, season, isSearchBySeason);
+    // 検索値がある場合のフィルタリング
+    const filteredByKey = allStorages.filter((storage: StorageDisplay) => {
+      try {
+        const fieldValue = getNestedProperty(storage, searchKey);
+        console.log("フィールド値:", fieldValue, "for key:", searchKey);
+
+        if (fieldValue === undefined || fieldValue === null) return false;
+
+        if (typeof fieldValue === "string") {
+          return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
+        } else if (typeof fieldValue === "number") {
+          return fieldValue.toString().includes(searchValue);
+        } else if (fieldValue instanceof Date) {
+          return fieldValue.toISOString().includes(searchValue);
+        }
+      } catch (err) {
+        console.error("フィルタリングエラー:", err);
+      }
+      return false;
+    });
+
+    console.log("キーワードでフィルター後:", filteredByKey.length, "件");
+
+    if (isSearchBySeason) {
+      const filteredBySeason = filteredByKey.filter(
+        (storage: StorageDisplay) =>
+          (storage.season === season || storage.season === season) &&
+          (storage.year === year || storage.year === year)
+      );
+      console.log("シーズンでフィルター後:", filteredBySeason.length, "件");
+      setStorageList(
+        filteredBySeason.length ? filteredBySeason : filteredByKey
+      );
+    } else {
+      setStorageList(filteredByKey);
+    }
+  }, [allStorages, searchKey, searchValue, isSearchBySeason, season, year]);
+
+  const getNestedProperty = useCallback(
+    (obj: StorageDisplay, path: string): unknown => {
+      try {
+        return path.split(".").reduce((prev: unknown, curr: string) => {
+          if (prev && typeof prev === "object") {
+            return (prev as Record<string, unknown>)[curr];
+          }
+          return undefined;
+        }, obj);
+      } catch (error) {
+        console.error("プロパティアクセスエラー:", error);
+        return undefined;
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
     filterStorageList();
-  }, [searchKey, searchValue, allStorages, year, season, isSearchBySeason]);
+    console.log("フィルター後のストレージ", storageList);
+  }, [filterStorageList]);
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  const TABLE_HEADERS = [
+    "A or B",
+    "保管庫ID",
+    "顧客名",
+    "車種",
+    "ナンバー",
+    "タイヤメーカー",
+    "タイヤパターン",
+    "タイヤサイズ",
+  ];
 
   return (
     <div className="overflow-x-auto">
@@ -87,33 +161,33 @@ const StorageList: React.FC<Props> = ({
         <TableCaption>これは保管庫リスト一覧です</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>A or B</TableHead>
-            <TableHead>保管庫ID</TableHead>
-            <TableHead>顧客名</TableHead>
-            <TableHead>車種</TableHead>
-            <TableHead>ナンバー</TableHead>
-            <TableHead>タイヤメーカー</TableHead>
-            <TableHead>タイヤパターン</TableHead>
-            <TableHead>タイヤサイズ</TableHead>
+            {TABLE_HEADERS.map((header) => (
+              <TableHead key={header}>{header}</TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {storageList.map((storage) => (
-            <TableRow
-              key={storage.id}
-              onClick={() => router.push(`/storage/${storage.id}`)} // 修正
-              className="cursor-pointer hover:bg-gray-100"
-            >
-              <TableCell>{storage.location}</TableCell>
-              <TableCell>{storage.storage_id}</TableCell>
-              <TableCell>{storage.state.car.client.client_name}</TableCell>
-              <TableCell>{storage.state.car.car_model}</TableCell>
-              <TableCell>{storage.state.car.car_number}</TableCell>
-              <TableCell>{storage.state.tire_maker}</TableCell>
-              <TableCell>{storage.state.tire_pattern}</TableCell>
-              <TableCell>{storage.state.tire_size}</TableCell>
-            </TableRow>
-          ))}
+          {storageList.map((storage) => {
+            console.log("レンダリングするストレージ:", storage);
+            return (
+              <TableRow
+                key={storage.id}
+                onClick={() => router.push(`/storage/${storage.id}`)}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+                <TableCell>{storage.storage?.storage_type || "-"}</TableCell>
+                <TableCell>{storage.storage?.storage_number || "-"}</TableCell>
+                <TableCell>
+                  {storage.state?.car?.client?.client_name || "-"}
+                </TableCell>
+                <TableCell>{storage.state?.car?.car_model || "-"}</TableCell>
+                <TableCell>{storage.state?.car?.car_number || "-"}</TableCell>
+                <TableCell>{storage.state?.tire_maker || "-"}</TableCell>
+                <TableCell>{storage.state?.tire_pattern || "-"}</TableCell>
+                <TableCell>{storage.state?.tire_size || "-"}</TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

@@ -99,7 +99,7 @@ const PDFDocument = ({ storage }: { storage: StorageDisplay }) => (
         </Text>
         <Text style={styles.text}>場所: {storage.location || "未設定"}</Text>
         <Text style={styles.text}>
-          保管庫ID: {storage.storage_id || "未設定"}
+          保管庫ID: {storage.storage.storage_number || "未設定"}
         </Text>
         <Text style={styles.textLarge}>
           作成日:{" "}

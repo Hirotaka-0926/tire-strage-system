@@ -1,16 +1,16 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Tire, FormSchema } from "@/utils/interface";
+import { State, FormSchema } from "@/utils/interface";
 import { upsertTire } from "@/utils/supabaseFunction";
 import FormCustomer from "@/features/customer/FormCustomer";
 
 const TaskForm = () => {
   const searchParams = useParams();
   const taskId = searchParams.task_id;
-  const form = useForm<Tire>();
+  const form = useForm<State>();
 
-  const formSchema: FormSchema<Tire> = {
+  const formSchema: FormSchema<State> = {
     form: form,
     fields: [
       {
@@ -141,7 +141,7 @@ const TaskForm = () => {
       },
     ],
     title: "整備データ入力",
-    submit: async (data: Tire) => {
+    submit: async (data: State) => {
       try {
         await upsertTire(data, Number(taskId));
       } catch (e) {
@@ -149,7 +149,7 @@ const TaskForm = () => {
       }
     },
     setDefault: () => {
-      const defaultValues: Partial<Tire> = {
+      const defaultValues: Partial<State> = {
         id: Number(taskId),
       };
       form.reset(defaultValues);

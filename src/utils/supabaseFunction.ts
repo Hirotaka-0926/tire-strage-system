@@ -258,8 +258,10 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
 
 export const getAllStorages = async (): Promise<StorageDisplay[]> => {
   const { data, error } = await supabase
-    .from("StorageDB")
-    .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))");
+    .from("StorageLogs")
+    .select(
+      "*, storage:StorageMaster(*), state:Tire_State(*, car:CarTable(*, client:ClientData(*)))"
+    );
 
   if (error) {
     throw error;
@@ -273,8 +275,10 @@ export const getStorageById = async (
 ): Promise<StorageDisplay> => {
   try {
     const { data: storageData, error: storageError } = await supabase
-      .from("StorageDB")
-      .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))")
+      .from("StorageLogs")
+      .select(
+        "*, storage:StorageMaster(*), state:Tire_State(*, car:CarTable(*, client:ClientData(*)))"
+      )
       .eq("id", storageId)
       .single();
 
@@ -320,7 +324,7 @@ export const getStorageById = async (
 
 export const getStoragedYear = async () => {
   const { data, error } = await supabase
-    .from("StorageDB")
+    .from("StorageLogs")
     .select("year")
     .order("year");
   if (error) {

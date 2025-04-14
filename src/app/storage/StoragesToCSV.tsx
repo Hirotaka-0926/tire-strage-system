@@ -1,6 +1,8 @@
+"use client";
+
 import { StorageDisplay } from "@/utils/interface";
 import { CSVLink } from "react-csv";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -8,6 +10,12 @@ interface Props {
 }
 
 const StorageToCSV: React.FC<Props> = ({ storages }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const headers = [
     { label: "ID", key: "id" },
     { label: "作成日", key: "created_at" },
@@ -46,6 +54,15 @@ const StorageToCSV: React.FC<Props> = ({ storages }) => {
     "state.drive_distance": storage.state.drive_distance,
     "state.next_theme": storage.state.next_theme,
   }));
+
+  // クライアントサイドでマウントされた後にのみCSVLinkをレンダリング
+  if (!isMounted) {
+    return (
+      <div>
+        <Button className="m-4">CSVダウンロード</Button>
+      </div>
+    );
+  }
 
   return (
     <div>
