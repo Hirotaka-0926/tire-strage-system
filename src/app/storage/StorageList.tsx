@@ -36,55 +36,47 @@ const StorageList: React.FC<Props> = ({
   const router = useRouter();
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchAllStorages = async () => {
       try {
-        console.log("データ取得開始");
-
+        setIsLoading(true);
         const storages = await getAllStorages();
-        console.log("取得したデータ:", storages);
         setAllStorages(storages);
         setStorageList(storages);
       } catch (err) {
-        console.error("データ取得エラーの詳細:", err);
+        console.error("データ取得エラー:", err);
         setError("データの取得に失敗しました");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAllStorages();
-  }, []);
+  }, [setStorageList]);
 
   const filterStorageList = useCallback(() => {
     if (!allStorages.length) return;
 
-    console.log("フィルタリング開始:", allStorages.length, "件のデータ");
-
-    // 検索語が空の場合は全データを表示
     if (!searchValue) {
       if (isSearchBySeason) {
-        // シーズンフィルターが有効な場合
         const filteredBySeason = allStorages.filter(
           (storage: StorageDisplay) =>
-            (storage.season === season || storage.season === season) &&
-            (storage.year === year || storage.year === year)
+            storage.season === season && storage.year === year
         );
-        console.log("シーズンでフィルター後:", filteredBySeason.length, "件");
         setStorageList(
           filteredBySeason.length ? filteredBySeason : allStorages
         );
       } else {
-        // 検索もシーズンフィルターも指定なしの場合は全データ
         setStorageList(allStorages);
       }
       return;
     }
 
-    // 検索値がある場合のフィルタリング
     const filteredByKey = allStorages.filter((storage: StorageDisplay) => {
       try {
         const fieldValue = getNestedProperty(storage, searchKey);
-        console.log("フィールド値:", fieldValue, "for key:", searchKey);
 
         if (fieldValue === undefined || fieldValue === null) return false;
 
@@ -101,22 +93,26 @@ const StorageList: React.FC<Props> = ({
       return false;
     });
 
-    console.log("キーワードでフィルター後:", filteredByKey.length, "件");
-
     if (isSearchBySeason) {
       const filteredBySeason = filteredByKey.filter(
         (storage: StorageDisplay) =>
-          (storage.season === season || storage.season === season) &&
-          (storage.year === year || storage.year === year)
+          storage.season === season && storage.year === year
       );
-      console.log("シーズンでフィルター後:", filteredBySeason.length, "件");
       setStorageList(
         filteredBySeason.length ? filteredBySeason : filteredByKey
       );
     } else {
       setStorageList(filteredByKey);
     }
-  }, [allStorages, searchKey, searchValue, isSearchBySeason, season, year]);
+  }, [
+    allStorages,
+    searchKey,
+    searchValue,
+    isSearchBySeason,
+    season,
+    year,
+    setStorageList,
+  ]);
 
   const getNestedProperty = useCallback(
     (obj: StorageDisplay, path: string): unknown => {
@@ -137,11 +133,14 @@ const StorageList: React.FC<Props> = ({
 
   useEffect(() => {
     filterStorageList();
-    console.log("フィルター後のストレージ", storageList);
   }, [filterStorageList]);
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return <div className="text-red-500 p-4 text-center">{error}</div>;
+  }
+
+  if (isLoading) {
+    return <div className="text-center p-4">データを読み込み中...</div>;
   }
 
   const TABLE_HEADERS = [
@@ -155,39 +154,61 @@ const StorageList: React.FC<Props> = ({
     "タイヤサイズ",
   ];
 
+  if (storageList.length === 0) {
+    return <div className="text-center p-4">該当するデータがありません</div>;
+  }
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-md shadow-sm">
       <Table className="min-w-full bg-white">
-        <TableCaption>これは保管庫リスト一覧です</TableCaption>
-        <TableHeader>
+        <TableCaption className="mt-2 mb-4 text-gray-500">
+          保管庫リスト一覧
+        </TableCaption>
+        <TableHeader className="bg-gray-50">
           <TableRow>
             {TABLE_HEADERS.map((header) => (
-              <TableHead key={header}>{header}</TableHead>
+              <TableHead
+                key={header}
+                className="py-3 text-sm font-medium text-gray-700"
+              >
+                {header}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {storageList.map((storage) => {
-            console.log("レンダリングするストレージ:", storage);
-            return (
-              <TableRow
-                key={storage.id}
-                onClick={() => router.push(`/storage/${storage.id}`)}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-                <TableCell>{storage.storage?.storage_type || "-"}</TableCell>
-                <TableCell>{storage.storage?.storage_number || "-"}</TableCell>
-                <TableCell>
-                  {storage.state?.car?.client?.client_name || "-"}
-                </TableCell>
-                <TableCell>{storage.state?.car?.car_model || "-"}</TableCell>
-                <TableCell>{storage.state?.car?.car_number || "-"}</TableCell>
-                <TableCell>{storage.state?.tire_maker || "-"}</TableCell>
-                <TableCell>{storage.state?.tire_pattern || "-"}</TableCell>
-                <TableCell>{storage.state?.tire_size || "-"}</TableCell>
-              </TableRow>
-            );
-          })}
+          {storageList.map((storage) => (
+            <TableRow
+              key={storage.id}
+              onClick={() => router.push(`/storage/${storage.id}`)}
+              className="cursor-pointer transition-colors hover:bg-gray-100 border-b"
+            >
+              <TableCell className="py-3">
+                {storage.storage?.storage_type || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.storage?.storage_number || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.car?.client?.client_name || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.car?.car_model || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.car?.car_number || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.tire_maker || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.tire_pattern || "-"}
+              </TableCell>
+              <TableCell className="py-3">
+                {storage.state?.tire_size || "-"}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>

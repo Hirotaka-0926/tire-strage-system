@@ -92,10 +92,6 @@ const StoragePage: React.FC = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2 text-lg">データを読み込み中...</span>
         </div>
-      ) : storageList.length === 0 ? (
-        <div className="text-center p-10 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-lg text-gray-500">データがありません</p>
-        </div>
       ) : (
         <Card>
           <CardContent className="p-0 sm:p-2">
