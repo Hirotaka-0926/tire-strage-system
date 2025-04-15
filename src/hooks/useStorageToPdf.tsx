@@ -62,118 +62,127 @@ const pdfStyles = StyleSheet.create({
   },
 });
 
-// PDF文書コンポーネント
-const StoragePDFDocument: React.FC<{ storage: StorageDisplay }> = ({
-  storage,
-}) => (
-  <Document>
-    <Page size="A4" style={pdfStyles.page}>
-      <View style={pdfStyles.section}>
-        <Text style={pdfStyles.title}>保管庫詳細</Text>
+// PDF文書コンポーネント - 単一のストレージページを生成
+const StoragePage: React.FC<{ storage: StorageDisplay }> = ({ storage }) => (
+  <Page size="A4" style={pdfStyles.page}>
+    <View style={pdfStyles.section}>
+      <Text style={pdfStyles.title}>保管庫詳細</Text>
 
-        <View style={pdfStyles.infoRow}>
-          <Text style={pdfStyles.infoLabel}>ID:</Text>
-          <Text style={pdfStyles.infoValue}>{storage.id}</Text>
-        </View>
-
-        <View style={pdfStyles.infoRow}>
-          <Text style={pdfStyles.infoLabel}>名前:</Text>
-          <Text style={pdfStyles.infoValue}>
-            {storage.state.car.client.client_name || "未設定"}
-          </Text>
-        </View>
-
-        <View style={pdfStyles.infoRow}>
-          <Text style={pdfStyles.infoLabel}>場所:</Text>
-          <Text style={pdfStyles.infoValue}>
-            {storage.storage.storage_type || "未設定"}
-          </Text>
-        </View>
-
-        <View style={pdfStyles.infoRow}>
-          <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
-          <Text style={pdfStyles.infoValue}>
-            {storage.storage.storage_number || "未設定"}
-          </Text>
-        </View>
-
-        <View style={pdfStyles.infoRow}>
-          <Text style={pdfStyles.infoLabel}>作成日:</Text>
-          <Text style={pdfStyles.infoValue}>
-            {storage.state.car.client.created_at
-              ? new Date(
-                  storage.state.car.client.created_at
-                ).toLocaleDateString("ja-JP")
-              : "未設定"}
-          </Text>
-        </View>
-
-        <Text style={pdfStyles.subtitle}>保管タイヤ情報</Text>
-        {storage.state ? (
-          <View key={storage.state.id} style={pdfStyles.tireContainer}>
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>タイヤID:</Text>
-              <Text style={pdfStyles.infoValue}>{storage.state.id}</Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>車種:</Text>
-              <Text style={pdfStyles.infoValue}>
-                {storage.state.car.car_model}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>メーカー:</Text>
-              <Text style={pdfStyles.infoValue}>
-                {storage.state.tire_maker}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>パターン:</Text>
-              <Text style={pdfStyles.infoValue}>
-                {storage.state.tire_pattern}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>サイズ:</Text>
-              <Text style={pdfStyles.infoValue}>{storage.state.tire_size}</Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>製造年:</Text>
-              <Text style={pdfStyles.infoValue}>
-                {storage.state.manufacture_year}
-              </Text>
-            </View>
-
-            <View style={pdfStyles.infoRow}>
-              <Text style={pdfStyles.infoLabel}>シーズン:</Text>
-              <Text style={pdfStyles.infoValue}>{storage.season}</Text>
-            </View>
-          </View>
-        ) : (
-          <Text>保管タイヤはありません</Text>
-        )}
+      <View style={pdfStyles.infoRow}>
+        <Text style={pdfStyles.infoLabel}>ID:</Text>
+        <Text style={pdfStyles.infoValue}>{storage.id}</Text>
       </View>
-    </Page>
-  </Document>
+
+      <View style={pdfStyles.infoRow}>
+        <Text style={pdfStyles.infoLabel}>名前:</Text>
+        <Text style={pdfStyles.infoValue}>
+          {storage.state.car.client.client_name || "未設定"}
+        </Text>
+      </View>
+
+      <View style={pdfStyles.infoRow}>
+        <Text style={pdfStyles.infoLabel}>場所:</Text>
+        <Text style={pdfStyles.infoValue}>
+          {storage.storage.storage_type || "未設定"}
+        </Text>
+      </View>
+
+      <View style={pdfStyles.infoRow}>
+        <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
+        <Text style={pdfStyles.infoValue}>
+          {storage.storage.storage_number || "未設定"}
+        </Text>
+      </View>
+
+      <View style={pdfStyles.infoRow}>
+        <Text style={pdfStyles.infoLabel}>作成日:</Text>
+        <Text style={pdfStyles.infoValue}>
+          {storage.state.car.client.created_at
+            ? new Date(storage.state.car.client.created_at).toLocaleDateString(
+                "ja-JP"
+              )
+            : "未設定"}
+        </Text>
+      </View>
+
+      <Text style={pdfStyles.subtitle}>保管タイヤ情報</Text>
+      {storage.state ? (
+        <View key={storage.state.id} style={pdfStyles.tireContainer}>
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>タイヤID:</Text>
+            <Text style={pdfStyles.infoValue}>{storage.state.id}</Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>車種:</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.car.car_model}
+            </Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>メーカー:</Text>
+            <Text style={pdfStyles.infoValue}>{storage.state.tire_maker}</Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>パターン:</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.tire_pattern}
+            </Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>サイズ:</Text>
+            <Text style={pdfStyles.infoValue}>{storage.state.tire_size}</Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>製造年:</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.manufacture_year}
+            </Text>
+          </View>
+
+          <View style={pdfStyles.infoRow}>
+            <Text style={pdfStyles.infoLabel}>シーズン:</Text>
+            <Text style={pdfStyles.infoValue}>{storage.season}</Text>
+          </View>
+        </View>
+      ) : (
+        <Text>保管タイヤはありません</Text>
+      )}
+    </View>
+  </Page>
 );
+
+// 複数のストレージに対応するPDF文書コンポーネント
+const StoragePDFDocument: React.FC<{
+  storages: StorageDisplay | StorageDisplay[];
+}> = ({ storages }) => {
+  const storageArray = Array.isArray(storages) ? storages : [storages];
+
+  return (
+    <Document>
+      {storageArray.map((storage, index) => (
+        <StoragePage key={storage.id || index} storage={storage} />
+      ))}
+    </Document>
+  );
+};
 
 // フックの型定義
 interface UseStorageToPdfReturn {
   isLoading: boolean;
   error: Error | null;
-  StoragePDFDocument: React.FC<{ storage: StorageDisplay }>;
+  StoragePDFDocument: React.FC<{ storages: StorageDisplay | StorageDisplay[] }>;
   renderPDFDownloadLink: (
-    storage: StorageDisplay,
+    storages: StorageDisplay | StorageDisplay[],
     fileName?: string,
     linkText?: string
   ) => JSX.Element | null;
   renderBlobProvider: (
-    storage: StorageDisplay,
+    storages: StorageDisplay | StorageDisplay[],
     children: (params: {
       blob: Blob | null;
       url: string | null;
@@ -207,18 +216,20 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // PDFダウンロードリンクをレンダリングする関数
   const renderPDFDownloadLink = (
-    storage: StorageDisplay,
-    fileName = `保管庫_${storage.id || "不明"}.pdf`,
+    storages: StorageDisplay | StorageDisplay[],
+    fileName = `保管庫_${
+      Array.isArray(storages) ? "まとめ" : storages.id || "不明"
+    }.pdf`,
     linkText = "PDFをダウンロード"
   ): JSX.Element | null => {
     if (isLoading || error) return null;
 
     return (
       <PDFDownloadLink
-        document={<StoragePDFDocument storage={storage} />}
+        document={<StoragePDFDocument storages={storages} />}
         fileName={fileName}
       >
-        {({ blob, url, loading, error }) =>
+        {({ loading, error }) =>
           loading
             ? "PDF生成中..."
             : error
@@ -231,7 +242,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // BlobProviderも同様に修正
   const renderBlobProvider = (
-    storage: StorageDisplay,
+    storages: StorageDisplay | StorageDisplay[],
     children: (params: {
       blob: Blob | null;
       url: string | null;
@@ -240,7 +251,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
     }) => React.ReactNode
   ): JSX.Element => {
     return (
-      <BlobProvider document={<StoragePDFDocument storage={storage} />}>
+      <BlobProvider document={<StoragePDFDocument storages={storages} />}>
         {children}
       </BlobProvider>
     );
