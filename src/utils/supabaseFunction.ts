@@ -164,38 +164,6 @@ export const upsertTire = async (data: State, taskId: number) => {
   }
 };
 
-// export const getTaskById = async (id: number) => {
-//   const { data, error } = await supabase
-//     .from("TaskList")
-//     .select("*, state:Tire_State(*, car:CarTable(*, client:ClientData(*)))")
-//     .eq("id", id);
-//   if (error) {
-//     throw error;
-//   }
-//   const {data:inspectionData, error: inspectionError} = await supabase.from("Inspection").select("*").eq("tire_state_id", data[0].tire_state_id);
-
-//   const result = {
-//     ...data.tire_state,
-//     tire_state: inspectionData.find(
-//       (inspection: Inspection) => inspection.type === "tire_state"
-//     ),
-//     oil: inspectionData.find(
-//       (inspection: Inspection) => inspection.type === "oil"
-//     ),
-//     battery: inspectionData.find(
-//       (inspection: Inspection) => inspection.type === "battery"
-//     ),
-//     wiper: inspectionData.find(
-//       (inspection: Inspection) => inspection.type === "wiper"
-//     ),
-//     other: inspectionData.find(
-//       (inspection: Inspection) => inspection.type === "other"
-//     ),
-//   };
-
-//   return data;
-// };
-
 export const pushNewState = async (car_id: number) => {
   const { data, error } = await supabase
     .from("Tire_State")
@@ -332,4 +300,52 @@ export const getStoragedYear = async () => {
   }
   console.log(data);
   return data;
+};
+
+export const getAllMasterStorages = async () => {
+  const { data, error } = await supabase
+    .from("StorageMaster")
+    .select("*")
+    .order("storage_number", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
+export const getStoragesType = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("StorageMaster")
+    .select("storage_type")
+    .order("storage_type", { ascending: true });
+  if (error) {
+    throw error;
+  }
+  // Create a Set to get unique values, then convert back to array
+  const uniqueTypes = [...new Set(data.map((item) => item.storage_type))];
+  return uniqueTypes;
+};
+
+export const getStoragesUseNumber = async (
+  year: number,
+  season: "summer" | "winter"
+): Promise<{ id: number; storage_id: number }[]> => {
+  try {
+    // 指定されたStorage_idとyear, seasonに一致するデータを取得
+    const { data, error } = await supabase
+      .from("StorageLogs")
+      .select("id, storage_id")
+      .eq("year", year)
+      .eq("season", season);
+    if (error) {
+      throw error;
+    }
+
+    // Return array with id and storage_id
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching storage use numbers:", error);
+    throw error;
+  }
 };
