@@ -11,6 +11,7 @@ import { StorageDisplay } from "@/utils/interface";
 import { getAllStorages } from "@/utils/supabaseFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import StoragesToPDF from "./StoragesToPDF";
 
 const StoragePage: React.FC = () => {
   const [searchKey, setSearchKey] = useState<string>("location");
@@ -20,6 +21,10 @@ const StoragePage: React.FC = () => {
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
   const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedStorages, setSelectedStorages] = useState<StorageDisplay[]>(
+    []
+  );
+  const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchStorages = async () => {
@@ -82,6 +87,11 @@ const StoragePage: React.FC = () => {
 
             <div className="md:col-span-1 flex justify-end items-center">
               <StorageToCSV storages={storageList} />
+              <StoragesToPDF
+                selectedStorages={selectedStorages}
+                setIsConvertPDF={setIsConvertPDF}
+                isConvertPDF={isConvertPDF}
+              />
             </div>
           </div>
         </CardContent>
@@ -103,6 +113,9 @@ const StoragePage: React.FC = () => {
               isSearchBySeason={isSearchBySeason}
               storageList={storageList}
               setStorageList={setStorageList}
+              setSelectedStorages={setSelectedStorages}
+              selectedStorages={selectedStorages}
+              isConvertPDF={isConvertPDF}
             />
           </CardContent>
         </Card>

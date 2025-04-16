@@ -1,147 +1,123 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Plus, Filter } from "lucide-react";
+// インタラクティブマップビュー
+"use client";
 
-export default function StorageKanbanBoard() {
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, ZoomIn, ZoomOut, Filter } from "lucide-react";
+
+export default function StorageMapView() {
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">保管庫ステータス管理</h1>
+      <h1 className="text-2xl font-bold mb-6">保管庫マップ</h1>
 
-      {/* 検索エリア */}
-      <div className="flex gap-2 mb-6">
-        <div className="relative max-w-md w-full">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="保管庫や顧客名で検索" className="pl-8" />
+      {/* 検索・操作パネル */}
+      <div className="flex justify-between flex-wrap gap-3 mb-6">
+        <div className="flex gap-2">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="保管庫を検索"
+              className="pl-9 pr-4 py-2"
+            />
+            <Search
+              className="absolute left-3 top-2.5 text-gray-400"
+              size={18}
+            />
+          </div>
+          <Button variant="outline" size="icon">
+            <Filter size={18} />
+          </Button>
         </div>
-        <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" />
-          フィルター
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="icon">
+            <ZoomOut size={18} />
+          </Button>
+          <Button variant="outline" size="icon">
+            <ZoomIn size={18} />
+          </Button>
+          <Select defaultValue="1F">
+            <SelectTrigger className="w-[80px]">
+              <SelectValue placeholder="階層" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1F">1F</SelectItem>
+              <SelectItem value="2F">2F</SelectItem>
+              <SelectItem value="3F">3F</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* カンバンボード */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* 空き有りカラム */}
-        <div className="bg-green-50 rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold text-lg flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              空き有り
-            </h2>
-            <Badge className="bg-green-500">5 庫</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <Card key={idx} className="shadow-sm">
-                <CardContent className="p-3">
-                  <div className="flex justify-between">
-                    <h3 className="font-semibold">保管庫 #{idx + 1}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      50% 使用中
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    東棟1F-{String.fromCharCode(65 + idx)}
-                  </p>
-                  <div className="bg-gray-100 h-2 rounded-full mt-2">
-                    <div className="bg-green-500 h-2 rounded-full w-1/2" />
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    <span>利用可能: 10/20セット</span>
-                  </div>
-                  <Button size="sm" className="mt-2 w-full">
-                    <Plus className="mr-1 h-4 w-4" />
-                    タイヤを追加
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      {/* マップビュー */}
+      <div className="border rounded-xl p-4 mb-6 overflow-x-auto">
+        <div className="min-w-[800px] h-[500px] bg-slate-50 relative">
+          {/* マップ上のセクション表示 - 実際には正しい位置に配置するためのCSSが必要 */}
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <Card
+              key={idx}
+              style={{
+                position: "absolute",
+                left: `${(idx % 4) * 25 + 5}%`,
+                top: `${Math.floor(idx / 4) * 30 + 5}%`,
+                width: "20%",
+                height: "25%",
+              }}
+              className={`border-2 ${
+                idx % 3 === 0
+                  ? "border-green-500 bg-green-50"
+                  : idx % 3 === 1
+                  ? "border-yellow-500 bg-yellow-50"
+                  : "border-red-500 bg-red-50"
+              } flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity p-2`}
+            >
+              <span className="font-semibold">保管庫 #{idx + 1}</span>
+              <span className="text-xs text-gray-600">
+                利用率: {idx % 3 === 0 ? "60%" : idx % 3 === 1 ? "85%" : "100%"}
+              </span>
+              <Badge
+                variant={
+                  idx % 3 === 0
+                    ? "secondary"
+                    : idx % 3 === 1
+                    ? "outline"
+                    : "destructive"
+                }
+                className="mt-1"
+              >
+                {idx % 3 === 0
+                  ? "空き有り"
+                  : idx % 3 === 1
+                  ? "残りわずか"
+                  : "満タン"}
+              </Badge>
+            </Card>
+          ))}
         </div>
+      </div>
 
-        {/* 残りわずかカラム */}
-        <div className="bg-yellow-50 rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold text-lg flex items-center">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-              残りわずか
-            </h2>
-            <Badge className="bg-yellow-500">3 庫</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {Array.from({ length: 2 }).map((_, idx) => (
-              <Card key={idx} className="shadow-sm">
-                <CardContent className="p-3">
-                  <div className="flex justify-between">
-                    <h3 className="font-semibold">保管庫 #{idx + 4}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      85% 使用中
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    西棟2F-{String.fromCharCode(67 + idx)}
-                  </p>
-                  <div className="bg-gray-100 h-2 rounded-full mt-2">
-                    <div className="bg-yellow-500 h-2 rounded-full w-4/5" />
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    <span>利用可能: 3/20セット</span>
-                  </div>
-                  <div className="flex gap-1 mt-2">
-                    <Button size="sm" variant="outline" className="flex-1">
-                      詳細
-                    </Button>
-                    <Button size="sm" className="flex-1">
-                      追加
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      {/* 凡例 */}
+      <div className="flex gap-4 mb-4 justify-center">
+        <div className="flex items-center">
+          <div className="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
+          <span className="text-sm">空き有り</span>
         </div>
-
-        {/* 満タンカラム */}
-        <div className="bg-red-50 rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold text-lg flex items-center">
-              <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-              満タン
-            </h2>
-            <Badge className="bg-red-500">4 庫</Badge>
-          </div>
-
-          <div className="space-y-3">
-            {Array.from({ length: 2 }).map((_, idx) => (
-              <Card key={idx} className="shadow-sm">
-                <CardContent className="p-3">
-                  <div className="flex justify-between">
-                    <h3 className="font-semibold">保管庫 #{idx + 6}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      100% 使用中
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    南棟B1-{String.fromCharCode(69 + idx)}
-                  </p>
-                  <div className="bg-gray-100 h-2 rounded-full mt-2">
-                    <div className="bg-red-500 h-2 rounded-full w-full" />
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    <span>利用可能: 0/20セット</span>
-                  </div>
-                  <Button size="sm" variant="outline" className="mt-2 w-full">
-                    詳細を表示
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="flex items-center">
+          <div className="w-4 h-4 bg-yellow-500 rounded-sm mr-2"></div>
+          <span className="text-sm">残りわずか</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-4 h-4 bg-red-500 rounded-sm mr-2"></div>
+          <span className="text-sm">満タン</span>
         </div>
       </div>
     </div>

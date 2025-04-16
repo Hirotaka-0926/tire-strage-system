@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { StorageDisplay } from "@/utils/interface";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -22,6 +23,9 @@ interface Props {
   isSearchBySeason: boolean;
   storageList: StorageDisplay[];
   setStorageList: React.Dispatch<React.SetStateAction<StorageDisplay[]>>;
+  setSelectedStorages: React.Dispatch<React.SetStateAction<StorageDisplay[]>>;
+  selectedStorages: StorageDisplay[];
+  isConvertPDF: boolean;
 }
 
 const StorageList: React.FC<Props> = ({
@@ -32,6 +36,9 @@ const StorageList: React.FC<Props> = ({
   isSearchBySeason,
   storageList,
   setStorageList,
+  setSelectedStorages,
+  selectedStorages,
+  isConvertPDF,
 }) => {
   const router = useRouter();
   const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
@@ -158,6 +165,24 @@ const StorageList: React.FC<Props> = ({
     return <div className="text-center p-4">該当するデータがありません</div>;
   }
 
+  const handleClickRow = (storage: StorageDisplay, checked: boolean = true) => {
+    if (isConvertPDF) {
+      selectItem(checked, storage);
+    } else {
+      router.push(`/storage/${storage.id}`);
+    }
+  };
+
+  const selectItem = (checked: boolean, storage: StorageDisplay) => {
+    if (checked) {
+      setSelectedStorages((prev) => [...prev, storage]);
+    } else {
+      setSelectedStorages((prev) =>
+        prev.filter((item) => item.id !== storage.id)
+      );
+    }
+  };
+
   return (
     <div className="overflow-x-auto rounded-md shadow-sm">
       <Table className="min-w-full bg-white">
@@ -180,9 +205,34 @@ const StorageList: React.FC<Props> = ({
           {storageList.map((storage) => (
             <TableRow
               key={storage.id}
-              onClick={() => router.push(`/storage/${storage.id}`)}
+              onClick={() => {
+                if (isConvertPDF) {
+                  // 現在の選択状態を確認して逆にする
+                  const isCurrentlySelected = selectedStorages.some(
+                    (selected) => selected.id === storage.id
+                  );
+                  handleClickRow(storage, !isCurrentlySelected);
+                } else {
+                  router.push(`/storage/${storage.id}`);
+                }
+              }}
               className="cursor-pointer transition-colors hover:bg-gray-100 border-b"
             >
+              {isConvertPDF && (
+                <TableCell
+                  className="py-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Checkbox
+                    checked={selectedStorages.some(
+                      (selected) => selected.id === storage.id
+                    )}
+                    onCheckedChange={(checked) => {
+                      selectItem(checked === true, storage);
+                    }}
+                  />
+                </TableCell>
+              )}
               <TableCell className="py-3">
                 {storage.storage?.storage_type || "-"}
               </TableCell>
