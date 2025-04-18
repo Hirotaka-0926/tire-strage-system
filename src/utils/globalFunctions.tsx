@@ -1,5 +1,5 @@
 import { StorageDisplay } from "./interface";
-import { getStoragesUseNumber } from "@/utils/supabaseFunction";
+import { getInspectionCount } from "@/utils/supabaseFunction";
 
 /**
  * 日付から年とシーズン（夏/冬）を取得する
@@ -31,19 +31,27 @@ export const getSeasonInJapanese = (season: "summer" | "winter"): string => {
   return season === "summer" ? "夏タイヤ" : "冬タイヤ";
 };
 
-export const calInspectionProgress = () => {
+export const calInspectionProgress = async () => {
   const { year, season } = getYearAndSeason();
 
   const { preYear, preSeason } = getPriviousSeason(year, season);
+  const currentInspectionNumber = await getInspectionCount(year, season);
+  const preInspectionNumber = await getInspectionCount(preYear, preSeason);
+  console.log("今期の検査数:", currentInspectionNumber);
+  console.log("前期の検査数:", preInspectionNumber);
+  const progress = Math.floor(
+    (currentInspectionNumber / preInspectionNumber) * 100
+  );
+  return progress;
 };
 
 const getPriviousSeason = (year: number, season: string) => {
   if (season === "summer") {
-    const preSeason = "winter";
+    const preSeason: "summer" | "winter" = "winter";
     const preYear = year - 1;
     return { preYear, preSeason };
   } else if (season === "winter") {
-    const preSeason = "summer";
+    const preSeason: "summer" | "winter" = "summer";
     const preYear = year;
     return { preYear, preSeason };
   } else {

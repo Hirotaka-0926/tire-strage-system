@@ -8,12 +8,14 @@ import {
   getAllClients,
   getAllTasks,
 } from "@/utils/supabaseFunction";
+import { calInspectionProgress } from "@/utils/globalFunctions";
 
 const Dashboard: React.FC = () => {
   const [storageCount, setStorageCount] = useState(0);
   const [clientCount, setClientCount] = useState(0);
   const [taskCount, setTaskCount] = useState(0);
   const [seasonalData, setSeasonalData] = useState({ summer: 0, winter: 0 });
+  const [inspectionProgress, setInspectionProgress] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +32,12 @@ const Dashboard: React.FC = () => {
       const winter = storages.filter((s) => s.season === "winter").length;
       setSeasonalData({ summer, winter });
     };
+
+    const fetchInspectionProgress = async () => {
+      const progressRate = await calInspectionProgress();
+      setInspectionProgress(progressRate);
+    };
+    fetchInspectionProgress();
 
     fetchData();
   }, []);
@@ -73,6 +81,15 @@ const Dashboard: React.FC = () => {
             <p>
               冬タイヤ: <span className="font-bold">{seasonalData.winter}</span>
             </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="bg-blue-50">
+            <CardTitle>装着率</CardTitle>
+          </CardHeader>
+          <CardContent className="text-3xl font-bold pt-4">
+            {inspectionProgress}%
           </CardContent>
         </Card>
       </div>

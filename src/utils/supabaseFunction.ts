@@ -349,3 +349,25 @@ export const getStoragesUseNumber = async (
     throw error;
   }
 };
+
+export const getInspectionCount = async (
+  year: number,
+  season: "summer" | "winter"
+) => {
+  try {
+    const { count, error } = await supabase
+      .from("StorageLogs")
+      .select("id", { count: "exact" })
+      .eq("year", year)
+      .eq("season", season);
+
+    if (error) {
+      throw error;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.error("Error fetching inspection count:", error);
+    return 0;
+  }
+};
