@@ -9,6 +9,7 @@ import {
   getAllTasks,
 } from "@/utils/supabaseFunction";
 import { calInspectionProgress } from "@/utils/globalFunctions";
+import StorageMap from "@/app/emptyList/storageMap";
 
 const Dashboard: React.FC = () => {
   const [storageCount, setStorageCount] = useState(0);
@@ -92,6 +93,12 @@ const Dashboard: React.FC = () => {
             {inspectionProgress}%
           </CardContent>
         </Card>
+      </div>
+      <div className="mt-8">
+        <StorageMap />
+        <p className="text-sm text-gray-500 mt-2">
+          ※保管庫マップは実際の保管庫の配置を示すものではありません。
+        </p>
       </div>
     </div>
   );

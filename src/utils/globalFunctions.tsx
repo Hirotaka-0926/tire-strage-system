@@ -58,3 +58,9 @@ const getPriviousSeason = (year: number, season: string) => {
     throw new Error("Invalid season value. Expected 'summer' or 'winter'.");
   }
 };
+
+// Check if storage is in use
+const checkStorageUsage = (storageId: number | undefined) => {
+  if (!storageId) return false;
+  return usedNumbers.find((item) => item.storage_id === storageId);
+};
