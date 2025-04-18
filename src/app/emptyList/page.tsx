@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -22,13 +23,15 @@ import {
 import { Storage } from "@/utils/interface";
 
 import { Search, ZoomIn, ZoomOut, Filter } from "lucide-react";
-import { set } from "react-hook-form";
 
 export default function StorageMapView() {
   const [storageList, setStorageList] = useState<Record<string, Storage[]>>({});
   const [storagesTypes, setStoragesTypes] = useState<string[]>([]);
   const [displayLocation, setDisplayLocation] = useState<string>("A");
-  const [usedNumbers, setUsedNumbers] = useState<number[]>([]);
+  const router = useRouter();
+  const [usedNumbers, setUsedNumbers] = useState<
+    { id: number; storage_id: number }[]
+  >([]);
   const { year, season } = getYearAndSeason();
 
   useEffect(() => {
@@ -93,6 +96,20 @@ export default function StorageMapView() {
     loadStorages();
   }, []);
 
+  const handleLinkStorageDetail = (storageId: number) => {
+    const isStoraged = checkStorageUsage(storageId!);
+
+    if (isStoraged) {
+      router.push("/storage/" + isStoraged.id);
+    }
+  };
+
+  // Check if storage is in use
+  const checkStorageUsage = (storageId: number | undefined) => {
+    if (!storageId) return false;
+    return usedNumbers.find((item) => item.storage_id === storageId);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">保管庫マップ</h1>
@@ -122,17 +139,13 @@ export default function StorageMapView() {
           <Button variant="outline" size="icon">
             <ZoomIn size={18} />
           </Button>
-          <Select defaultValue="A">
+          <Select value={displayLocation} onValueChange={setDisplayLocation}>
             <SelectTrigger className="w-[80px]">
               <SelectValue placeholder="階層" />
             </SelectTrigger>
             <SelectContent>
               {storagesTypes.map((type) => (
-                <SelectItem
-                  key={type}
-                  value={type}
-                  onClick={() => setDisplayLocation(type)}
-                >
+                <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>
               ))}
@@ -143,50 +156,46 @@ export default function StorageMapView() {
 
       {/* マップビュー */}
       <div className="border rounded-xl p-4 mb-6 overflow-x-auto">
-        <div className="min-w-[800px] h-[500px] bg-slate-50 relative">
-          {/* マップ上のセクション表示 - 実際には正しい位置に配置するためのCSSが必要 */}
-          {storageList[displayLocation]?.map((storage, idx) => (
-            <Card
-              key={storage.id || idx}
-              style={{
-                position: "absolute",
-                left: `${(idx % 4) * 25 + 5}%`,
-                top: `${Math.floor(idx / 4) * 30 + 5}%`,
-                width: "20%",
-                height: "25%",
-              }}
-              className={`border-2 ${
-                idx % 3 === 0
-                  ? "border-green-500 bg-green-50"
-                  : idx % 3 === 1
-                  ? "border-yellow-500 bg-yellow-50"
-                  : "border-red-500 bg-red-50"
-              } flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity p-2`}
-            >
-              <span className="font-semibold">
-                保管庫 #{storage.storage_number}
-              </span>
-              <span className="text-xs text-gray-600">
-                利用率: {idx % 3 === 0 ? "60%" : idx % 3 === 1 ? "85%" : "100%"}
-              </span>
-              <Badge
-                variant={
-                  idx % 3 === 0
-                    ? "secondary"
-                    : idx % 3 === 1
-                    ? "outline"
-                    : "destructive"
-                }
-                className="mt-1"
-              >
-                {idx % 3 === 0
-                  ? "空き有り"
-                  : idx % 3 === 1
-                  ? "残りわずか"
-                  : "満タン"}
-              </Badge>
-            </Card>
-          )) || []}
+        <div className="min-w-[800px] bg-slate-50 p-4">
+          <div className="flex flex-wrap gap-4 justify-start">
+            {storageList[displayLocation] &&
+            storageList[displayLocation].length > 0 ? (
+              storageList[displayLocation].map((storage, idx) => (
+                <Card
+                  key={storage.id || idx}
+                  onClick={() => handleLinkStorageDetail(storage.id!)}
+                  className={`border-2 ${
+                    checkStorageUsage(storage.id)
+                      ? "border-red-500 bg-red-50"
+                      : "border-green-500 bg-green-50"
+                  } flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity p-2`}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span className="font-semibold text-center">
+                    {storage.storage_type}-{storage.storage_number}
+                  </span>
+                  <Badge
+                    variant={
+                      checkStorageUsage(storage.id)
+                        ? "destructive"
+                        : "secondary"
+                    }
+                    className="mt-2"
+                  >
+                    {checkStorageUsage(storage.id) ? "使用中" : "空き有り"}
+                  </Badge>
+                </Card>
+              ))
+            ) : (
+              <div className="w-full text-center py-10 text-gray-500">
+                この保管場所には表示できるデータがありません
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -199,7 +208,7 @@ export default function StorageMapView() {
 
         <div className="flex items-center">
           <div className="w-4 h-4 bg-red-500 rounded-sm mr-2"></div>
-          <span className="text-sm">満タン</span>
+          <span className="text-sm">使用中</span>
         </div>
       </div>
     </div>

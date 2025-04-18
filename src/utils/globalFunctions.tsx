@@ -1,4 +1,5 @@
 import { StorageDisplay } from "./interface";
+import { getStoragesUseNumber } from "@/utils/supabaseFunction";
 
 /**
  * 日付から年とシーズン（夏/冬）を取得する
@@ -28,4 +29,24 @@ export const getYearAndSeason = (
  */
 export const getSeasonInJapanese = (season: "summer" | "winter"): string => {
   return season === "summer" ? "夏タイヤ" : "冬タイヤ";
+};
+
+export const calInspectionProgress = () => {
+  const { year, season } = getYearAndSeason();
+
+  const { preYear, preSeason } = getPriviousSeason(year, season);
+};
+
+const getPriviousSeason = (year: number, season: string) => {
+  if (season === "summer") {
+    const preSeason = "winter";
+    const preYear = year - 1;
+    return { preYear, preSeason };
+  } else if (season === "winter") {
+    const preSeason = "summer";
+    const preYear = year;
+    return { preYear, preSeason };
+  } else {
+    throw new Error("Invalid season value. Expected 'summer' or 'winter'.");
+  }
 };
