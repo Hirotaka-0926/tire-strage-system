@@ -7,7 +7,7 @@ import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import StorageToCSV from "./StoragesToCSV";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageLogsToDisplay } from "@/utils/interface";
 import { getAllStorages } from "@/utils/supabaseFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -19,11 +19,11 @@ const StoragePage: React.FC = () => {
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
-  const [storageList, setStorageList] = useState<StorageDisplay[]>([]);
+  const [storageList, setStorageList] = useState<StorageLogsToDisplay[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [selectedStorages, setSelectedStorages] = useState<StorageDisplay[]>(
-    []
-  );
+  const [selectedStorages, setSelectedStorages] = useState<
+    StorageLogsToDisplay[]
+  >([]);
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
 
   useEffect(() => {

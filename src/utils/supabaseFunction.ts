@@ -214,7 +214,7 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   const result = {
     ...data.tire_state,
     tire_state: inspectionData.find(
-      (inspection: Inspection) => inspection.type === "tire_state"
+      (inspection: Inspection) => inspection.type === "tire"
     ),
     oil: inspectionData.find(
       (inspection: Inspection) => inspection.type === "oil"
@@ -263,37 +263,7 @@ export const getStorageById = async (
       throw storageError;
     }
 
-    const { data: inspectionData, error: inspectionError } = await supabase
-      .from("inspection")
-      .select("*")
-      .eq("tire_state_id", storageData.state.id);
-
-    if (inspectionError) {
-      throw inspectionError;
-    }
-
-    const result: StorageLogsToDisplay = {
-      ...storageData,
-      state: {
-        ...storageData.state,
-        tire_state: inspectionData.find(
-          (inspection: Inspection) => inspection.type === "tire_state"
-        ),
-        oil: inspectionData.find(
-          (inspection: Inspection) => inspection.type === "oil"
-        ),
-        battery: inspectionData.find(
-          (inspection: Inspection) => inspection.type === "battery"
-        ),
-        wiper: inspectionData.find(
-          (inspection: Inspection) => inspection.type === "wiper"
-        ),
-        other: inspectionData.find(
-          (inspection: Inspection) => inspection.type === "other"
-        ),
-      },
-    };
-    return result;
+    return storageData;
   } catch (e) {
     console.error("Error fetching storage by ID:", e);
     throw e;
