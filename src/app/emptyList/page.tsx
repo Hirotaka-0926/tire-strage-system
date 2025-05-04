@@ -1,7 +1,7 @@
 // インタラクティブマップビュー
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,11 @@ import {
   getStoragesUseNumber,
 } from "@/utils/supabaseFunction";
 import { Storage } from "@/utils/interface";
-
+import {
+  TransformWrapper,
+  TransformComponent,
+  ReactZoomPanPinchRef,
+} from "react-zoom-pan-pinch";
 import { Search, ZoomIn, ZoomOut, Filter } from "lucide-react";
 
 export default function StorageMapView() {
@@ -33,6 +37,19 @@ export default function StorageMapView() {
     { id: number; storage_id: number }[]
   >([]);
   const { year, season } = getYearAndSeason();
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
+
+  const handleZoomIn = () => {
+    if (transformRef.current) {
+      transformRef.current.zoomIn();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (transformRef.current) {
+      transformRef.current.zoomOut();
+    }
+  };
 
   useEffect(() => {
     const fetchStorages = async () => {
@@ -133,10 +150,10 @@ export default function StorageMapView() {
           </Button>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleZoomOut}>
             <ZoomOut size={18} />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleZoomIn}>
             <ZoomIn size={18} />
           </Button>
           <Select value={displayLocation} onValueChange={setDisplayLocation}>
@@ -156,47 +173,62 @@ export default function StorageMapView() {
 
       {/* マップビュー */}
       <div className="border rounded-xl p-4 mb-6 overflow-x-auto">
-        <div className="min-w-[800px] bg-slate-50 p-4">
-          <div className="flex flex-wrap gap-4 justify-start">
-            {storageList[displayLocation] &&
-            storageList[displayLocation].length > 0 ? (
-              storageList[displayLocation].map((storage, idx) => (
-                <Card
-                  key={storage.id || idx}
-                  onClick={() => handleLinkStorageDetail(storage.id!)}
-                  className={`border-2 ${
-                    checkStorageUsage(storage.id)
-                      ? "border-red-500 bg-red-50"
-                      : "border-green-500 bg-green-50"
-                  } flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity p-2`}
-                  style={{
-                    width: "120px",
-                    height: "120px",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span className="font-semibold text-center">
-                    {storage.storage_type}-{storage.storage_number}
-                  </span>
-                  <Badge
-                    variant={
-                      checkStorageUsage(storage.id)
-                        ? "destructive"
-                        : "secondary"
-                    }
-                    className="mt-2"
-                  >
-                    {checkStorageUsage(storage.id) ? "使用中" : "空き有り"}
-                  </Badge>
-                </Card>
-              ))
-            ) : (
-              <div className="w-full text-center py-10 text-gray-500">
-                この保管場所には表示できるデータがありません
-              </div>
-            )}
-          </div>
-        </div>
+        <TransformWrapper
+          ref={transformRef}
+          initialScale={1}
+          initialPositionX={0}
+          initialPositionY={0}
+        >
+          {({ zoomIn, zoomOut }) => (
+            <>
+              <TransformComponent>
+                <div className="min-w-[800px] bg-slate-50 p-4">
+                  <div className="flex flex-wrap gap-4 justify-start">
+                    {storageList[displayLocation] &&
+                    storageList[displayLocation].length > 0 ? (
+                      storageList[displayLocation].map((storage, idx) => (
+                        <Card
+                          key={storage.id || idx}
+                          onClick={() => handleLinkStorageDetail(storage.id!)}
+                          className={`border-2 ${
+                            checkStorageUsage(storage.id)
+                              ? "border-red-500 bg-red-50"
+                              : "border-green-500 bg-green-50"
+                          } flex flex-col items-center justify-center cursor-pointer hover:opacity-80 transition-opacity p-2`}
+                          style={{
+                            width: "120px",
+                            height: "120px",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <span className="font-semibold text-center">
+                            {storage.storage_type}-{storage.storage_number}
+                          </span>
+                          <Badge
+                            variant={
+                              checkStorageUsage(storage.id)
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className="mt-2"
+                          >
+                            {checkStorageUsage(storage.id)
+                              ? "使用中"
+                              : "空き有り"}
+                          </Badge>
+                        </Card>
+                      ))
+                    ) : (
+                      <div className="w-full text-center py-10 text-gray-500">
+                        この保管場所には表示できるデータがありません
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
       </div>
 
       {/* 凡例 */}

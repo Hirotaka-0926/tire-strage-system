@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Task, StorageDisplay } from "@/utils/interface";
+import { Task, StorageLogsToDisplay } from "@/utils/interface";
 import { getTasksFilterByState } from "@/utils/supabaseFunction";
 
 const PendingTask = () => {
