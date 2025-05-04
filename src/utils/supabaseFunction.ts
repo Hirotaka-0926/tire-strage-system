@@ -11,7 +11,7 @@ import {
 export const getAllClients = async (): Promise<Client[]> => {
   try {
     const { data, error } = await supabase
-      .from("ClientData")
+      .from("client_data")
       .select("*")
       .order("id", { ascending: true });
     if (error) {
@@ -33,9 +33,9 @@ export const getAllTasks = async (): Promise<
 > => {
   try {
     const { data, error } = await supabase
-      .from("TaskList")
+      .from("task_list")
       .select(
-        `*, tire_state:Tire_State(*, car:CarTable(*, client:ClientData(*)))`
+        `*, tire_state:tire_state(*, car:car_table(*, client:client_data(*)))`
       );
 
     if (error) {
@@ -51,7 +51,7 @@ export const getAllTasks = async (): Promise<
 
 export const getCarCandidate = async (clientId: number): Promise<Car[]> => {
   const { data, error } = await supabase
-    .from("CarTable")
+    .from("car_table")
     .select("*")
     .eq("client_id", clientId);
   if (error) {
@@ -63,7 +63,7 @@ export const getCarCandidate = async (clientId: number): Promise<Car[]> => {
 };
 
 export const upsertCar = async (car: Car) => {
-  const { data, error } = await supabase.from("CarTable").upsert(car).select();
+  const { data, error } = await supabase.from("car_table").upsert(car).select();
   if (error) {
     throw error;
   }
@@ -72,7 +72,7 @@ export const upsertCar = async (car: Car) => {
 };
 
 export const insertTireState = async (tireData: State): Promise<void> => {
-  const { data, error } = await supabase.from("Tire_State").upsert([tireData]);
+  const { data, error } = await supabase.from("tire_state").upsert([tireData]);
   if (error) {
     throw error;
   }
@@ -84,7 +84,7 @@ export const upsertClient = async (client: Client) => {
   try {
     console.log("Upserting client:", client);
     const { data, error } = await supabase
-      .from("ClientData")
+      .from("client_data")
       .upsert(client)
       .select();
     if (error) {
@@ -102,7 +102,7 @@ export const upsertTask = async (task: Task) => {
     console.log("Upserting task:", task);
 
     const { data, error } = await supabase
-      .from("TaskList")
+      .from("task_list")
       .upsert(task)
       .select();
     if (error) {
@@ -120,7 +120,7 @@ export const getSpecificClient = async (
   value: string
 ): Promise<Client[]> => {
   const { data, error } = await supabase
-    .from("ClientData")
+    .from("client_data")
     .select("*")
     .eq(key, value);
   if (error) {
@@ -138,7 +138,7 @@ export const upsertTire = async (data: State, taskId: number) => {
   const inspectionArray = [tire_state, oil, battery, wiper];
   console.log(data);
   const { data: tireData, error: tireError } = await supabase
-    .from("Tire_State")
+    .from("tire_state")
     .upsert(data)
     .select();
   if (tireError) {
@@ -146,7 +146,7 @@ export const upsertTire = async (data: State, taskId: number) => {
   }
 
   const { error: inspectionError } = await supabase
-    .from("Inspection")
+    .from("inspection")
     .upsert(inspectionArray);
   if (inspectionError) {
     throw inspectionError;
@@ -155,7 +155,7 @@ export const upsertTire = async (data: State, taskId: number) => {
   if (tireData && tireData.length > 0) {
     const tireId = tireData[0].id;
     const { error: taskError } = await supabase
-      .from("TaskList")
+      .from("task_list")
       .update({ tire_state_id: tireId })
       .eq("id", taskId);
     if (taskError) {
@@ -166,7 +166,7 @@ export const upsertTire = async (data: State, taskId: number) => {
 
 export const pushNewState = async (car_id: number) => {
   const { data, error } = await supabase
-    .from("Tire_State")
+    .from("tire_state")
     .insert([{ car_id: car_id }])
     .select("*");
   if (error) {
@@ -177,8 +177,8 @@ export const pushNewState = async (car_id: number) => {
 
 export const getStateByTaskId = async (taskId: number): Promise<State> => {
   const { data, error } = await supabase
-    .from("TaskList")
-    .select("*, tire_state:Tire_State(*)")
+    .from("task_list")
+    .select("*, tire_state:tire_state(*)")
     .eq("id", taskId)
     .single();
 
@@ -193,7 +193,7 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   // Get additional inspection data for the tire state
   const tireStateId = data.tire_state.id;
   const { data: inspectionData, error: inspectionError } = await supabase
-    .from("Inspection")
+    .from("inspection")
     .select("*")
     .eq("tire_state_id", tireStateId);
 
@@ -226,9 +226,9 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
 
 export const getAllStorages = async (): Promise<StorageDisplay[]> => {
   const { data, error } = await supabase
-    .from("StorageLogs")
+    .from("storage_logs")
     .select(
-      "*, storage:StorageMaster(*), state:Tire_State(*, car:CarTable(*, client:ClientData(*)))"
+      "*, storage:StorageMaster(*), state:tire_state(*, car:car_table(*, client:client_data(*)))"
     );
 
   if (error) {
@@ -243,9 +243,9 @@ export const getStorageById = async (
 ): Promise<StorageDisplay> => {
   try {
     const { data: storageData, error: storageError } = await supabase
-      .from("StorageLogs")
+      .from("storage_logs")
       .select(
-        "*, storage:StorageMaster(*), state:Tire_State(*, car:CarTable(*, client:ClientData(*)))"
+        "*, storage:StorageMaster(*), state:tire_state(*, car:car_table(*, client:client_data(*)))"
       )
       .eq("id", storageId)
       .single();
@@ -255,7 +255,7 @@ export const getStorageById = async (
     }
 
     const { data: inspectionData, error: inspectionError } = await supabase
-      .from("Inspection")
+      .from("inspection")
       .select("*")
       .eq("tire_state_id", storageData.state.id);
 
@@ -292,7 +292,7 @@ export const getStorageById = async (
 
 export const getStoragedYear = async () => {
   const { data, error } = await supabase
-    .from("StorageLogs")
+    .from("storage_logs")
     .select("year")
     .order("year");
   if (error) {
@@ -304,7 +304,7 @@ export const getStoragedYear = async () => {
 
 export const getAllMasterStorages = async () => {
   const { data, error } = await supabase
-    .from("StorageMaster")
+    .from("storage_master")
     .select("*")
     .order("storage_number", { ascending: true });
 
@@ -316,7 +316,7 @@ export const getAllMasterStorages = async () => {
 
 export const getStoragesType = async (): Promise<string[]> => {
   const { data, error } = await supabase
-    .from("StorageMaster")
+    .from("storage_master")
     .select("storage_type")
     .order("storage_type", { ascending: true });
   if (error) {
@@ -334,7 +334,7 @@ export const getStoragesUseNumber = async (
   try {
     // 指定されたStorage_idとyear, seasonに一致するデータを取得
     const { data, error } = await supabase
-      .from("StorageLogs")
+      .from("storage_logs")
       .select("id, storage_id")
       .eq("year", year)
       .eq("season", season);
@@ -356,7 +356,7 @@ export const getInspectionCount = async (
 ) => {
   try {
     const { count, error } = await supabase
-      .from("StorageLogs")
+      .from("storage_logs")
       .select("id", { count: "exact" })
       .eq("year", year)
       .eq("season", season);
