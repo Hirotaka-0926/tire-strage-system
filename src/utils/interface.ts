@@ -11,16 +11,15 @@ export interface Client {
 
 export interface State {
   id?: number;
-  car_id: number;
   tire_maker: string;
   tire_pattern: string;
   tire_size: string;
   manufacture_year: number;
   air_pressure: number;
-  tire_state?: Inspection;
-  oil?: Inspection;
-  battery?: Inspection;
-  wiper?: Inspection;
+  tire_inspection?: Inspection;
+  oil_inspection?: Inspection;
+  battery_inspection?: Inspection;
+  wiper_inspection?: Inspection;
   other_inspection: string;
   state_inspection: string;
   inspection_date: Date;
@@ -34,21 +33,26 @@ export interface Inspection {
   state: string;
   isExchange?: boolean;
   note: string;
-  tire_state_id?: number;
 }
 
 export interface Task {
   id?: number;
   tire_state_id?: number;
+  car_id: number;
+  client_id: number;
   state: number;
 }
 
 export interface StorageLog {
   id?: number;
   tire_state_id?: number;
+  storage_id: number;
+  client_id: number;
+  car_id: number;
   year: number;
   season: "summer" | "winter";
 }
+
 export interface Storage {
   id?: number;
   storage_number: number;
@@ -57,7 +61,6 @@ export interface Storage {
 
 export interface Car {
   id?: number;
-  client_id: number;
   car_model: string;
   car_number: string;
 }
@@ -79,6 +82,11 @@ interface FormField {
   required: boolean;
 }
 
-export type StorageDisplay = StorageLog & { storage: Storage } & {
-  state: State & { car: Car & { client: Client } };
+export type StorageLogsToDisplay = StorageLog & { storage: Storage } & {
+  state: State;
+} & { car: Car } & { client: Client };
+
+// タスク詳細の完全な情報を表す型
+export type TaskWithDetails = Task & { tire_state: State } & { car: Car } & {
+  client: Client;
 };

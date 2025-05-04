@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageLogsToDisplay } from "@/utils/interface";
 import { getStorageById } from "@/utils/supabaseFunction";
 import StorageToPdf from "./StorageToPdf";
 
@@ -20,7 +20,7 @@ const StorageDetail: React.FC = () => {
   const router = useRouter();
   const storageId =
     typeof params.storage_id === "string" ? parseInt(params.storage_id) : null;
-  const [storage, setStorage] = useState<StorageDisplay | null>(null);
+  const [storage, setStorage] = useState<StorageLogsToDisplay | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,21 +47,14 @@ const StorageDetail: React.FC = () => {
   }, [storageId]);
 
   const handleEditCustomer = () => {
-    if (
-      storage &&
-      storage.state &&
-      storage.state.car &&
-      storage.state.car.client
-    ) {
-      router.push(`/customer/edit/${storage.state.car.client.id}`);
+    if (storage && storage.client) {
+      router.push(`/customer/edit/${storage.client.id}`);
     }
   };
 
   const handleEditCar = () => {
-    if (storage && storage.state && storage.state.car) {
-      router.push(
-        `/customer/edit/${storage.state.car.client.id}/car/${storage.state.car.id}`
-      );
+    if (storage && storage.car) {
+      router.push(`/customer/edit/${storage.client.id}/car/${storage.car.id}`);
     }
   };
 
@@ -108,10 +101,10 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">保管庫タイプ:</p>
-              <p>{storage.storage.storage_type}</p>
+              <p>{storage.storage?.storage_type}</p>
 
               <p className="font-semibold">保管庫ID:</p>
-              <p>{storage.storage.storage_number}</p>
+              <p>{storage.storage?.storage_number}</p>
 
               <p className="font-semibold">作成年:</p>
               <p>{storage.year}</p>
@@ -129,16 +122,16 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">顧客名:</p>
-              <p>{storage.state.car.client.client_name}</p>
+              <p>{storage.client?.client_name}</p>
 
               <p className="font-semibold">顧客名(カナ):</p>
-              <p>{storage.state.car.client.client_name_kana}</p>
+              <p>{storage.client?.client_name_kana}</p>
 
               <p className="font-semibold">住所:</p>
-              <p>{storage.state.car.client.address}</p>
+              <p>{storage.client?.address}</p>
 
               <p className="font-semibold">郵便番号:</p>
-              <p>{storage.state.car.client.post_number}</p>
+              <p>{storage.client?.post_number}</p>
             </div>
             <Button onClick={handleEditCustomer} className="mt-4 w-full">
               顧客情報を編集
@@ -154,10 +147,10 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">車種:</p>
-              <p>{storage.state.car.car_model}</p>
+              <p>{storage.car?.car_model}</p>
 
               <p className="font-semibold">ナンバー:</p>
-              <p>{storage.state.car.car_number}</p>
+              <p>{storage.car?.car_number}</p>
             </div>
             <Button onClick={handleEditCar} className="mt-4 w-full">
               車両情報を編集
@@ -175,16 +168,16 @@ const StorageDetail: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               <p className="font-semibold">タイヤメーカー:</p>
-              <p>{storage.state.tire_maker}</p>
+              <p>{storage.state?.tire_maker}</p>
 
               <p className="font-semibold">タイヤパターン:</p>
-              <p>{storage.state.tire_pattern}</p>
+              <p>{storage.state?.tire_pattern}</p>
 
               <p className="font-semibold">タイヤサイズ:</p>
-              <p>{storage.state.tire_size}</p>
+              <p>{storage.state?.tire_size}</p>
 
               <p className="font-semibold">タイヤ状態:</p>
-              <p>{storage.state.tire_state?.state || "不明"}</p>
+              <p>{storage.state?.tire_inspection?.state || "不明"}</p>
             </div>
           </CardContent>
         </Card>

@@ -16,7 +16,9 @@ const Dashboard: React.FC = () => {
   const [clientCount, setClientCount] = useState(0);
   const [taskCount, setTaskCount] = useState(0);
   const [seasonalData, setSeasonalData] = useState({ summer: 0, winter: 0 });
-  const [inspectionProgress, setInspectionProgress] = useState(0);
+  const [inspectionProgress, setInspectionProgress] = useState<
+    number | undefined
+  >();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +92,7 @@ const Dashboard: React.FC = () => {
             <CardTitle>装着率</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl font-bold pt-4">
-            {inspectionProgress}%
+            {inspectionProgress ? inspectionProgress + "%" : "計算不可"}
           </CardContent>
         </Card>
       </div>

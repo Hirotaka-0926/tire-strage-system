@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageLogsToDisplay } from "@/utils/interface";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -21,10 +21,12 @@ interface Props {
   year: number;
   season: "summer" | "winter";
   isSearchBySeason: boolean;
-  storageList: StorageDisplay[];
-  setStorageList: React.Dispatch<React.SetStateAction<StorageDisplay[]>>;
-  setSelectedStorages: React.Dispatch<React.SetStateAction<StorageDisplay[]>>;
-  selectedStorages: StorageDisplay[];
+  storageList: StorageLogsToDisplay[];
+  setStorageList: React.Dispatch<React.SetStateAction<StorageLogsToDisplay[]>>;
+  setSelectedStorages: React.Dispatch<
+    React.SetStateAction<StorageLogsToDisplay[]>
+  >;
+  selectedStorages: StorageLogsToDisplay[];
   isConvertPDF: boolean;
 }
 
@@ -41,7 +43,7 @@ const StorageList: React.FC<Props> = ({
   isConvertPDF,
 }) => {
   const router = useRouter();
-  const [allStorages, setAllStorages] = useState<StorageDisplay[]>([]);
+  const [allStorages, setAllStorages] = useState<StorageLogsToDisplay[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -69,7 +71,7 @@ const StorageList: React.FC<Props> = ({
     if (!searchValue) {
       if (isSearchBySeason) {
         const filteredBySeason = allStorages.filter(
-          (storage: StorageDisplay) =>
+          (storage: StorageLogsToDisplay) =>
             storage.season === season && storage.year === year
         );
         setStorageList(
@@ -81,28 +83,30 @@ const StorageList: React.FC<Props> = ({
       return;
     }
 
-    const filteredByKey = allStorages.filter((storage: StorageDisplay) => {
-      try {
-        const fieldValue = getNestedProperty(storage, searchKey);
+    const filteredByKey = allStorages.filter(
+      (storage: StorageLogsToDisplay) => {
+        try {
+          const fieldValue = getNestedProperty(storage, searchKey);
 
-        if (fieldValue === undefined || fieldValue === null) return false;
+          if (fieldValue === undefined || fieldValue === null) return false;
 
-        if (typeof fieldValue === "string") {
-          return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
-        } else if (typeof fieldValue === "number") {
-          return fieldValue.toString().includes(searchValue);
-        } else if (fieldValue instanceof Date) {
-          return fieldValue.toISOString().includes(searchValue);
+          if (typeof fieldValue === "string") {
+            return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
+          } else if (typeof fieldValue === "number") {
+            return fieldValue.toString().includes(searchValue);
+          } else if (fieldValue instanceof Date) {
+            return fieldValue.toISOString().includes(searchValue);
+          }
+        } catch (err) {
+          console.error("フィルタリングエラー:", err);
         }
-      } catch (err) {
-        console.error("フィルタリングエラー:", err);
+        return false;
       }
-      return false;
-    });
+    );
 
     if (isSearchBySeason) {
       const filteredBySeason = filteredByKey.filter(
-        (storage: StorageDisplay) =>
+        (storage: StorageLogsToDisplay) =>
           storage.season === season && storage.year === year
       );
       setStorageList(
@@ -122,7 +126,7 @@ const StorageList: React.FC<Props> = ({
   ]);
 
   const getNestedProperty = useCallback(
-    (obj: StorageDisplay, path: string): unknown => {
+    (obj: StorageLogsToDisplay, path: string): unknown => {
       try {
         return path.split(".").reduce((prev: unknown, curr: string) => {
           if (prev && typeof prev === "object") {
@@ -165,7 +169,10 @@ const StorageList: React.FC<Props> = ({
     return <div className="text-center p-4">該当するデータがありません</div>;
   }
 
-  const handleClickRow = (storage: StorageDisplay, checked: boolean = true) => {
+  const handleClickRow = (
+    storage: StorageLogsToDisplay,
+    checked: boolean = true
+  ) => {
     if (isConvertPDF) {
       selectItem(checked, storage);
     } else {
@@ -173,7 +180,7 @@ const StorageList: React.FC<Props> = ({
     }
   };
 
-  const selectItem = (checked: boolean, storage: StorageDisplay) => {
+  const selectItem = (checked: boolean, storage: StorageLogsToDisplay) => {
     if (checked) {
       setSelectedStorages((prev) => [...prev, storage]);
     } else {
@@ -240,13 +247,13 @@ const StorageList: React.FC<Props> = ({
                 {storage.storage?.storage_number || "-"}
               </TableCell>
               <TableCell className="py-3">
-                {storage.state?.car?.client?.client_name || "-"}
+                {storage.client?.client_name || "-"}
               </TableCell>
               <TableCell className="py-3">
-                {storage.state?.car?.car_model || "-"}
+                {storage.car?.car_model || "-"}
               </TableCell>
               <TableCell className="py-3">
-                {storage.state?.car?.car_number || "-"}
+                {storage.car?.car_number || "-"}
               </TableCell>
               <TableCell className="py-3">
                 {storage.state?.tire_maker || "-"}

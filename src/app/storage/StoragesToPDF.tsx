@@ -1,11 +1,11 @@
 import { useStorageToPdf } from "@/hooks/useStorageToPdf";
 import { Button } from "@/components/ui/button";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageLogsToDisplay } from "@/utils/interface";
 import React from "react";
 import { Printer, Loader2, X } from "lucide-react";
 
 interface Props {
-  selectedStorages: StorageDisplay[];
+  selectedStorages: StorageLogsToDisplay[];
   setIsConvertPDF: React.Dispatch<React.SetStateAction<boolean>>;
   isConvertPDF: boolean;
 }

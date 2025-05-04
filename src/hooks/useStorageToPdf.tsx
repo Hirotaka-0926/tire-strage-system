@@ -9,7 +9,7 @@ import {
   PDFDownloadLink,
   BlobProvider,
 } from "@react-pdf/renderer";
-import { StorageDisplay } from "@/utils/interface";
+import { StorageLogsToDisplay } from "@/utils/interface";
 
 // PDFのスタイル定義
 
@@ -63,7 +63,9 @@ const pdfStyles = StyleSheet.create({
 });
 
 // PDF文書コンポーネント - 単一のストレージページを生成
-const StoragePage: React.FC<{ storage: StorageDisplay }> = ({ storage }) => (
+const StoragePage: React.FC<{ storage: StorageLogsToDisplay }> = ({
+  storage,
+}) => (
   <Page size="A4" style={pdfStyles.page}>
     <View style={pdfStyles.section}>
       <Text style={pdfStyles.title}>保管庫詳細</Text>
@@ -76,31 +78,29 @@ const StoragePage: React.FC<{ storage: StorageDisplay }> = ({ storage }) => (
       <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>名前:</Text>
         <Text style={pdfStyles.infoValue}>
-          {storage.state.car.client.client_name || "未設定"}
+          {storage.client?.client_name || "未設定"}
         </Text>
       </View>
 
       <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>場所:</Text>
         <Text style={pdfStyles.infoValue}>
-          {storage.storage.storage_type || "未設定"}
+          {storage.storage?.storage_type || "未設定"}
         </Text>
       </View>
 
       <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
         <Text style={pdfStyles.infoValue}>
-          {storage.storage.storage_number || "未設定"}
+          {storage.storage?.storage_number || "未設定"}
         </Text>
       </View>
 
       <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>作成日:</Text>
         <Text style={pdfStyles.infoValue}>
-          {storage.state.car.client.created_at
-            ? new Date(storage.state.car.client.created_at).toLocaleDateString(
-                "ja-JP"
-              )
+          {storage.client?.created_at
+            ? new Date(storage.client.created_at).toLocaleDateString("ja-JP")
             : "未設定"}
         </Text>
       </View>
@@ -115,9 +115,7 @@ const StoragePage: React.FC<{ storage: StorageDisplay }> = ({ storage }) => (
 
           <View style={pdfStyles.infoRow}>
             <Text style={pdfStyles.infoLabel}>車種:</Text>
-            <Text style={pdfStyles.infoValue}>
-              {storage.state.car.car_model}
-            </Text>
+            <Text style={pdfStyles.infoValue}>{storage.car?.car_model}</Text>
           </View>
 
           <View style={pdfStyles.infoRow}>
@@ -158,7 +156,7 @@ const StoragePage: React.FC<{ storage: StorageDisplay }> = ({ storage }) => (
 
 // 複数のストレージに対応するPDF文書コンポーネント
 const StoragePDFDocument: React.FC<{
-  storages: StorageDisplay | StorageDisplay[];
+  storages: StorageLogsToDisplay | StorageLogsToDisplay[];
 }> = ({ storages }) => {
   const storageArray = Array.isArray(storages) ? storages : [storages];
 
@@ -175,14 +173,16 @@ const StoragePDFDocument: React.FC<{
 interface UseStorageToPdfReturn {
   isLoading: boolean;
   error: Error | null;
-  StoragePDFDocument: React.FC<{ storages: StorageDisplay | StorageDisplay[] }>;
+  StoragePDFDocument: React.FC<{
+    storages: StorageLogsToDisplay | StorageLogsToDisplay[];
+  }>;
   renderPDFDownloadLink: (
-    storages: StorageDisplay | StorageDisplay[],
+    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
     fileName?: string,
     linkText?: string
   ) => JSX.Element | null;
   renderBlobProvider: (
-    storages: StorageDisplay | StorageDisplay[],
+    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
     children: (params: {
       blob: Blob | null;
       url: string | null;
@@ -193,7 +193,7 @@ interface UseStorageToPdfReturn {
 }
 
 /**
- * StorageDisplayオブジェクトからPDFを生成するためのカスタムフック
+ * StorageLogsToDisplayオブジェクトからPDFを生成するためのカスタムフック
  */
 export const useStorageToPdf = (): UseStorageToPdfReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -216,7 +216,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // PDFダウンロードリンクをレンダリングする関数
   const renderPDFDownloadLink = (
-    storages: StorageDisplay | StorageDisplay[],
+    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
     fileName = `保管庫_${
       Array.isArray(storages) ? "まとめ" : storages.id || "不明"
     }.pdf`,
@@ -242,7 +242,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // BlobProviderも同様に修正
   const renderBlobProvider = (
-    storages: StorageDisplay | StorageDisplay[],
+    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
     children: (params: {
       blob: Blob | null;
       url: string | null;

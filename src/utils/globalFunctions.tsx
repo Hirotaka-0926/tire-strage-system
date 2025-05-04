@@ -1,4 +1,4 @@
-import { StorageDisplay } from "./interface";
+import { StorageLogsToDisplay } from "./interface";
 import { getInspectionCount } from "@/utils/supabaseFunction";
 
 /**
@@ -8,7 +8,7 @@ import { getInspectionCount } from "@/utils/supabaseFunction";
  */
 export const getYearAndSeason = (
   date: Date = new Date()
-): Pick<StorageDisplay, "year" | "season"> => {
+): Pick<StorageLogsToDisplay, "year" | "season"> => {
   // 年を取得
   const year = date.getFullYear();
 
@@ -39,6 +39,9 @@ export const calInspectionProgress = async () => {
   const preInspectionNumber = await getInspectionCount(preYear, preSeason);
   console.log("今期の検査数:", currentInspectionNumber);
   console.log("前期の検査数:", preInspectionNumber);
+  if (preInspectionNumber === 0) {
+    return undefined; // Avoid division by zero
+  }
   const progress = Math.floor(
     (currentInspectionNumber / preInspectionNumber) * 100
   );
@@ -57,10 +60,4 @@ const getPriviousSeason = (year: number, season: string) => {
   } else {
     throw new Error("Invalid season value. Expected 'summer' or 'winter'.");
   }
-};
-
-// Check if storage is in use
-const checkStorageUsage = (storageId: number | undefined) => {
-  if (!storageId) return false;
-  return usedNumbers.find((item) => item.storage_id === storageId);
 };

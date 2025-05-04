@@ -5,7 +5,8 @@ import {
   State,
   Car,
   Inspection,
-  StorageDisplay,
+  StorageLogsToDisplay,
+  TaskWithDetails,
 } from "@/utils/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -28,14 +29,12 @@ export const getAllClients = async (): Promise<Client[]> => {
   }
 };
 
-export const getAllTasks = async (): Promise<
-  (Task & { tire_state: State & { car: Car & { client: Client } } })[]
-> => {
+export const getAllTasks = async (): Promise<TaskWithDetails[]> => {
   try {
     const { data, error } = await supabase
       .from("task_list")
       .select(
-        `*, tire_state:tire_state(*, car:car_table(*, client:client_data(*)))`
+        `*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)`
       );
 
     if (error) {
@@ -130,12 +129,22 @@ export const getSpecificClient = async (
 };
 
 export const upsertTire = async (data: State, taskId: number) => {
-  const { tire_state, oil, battery, wiper } = data;
-  delete data.tire_state;
-  delete data.oil;
-  delete data.battery;
-  delete data.wiper;
-  const inspectionArray = [tire_state, oil, battery, wiper];
+  const {
+    tire_inspection,
+    oil_inspection,
+    battery_inspection,
+    wiper_inspection,
+  } = data;
+  delete data.tire_inspection;
+  delete data.oil_inspection;
+  delete data.battery_inspection;
+  delete data.wiper_inspection;
+  const inspectionArray = [
+    tire_inspection,
+    oil_inspection,
+    battery_inspection,
+    wiper_inspection,
+  ];
   console.log(data);
   const { data: tireData, error: tireError } = await supabase
     .from("tire_state")
@@ -224,11 +233,11 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   return result;
 };
 
-export const getAllStorages = async (): Promise<StorageDisplay[]> => {
+export const getAllStorages = async (): Promise<StorageLogsToDisplay[]> => {
   const { data, error } = await supabase
     .from("storage_logs")
     .select(
-      "*, storage:StorageMaster(*), state:tire_state(*, car:car_table(*, client:client_data(*)))"
+      "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
     );
 
   if (error) {
@@ -240,12 +249,12 @@ export const getAllStorages = async (): Promise<StorageDisplay[]> => {
 
 export const getStorageById = async (
   storageId: number
-): Promise<StorageDisplay> => {
+): Promise<StorageLogsToDisplay> => {
   try {
     const { data: storageData, error: storageError } = await supabase
       .from("storage_logs")
       .select(
-        "*, storage:StorageMaster(*), state:tire_state(*, car:car_table(*, client:client_data(*)))"
+        "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
       )
       .eq("id", storageId)
       .single();
@@ -262,7 +271,8 @@ export const getStorageById = async (
     if (inspectionError) {
       throw inspectionError;
     }
-    const result: StorageDisplay = {
+
+    const result: StorageLogsToDisplay = {
       ...storageData,
       state: {
         ...storageData.state,
