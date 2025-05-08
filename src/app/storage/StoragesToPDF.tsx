@@ -8,14 +8,24 @@ interface Props {
   selectedStorages: StorageLogsToDisplay[];
   setIsConvertPDF: React.Dispatch<React.SetStateAction<boolean>>;
   isConvertPDF: boolean;
+  tabText: string;
 }
 
 const StoragesToPDF: React.FC<Props> = ({
   selectedStorages,
   setIsConvertPDF,
   isConvertPDF,
+  tabText,
 }) => {
   const { isLoading, error, renderBlobProvider } = useStorageToPdf();
+  if (tabText === "detail") {
+    return (
+      <Button disabled className="ml-2 flex items-center">
+        <Printer className="mr-2 h-4 w-4" />
+        PDF出力
+      </Button>
+    );
+  }
 
   if (error) {
     return (

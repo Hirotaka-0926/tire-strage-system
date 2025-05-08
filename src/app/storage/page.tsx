@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import StorageList from "./StorageList";
+import { DataTableDemo } from "./StorageList";
 import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,13 +25,13 @@ const StoragePage: React.FC = () => {
     StorageLogsToDisplay[]
   >([]);
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
+  const [tabText, setTabText] = useState<string>("checkbox");
 
   useEffect(() => {
     const fetchStorages = async () => {
       try {
         setIsLoading(true);
         const data = await getAllStorages();
-        console.log("取得したデータ：", data);
         setStorageList(data);
       } catch (error) {
         console.error("データ取得エラー:", error);
@@ -91,6 +91,7 @@ const StoragePage: React.FC = () => {
                 selectedStorages={selectedStorages}
                 setIsConvertPDF={setIsConvertPDF}
                 isConvertPDF={isConvertPDF}
+                tabText={tabText}
               />
             </div>
           </div>
@@ -105,7 +106,7 @@ const StoragePage: React.FC = () => {
       ) : (
         <Card>
           <CardContent className="p-0 sm:p-2">
-            <StorageList
+            <DataTableDemo
               searchKey={searchKey}
               searchValue={searchValue}
               year={year}
@@ -116,6 +117,8 @@ const StoragePage: React.FC = () => {
               setSelectedStorages={setSelectedStorages}
               selectedStorages={selectedStorages}
               isConvertPDF={isConvertPDF}
+              tabText={tabText}
+              setTabText={setTabText}
             />
           </CardContent>
         </Card>
