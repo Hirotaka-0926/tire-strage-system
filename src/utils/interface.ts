@@ -90,3 +90,10 @@ export type StorageLogsToDisplay = StorageLog & { storage: Storage } & {
 export type TaskWithDetails = Task & { tire_state: State } & { car: Car } & {
   client: Client;
 };
+
+export type deleteStorageSchema = {
+  id: number;
+  tire_state_id?: number; //tire_state_idが存在する場合はtire_stateテーブルからも削除する
+  car_id?: number; //car_idが存在する場合はcarテーブルからも削除する
+  client_id?: number; //client_idが存在する場合はclientテーブルからも削除する
+};

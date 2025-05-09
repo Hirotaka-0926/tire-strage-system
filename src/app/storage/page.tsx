@@ -12,9 +12,10 @@ import { getAllStorages } from "@/utils/supabaseFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import StoragesToPDF from "./StoragesToPDF";
+import DeleteStorages from "./DeleteStorages";
 
 const StoragePage: React.FC = () => {
-  const [searchKey, setSearchKey] = useState<string>("location");
+  const [searchKey, setSearchKey] = useState<string>("storage.storage_type");
   const [searchValue, setSearchValue] = useState<string>("");
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
@@ -93,6 +94,7 @@ const StoragePage: React.FC = () => {
                 isConvertPDF={isConvertPDF}
                 tabText={tabText}
               />
+              <DeleteStorages selectedStorages={selectedStorages} />
             </div>
           </div>
         </CardContent>

@@ -7,6 +7,7 @@ import {
   Inspection,
   StorageLogsToDisplay,
   TaskWithDetails,
+  deleteStorageSchema,
 } from "@/utils/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -349,5 +350,43 @@ export const getInspectionCount = async (
   } catch (error) {
     console.error("Error fetching inspection count:", error);
     return 0;
+  }
+};
+
+export const deleteStorages = async (deleteStorages: deleteStorageSchema[]) => {
+  try {
+    const storage_logs_Ids = deleteStorages.map((storage) => storage.id);
+    const tire_state_Ids = deleteStorages.map(
+      (storage) => storage.tire_state_id!
+    );
+    const car_Ids = deleteStorages.map((storage) => storage.car_id!);
+    const client_Ids = deleteStorages.map((storage) => storage.client_id!);
+    const { error: storages_error } = await supabase
+      .from("storage_logs")
+      .delete()
+      .in("id", storage_logs_Ids)
+      .select("*");
+    const { error: tire_state_error } = await supabase
+      .from("tire_state")
+      .delete()
+      .in("id", tire_state_Ids)
+      .select("*");
+    const { error: car_error } = await supabase
+      .from("car_table")
+      .delete()
+      .in("id", car_Ids)
+      .select("*");
+    const { error: client_error } = await supabase
+      .from("client_data")
+      .delete()
+      .in("id", client_Ids)
+      .select("*");
+    if (storages_error || tire_state_error || car_error || client_error) {
+      throw storages_error || tire_state_error || car_error || client_error;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting storages:", error);
+    throw error;
   }
 };

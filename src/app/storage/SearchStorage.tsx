@@ -40,11 +40,11 @@ const SearchStorage: React.FC<Props> = ({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>保管庫情報</SelectLabel>
-            <SelectItem value="location">保管場所</SelectItem>
-            <SelectItem value="storage_id">保管庫ID</SelectItem>
-            <SelectItem value="state.car.client.client_name">顧客名</SelectItem>
-            <SelectItem value="state.car.car_model">車種</SelectItem>
-            <SelectItem value="state.car.car_number">ナンバー</SelectItem>
+            <SelectItem value="storage.storage_type">保管庫タイプ</SelectItem>
+            <SelectItem value="storage.storage_number">保管庫ID</SelectItem>
+            <SelectItem value="client.client_name">顧客名</SelectItem>
+            <SelectItem value="car.car_model">車種</SelectItem>
+            <SelectItem value="car.car_number">ナンバー</SelectItem>
             <SelectItem value="state.tire_maker">タイヤメーカー</SelectItem>
             <SelectItem value="state.tire_size">タイヤサイズ</SelectItem>
             <SelectItem value="state.tire_pattern">タイヤパターン</SelectItem>
