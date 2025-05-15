@@ -331,6 +331,30 @@ export const getStoragesUseNumber = async (
   }
 };
 
+export const getStorageByMasterStorageId = async (
+  id: number
+): Promise<StorageLogsToDisplay> => {
+  try {
+    const { data, error } = await supabase
+      .from("storage_logs")
+      .select(
+        "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
+      )
+      .eq("storage_id", id)
+      .single();
+    if (error) {
+      throw error;
+    }
+    if (!data || data.length === 0) {
+      throw new Error("Storage not found");
+    }
+    return data;
+  } catch (error) {
+    console.error("Error fetching storage by master storage ID:", error);
+    throw error;
+  }
+};
+
 export const getInspectionCount = async (
   year: number,
   season: "summer" | "winter"

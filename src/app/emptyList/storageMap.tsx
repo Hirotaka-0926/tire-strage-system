@@ -97,7 +97,7 @@ export default function StorageMap() {
     const isStoraged = checkStorageUsage(storageId!);
 
     if (isStoraged) {
-      router.push("/storage/" + isStoraged.id);
+      router.push("/storageLogs/" + isStoraged.id);
     }
   };
 

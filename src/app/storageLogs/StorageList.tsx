@@ -416,7 +416,7 @@ export const DataTableDemo: React.FC<Props> = ({
                         );
                       }
                     } else if (tabText == "detail") {
-                      router.push(`/storage/${row.original.id}`);
+                      router.push(`/storageLogs/${row.original.id}`);
                     }
                   }}
                 >

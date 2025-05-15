@@ -31,11 +31,11 @@ const StoragedSeason: React.FC<Props> = ({
   const [years, setYears] = useState<number[]>([]);
   useEffect(() => {
     const fetchYear = async () => {
-      const years = await getStoragedYear();
-      setYears(distinctYear(years));
+      const getYears = await getStoragedYear();
+      setYears(distinctYear(getYears));
     };
 
-    const distinctYear = (years: number[]) => {
+    const distinctYear = (years: { year: number }[]) => {
       return years.reduce<number[]>((prev, current) => {
         // 配列が空、または最後の要素と異なる場合に追加
         if (prev.length === 0 || prev[prev.length - 1] !== current.year) {
@@ -48,7 +48,7 @@ const StoragedSeason: React.FC<Props> = ({
   }, []);
   return (
     <div className="flex flex-col space-y-4 w-full p-4">
-      <Select value={year} onValueChange={setYear}>
+      <Select value={year.toString()} onValueChange={(value) => setYear(Number(value))}>
         <SelectTrigger className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <SelectValue placeholder="年度" />
         </SelectTrigger>
