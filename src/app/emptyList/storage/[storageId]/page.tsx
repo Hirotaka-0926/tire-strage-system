@@ -1,5 +1,5 @@
 import React from "react";
-import { Detail } from "./Detail";
+import { Detail } from "./DetailTest";
 
 interface StorageParams {
   storageId: string;
