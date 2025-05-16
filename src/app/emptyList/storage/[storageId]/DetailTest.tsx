@@ -21,6 +21,185 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+type Tire = {
+  id: string;
+  brand: string;
+  model: string;
+  size: string;
+  type: string;
+  treadDepth: number;
+  condition: string;
+  exchangeDate: string;
+  customer: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    avatarUrl?: string;
+  };
+  vehicle: {
+    id: string;
+    make: string;
+    model: string;
+    year: number;
+    licensePlate: string;
+  };
+};
+
+// 保管庫の型定義
+type StorageCell = {
+  id: string;
+  row: string;
+  column: number;
+  tire: Tire | null;
+};
+
+// 保管庫データの型定義
+type Storage = {
+  id: string;
+  name: string;
+  cells: StorageCell[];
+};
+
+// サンプルデータ - 保管庫
+const storagesData: Record<string, Storage> = {
+  "storage-1": {
+    id: "storage-1",
+    name: "第1保管庫",
+    cells: [
+      {
+        id: "A1",
+        row: "A",
+        column: 1,
+        tire: {
+          id: "tire1",
+          brand: "ブリヂストン",
+          model: "BLIZZAK",
+          size: "205/55R16",
+          type: "スタッドレス",
+          treadDepth: 7.5,
+          condition: "良好",
+          exchangeDate: "2023-11-15",
+          customer: {
+            id: "cust1",
+            name: "田中 太郎",
+            phone: "090-1234-5678",
+            email: "tanaka@example.com",
+            avatarUrl: "/placeholder.svg?height=40&width=40",
+          },
+          vehicle: {
+            id: "veh1",
+            make: "トヨタ",
+            model: "カローラ",
+            year: 2022,
+            licensePlate: "品川 300 あ 1234",
+          },
+        },
+      },
+    ],
+  },
+};
+
+// 未割り当てタイヤのタスクリスト
+const initialTaskList: Tire[] = [
+  {
+    id: "tire4",
+    brand: "ミシュラン",
+    model: "X-ICE",
+    size: "195/65R15",
+    type: "スタッドレス",
+    treadDepth: 6.8,
+    condition: "良好",
+    exchangeDate: "2023-12-10",
+    customer: {
+      id: "cust4",
+      name: "山田 次郎",
+      phone: "060-1357-2468",
+      email: "yamada@example.com",
+      avatarUrl: "/placeholder.svg?height=40&width=40",
+    },
+    vehicle: {
+      id: "veh4",
+      make: "ホンダ",
+      model: "フィット",
+      year: 2021,
+      licensePlate: "横浜 500 さ 5678",
+    },
+  },
+  {
+    id: "tire5",
+    brand: "コンチネンタル",
+    model: "ContiPremiumContact",
+    size: "225/45R18",
+    type: "サマータイヤ",
+    treadDepth: 5.5,
+    condition: "使用感あり",
+    exchangeDate: "2023-12-12",
+    customer: {
+      id: "cust5",
+      name: "伊藤 三郎",
+      phone: "050-9876-5432",
+      email: "ito@example.com",
+      avatarUrl: "/placeholder.svg?height=40&width=40",
+    },
+    vehicle: {
+      id: "veh5",
+      make: "スバル",
+      model: "インプレッサ",
+      year: 2020,
+      licensePlate: "福岡 800 お 7890",
+    },
+  },
+  {
+    id: "tire6",
+    brand: "ピレリ",
+    model: "P Zero",
+    size: "245/40R19",
+    type: "サマータイヤ",
+    treadDepth: 7.2,
+    condition: "良好",
+    exchangeDate: "2023-12-15",
+    customer: {
+      id: "cust6",
+      name: "高橋 美咲",
+      phone: "080-1122-3344",
+      email: "takahashi@example.com",
+      avatarUrl: "/placeholder.svg?height=40&width=40",
+    },
+    vehicle: {
+      id: "veh6",
+      make: "BMW",
+      model: "3シリーズ",
+      year: 2021,
+      licensePlate: "東京 700 か 9876",
+    },
+  },
+  {
+    id: "tire7",
+    brand: "グッドイヤー",
+    model: "Eagle F1",
+    size: "215/50R17",
+    type: "オールシーズン",
+    treadDepth: 6.0,
+    condition: "使用感あり",
+    exchangeDate: "2023-12-18",
+    customer: {
+      id: "cust7",
+      name: "渡辺 健太",
+      phone: "070-5566-7788",
+      email: "watanabe@example.com",
+      avatarUrl: "/placeholder.svg?height=40&width=40",
+    },
+    vehicle: {
+      id: "veh7",
+      make: "アウディ",
+      model: "A4",
+      year: 2019,
+      licensePlate: "名古屋 500 え 1122",
+    },
+  },
+];
+
 export const Detail = () => {
   const params = useParams();
   const storageId = params.storageId as string;
@@ -43,7 +222,8 @@ export const Detail = () => {
     return <div>Loading...</div>;
   }
 
-  const storedTire = storageDetail;
+  // const storedTire = storageDetail;
+  const storedTire = null;
 
   return (
     <div className="container mx-auto p-4">
@@ -156,16 +336,16 @@ export const Detail = () => {
                               <div className="flex items-center gap-1 mt-2">
                                 <Badge
                                   className={`${
-                                    storedTire.state.tire_inspection?.state ===
-                                    "良好"
+                                    storageDetail.state.tire_inspection
+                                      ?.state === "良好"
                                       ? "bg-green-500"
-                                      : storedTire.state.tire_inspection
+                                      : storageDetail.state.tire_inspection
                                           ?.state === "新品同様"
                                       ? "bg-blue-500"
                                       : "bg-yellow-500"
                                   }`}
                                 >
-                                  {storedTire.state.tire_inspection?.state}
+                                  {storageDetail.state.tire_inspection?.state}
                                 </Badge>
                               </div>
                             </div>
@@ -202,13 +382,21 @@ export const Detail = () => {
                         </div>
                       </div>
                     ) : (
-                      <div></div>
+                      <div className="flex flex-col items-center justify-center h-hull text-muted-foreground">
+                        <AlertCircle className="h-16 w-16 mb-4" />
+                        <p className="text-xl mb-2">ここにタイヤをドロップ</p>
+                        <p className="text-sm">
+                          右側のタスクリストからタイヤをドラックして保管庫データに割り当ててください
+                        </p>
+                      </div>
                     )}
+                    {provided.placeholder}
                   </div>
                 )}
               </Droppable>
             </div>
           </div>
+          <div className="lg:col-span-2"></div>
         </div>
       </DragDropContext>
     </div>

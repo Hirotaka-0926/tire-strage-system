@@ -275,7 +275,8 @@ export default function TestView() {
   }
 
   // 保管庫のタイヤデータを取得
-  const storedTire = storage.cells[0]?.tire;
+  // const storedTire = storage.cells[0]?.tire;
+  const storedTire = null;
 
   return (
     <div className="container mx-auto p-4">
