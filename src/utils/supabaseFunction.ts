@@ -309,23 +309,21 @@ export const getStoragesType = async (): Promise<string[]> => {
   return uniqueTypes;
 };
 
-export const getStoragesUseId = async (
-  year: number,
-  season: "summer" | "winter"
-): Promise<{ id: string; storage_id: string }[]> => {
+export const getStoragesUseId = async (): Promise<string[]> => {
   try {
     // 指定されたStorage_idとyear, seasonに一致するデータを取得
     const { data, error } = await supabase
-      .from("storage_logs")
-      .select("id, storage_id")
-      .eq("year", year)
-      .eq("season", season);
+      .from("storage_master")
+      .select("id")
+      .not("car_id", "is", null)
+      .not("client_id", "is", null)
+      .not("inspection_id", "is", null);
+
     if (error) {
       throw error;
     }
-
-    // Return array with id and storage_id
-    return data || [];
+    // Return array with id values as strings
+    return data ? data.map((item) => item.id) : [];
   } catch (error) {
     console.error("Error fetching storage use numbers:", error);
     throw error;
@@ -431,4 +429,20 @@ export const getPendingTasks = async (): Promise<TaskInput[] | null> => {
     return null;
   }
   return data;
+};
+
+export const getLogsByStorageId = async (
+  storage_id: string
+): Promise<StorageLogInput[]> => {
+  const { data, error } = await supabase
+    .from("storage_logs")
+    .select(
+      "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
+    )
+    .eq("storage_id", storage_id)
+    .order("year", { ascending: true });
+  if (error) {
+    throw error;
+  }
+  return data || [];
 };

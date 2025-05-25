@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+
 import { StorageInput, TaskInput } from "@/utils/interface";
-import { getStorageByMasterStorageId } from "@/utils/supabaseFunction";
+
 import {
   Card,
   CardContent,
@@ -27,6 +27,8 @@ import {
   Tag,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import LogDisplay from "./LogDisplay";
+import { set } from "react-hook-form";
 
 // サンプルデータ - 保管庫
 interface Props {
@@ -38,8 +40,63 @@ export const Detail: React.FC<Props> = ({
   initialStorageDetail,
   initialPendingTasks,
 }) => {
-  const [storageDetail] = useState<StorageInput>(initialStorageDetail);
-  const [taskList] = useState<TaskInput[]>(initialPendingTasks || []);
+  const [currentStorage, setCurrentStorage] = useState<StorageInput | null>(
+    initialStorageDetail
+  );
+  const [taskList, setTaskList] = useState<TaskInput[]>(
+    initialPendingTasks || []
+  );
+  const [savedStorage, setSavedStorage] = useState<StorageInput | null>(
+    currentStorage
+  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const hasChanges =
+      JSON.stringify(currentStorage) !== JSON.stringify(savedStorage);
+    setHasUnsavedChanges(hasChanges);
+  }, [currentStorage, savedStorage]);
+
+  const showNotification = (
+    type: "success" | "error" | "info",
+    message: string
+  ) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const hasInsertData = (data: StorageInput) => {
+    if (currentStorage) {
+      showNotification(
+        "error",
+        "既に保管庫にはデータが格納されています。先に取り出してください"
+      );
+      return;
+    }
+
+    const newStorage = data;
+    setCurrentStorage(newStorage);
+    showNotification(
+      "success",
+      `${data.client.client_name}のデータを保管庫A1に挿入しました。`
+    );
+  };
+
+  const handleRemoveData = () => {
+    setCurrentStorage(null);
+    showNotification("info", "保管庫のデータを取り出しました。");
+  };
+
+  const handleSaveToServer = async () => {
+    setIsSaving(true);
+    setSavedStorage(currentStorage);
+    setIsSaving(false);
+  };
 
   const storedTire = storageDetail;
   // const storedTire = null;
@@ -48,9 +105,9 @@ export const Detail: React.FC<Props> = ({
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-2xl mb-6">保管庫管理</h1>
       <DragDropContext>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
           {/*ここから左側のコンポーネントだよ*/}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <div className="bg-muted/30 p-6 rounded-lg">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">保管庫内データ</h2>
@@ -215,6 +272,11 @@ export const Detail: React.FC<Props> = ({
                   </div>
                 )}
               </Droppable>
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <LogDisplay />
             </div>
           </div>
           <div className="lg:col-span-2">

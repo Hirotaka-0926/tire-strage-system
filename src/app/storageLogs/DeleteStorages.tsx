@@ -27,7 +27,7 @@ const DeleteStorages: React.FC<Props> = ({ selectedStorages }) => {
       .filter((storage_logs) => storage_logs.id !== undefined)
       .map((storage_logs: StorageLogInput) => ({
         id: storage_logs.id as number,
-        storage_id: storage_logs.storage.storage_number,
+        storage_id: storage_logs.storage.id,
         client_id: deleteProperties.client ? storage_logs.client.id : undefined,
         car_id: deleteProperties.car ? storage_logs.car.id : undefined,
         tire_state_id: deleteProperties.tire_state

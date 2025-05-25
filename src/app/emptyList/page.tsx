@@ -34,9 +34,7 @@ export default function StorageMapView() {
   const [storagesTypes, setStoragesTypes] = useState<string[]>([]);
   const [displayLocation, setDisplayLocation] = useState<string>("A");
   const router = useRouter();
-  const [usedId, setUsedId] = useState<{ id: string; storage_id: string }[]>(
-    []
-  );
+  const [usedId, setUsedId] = useState<string[]>([]);
   const { year, season } = getYearAndSeason();
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
@@ -75,7 +73,6 @@ export default function StorageMapView() {
         },
         {}
       );
-      console.log(dividedStorages);
       return dividedStorages;
     };
 
@@ -98,19 +95,16 @@ export default function StorageMapView() {
       }
     };
 
-    const fetchStoragesUseNumber = async (
-      year: number,
-      season: "summer" | "winter"
-    ) => {
+    const fetchStoragesUseNumber = async () => {
       try {
-        const data = await getStoragesUseId(year, season);
+        const data = await getStoragesUseId();
         setUsedId(data);
         console.log("取得した使用番号:", data);
       } catch (error) {
         console.error("データ取得エラー:", error);
       }
     };
-    fetchStoragesUseNumber(year, season);
+    fetchStoragesUseNumber();
     fetchStoragesTypes();
     loadStorages();
   }, []);
@@ -128,7 +122,7 @@ export default function StorageMapView() {
   // Check if storage is in use
   const checkStorageUsage = (storageId: string | undefined) => {
     if (!storageId) return false;
-    return usedId.find((item) => item.storage_id === storageId);
+    return usedId.find((item) => item === storageId);
   };
 
   return (
