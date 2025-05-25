@@ -19,7 +19,7 @@ import { getYearAndSeason } from "@/utils/globalFunctions";
 import {
   getAllMasterStorages,
   getStoragesType,
-  getStoragesUseNumber,
+  getStoragesUseId,
 } from "@/utils/supabaseFunction";
 import { Storage } from "@/utils/interface";
 import {
@@ -34,9 +34,9 @@ export default function StorageMapView() {
   const [storagesTypes, setStoragesTypes] = useState<string[]>([]);
   const [displayLocation, setDisplayLocation] = useState<string>("A");
   const router = useRouter();
-  const [usedNumbers, setUsedNumbers] = useState<
-    { id: number; storage_id: number }[]
-  >([]);
+  const [usedId, setUsedId] = useState<{ id: string; storage_id: string }[]>(
+    []
+  );
   const { year, season } = getYearAndSeason();
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
@@ -66,7 +66,7 @@ export default function StorageMapView() {
     const divideStoragesByLocation = (storages: Storage[]) => {
       const dividedStorages = storages.reduce(
         (acc: Record<string, Storage[]>, item: Storage) => {
-          const type = item.storage_type;
+          const type = item.id!.split("_")[0];
           if (!acc[type]) {
             acc[type] = [];
           }
@@ -75,6 +75,7 @@ export default function StorageMapView() {
         },
         {}
       );
+      console.log(dividedStorages);
       return dividedStorages;
     };
 
@@ -102,8 +103,8 @@ export default function StorageMapView() {
       season: "summer" | "winter"
     ) => {
       try {
-        const data = await getStoragesUseNumber(year, season);
-        setUsedNumbers(data);
+        const data = await getStoragesUseId(year, season);
+        setUsedId(data);
         console.log("取得した使用番号:", data);
       } catch (error) {
         console.error("データ取得エラー:", error);
@@ -114,7 +115,7 @@ export default function StorageMapView() {
     loadStorages();
   }, []);
 
-  const handleLinkStorageDetail = (storageId: number) => {
+  const handleLinkStorageDetail = (storageId: string) => {
     const isStoraged = checkStorageUsage(storageId!);
 
     if (isStoraged) {
@@ -125,9 +126,9 @@ export default function StorageMapView() {
   };
 
   // Check if storage is in use
-  const checkStorageUsage = (storageId: number | undefined) => {
+  const checkStorageUsage = (storageId: string | undefined) => {
     if (!storageId) return false;
-    return usedNumbers.find((item) => item.storage_id === storageId);
+    return usedId.find((item) => item.storage_id === storageId);
   };
 
   return (
@@ -205,7 +206,7 @@ export default function StorageMapView() {
                           }}
                         >
                           <span className="font-semibold text-center">
-                            {storage.storage_type}-{storage.storage_number}
+                            {storage.id}
                           </span>
                           <Badge
                             variant={

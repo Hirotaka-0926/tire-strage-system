@@ -288,7 +288,7 @@ export const getAllMasterStorages = async () => {
   const { data, error } = await supabase
     .from("storage_master")
     .select("*")
-    .order("storage_number", { ascending: true });
+    .order("id", { ascending: true });
 
   if (error) {
     throw error;
@@ -299,20 +299,20 @@ export const getAllMasterStorages = async () => {
 export const getStoragesType = async (): Promise<string[]> => {
   const { data, error } = await supabase
     .from("storage_master")
-    .select("storage_type")
-    .order("storage_type", { ascending: true });
+    .select("id")
+    .order("id", { ascending: true });
   if (error) {
     throw error;
   }
   // Create a Set to get unique values, then convert back to array
-  const uniqueTypes = [...new Set(data.map((item) => item.storage_type))];
+  const uniqueTypes = [...new Set(data.map((item) => item.id.split("_")[0]))];
   return uniqueTypes;
 };
 
-export const getStoragesUseNumber = async (
+export const getStoragesUseId = async (
   year: number,
   season: "summer" | "winter"
-): Promise<{ id: number; storage_id: number }[]> => {
+): Promise<{ id: string; storage_id: string }[]> => {
   try {
     // 指定されたStorage_idとyear, seasonに一致するデータを取得
     const { data, error } = await supabase

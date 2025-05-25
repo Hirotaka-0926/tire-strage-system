@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StorageLogsToDisplay } from "@/utils/interface";
+import { StorageLogInput } from "@/utils/interface";
 import { getStorageById } from "@/utils/supabaseFunction";
 import StorageToPdf from "./StorageToPdf";
 
@@ -20,7 +20,7 @@ const StorageDetail: React.FC = () => {
   const router = useRouter();
   const storageId =
     typeof params.storage_id === "string" ? parseInt(params.storage_id) : null;
-  const [storage, setStorage] = useState<StorageLogsToDisplay | null>(null);
+  const [storage, setStorage] = useState<StorageLogInput | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,11 +100,8 @@ const StorageDetail: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
-              <p className="font-semibold">保管庫タイプ:</p>
-              <p>{storage.storage?.storage_type}</p>
-
               <p className="font-semibold">保管庫ID:</p>
-              <p>{storage.storage?.storage_number}</p>
+              <p>{storage.storage?.id}</p>
 
               <p className="font-semibold">作成年:</p>
               <p>{storage.year}</p>

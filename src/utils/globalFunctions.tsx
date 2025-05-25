@@ -1,4 +1,4 @@
-import { StorageLogsToDisplay } from "./interface";
+import { StorageLogInput } from "./interface";
 import { getInspectionCount } from "@/utils/supabaseFunction";
 
 /**
@@ -8,7 +8,7 @@ import { getInspectionCount } from "@/utils/supabaseFunction";
  */
 export const getYearAndSeason = (
   date: Date = new Date()
-): Pick<StorageLogsToDisplay, "year" | "season"> => {
+): Pick<StorageLogInput, "year" | "season"> => {
   // 年を取得
   const year = date.getFullYear();
 

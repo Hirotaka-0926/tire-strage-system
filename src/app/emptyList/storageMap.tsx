@@ -17,7 +17,7 @@ import { getYearAndSeason } from "@/utils/globalFunctions";
 import {
   getAllMasterStorages,
   getStoragesType,
-  getStoragesUseNumber,
+  getStoragesUseId,
 } from "@/utils/supabaseFunction";
 import { Storage } from "@/utils/interface";
 
@@ -27,7 +27,7 @@ export default function StorageMap() {
   const [displayLocation, setDisplayLocation] = useState<string>("A");
   const router = useRouter();
   const [usedNumbers, setUsedNumbers] = useState<
-    { id: number; storage_id: number }[]
+    { id: string; storage_id: string }[]
   >([]);
   const { year, season } = getYearAndSeason();
 
@@ -45,7 +45,7 @@ export default function StorageMap() {
     const divideStoragesByLocation = (storages: Storage[]) => {
       const dividedStorages = storages.reduce(
         (acc: Record<string, Storage[]>, item: Storage) => {
-          const type = item.storage_type;
+          const type = item.id!.split("_")[0]; // Assuming the type is determined by the first part of the ID
           if (!acc[type]) {
             acc[type] = [];
           }
@@ -81,7 +81,7 @@ export default function StorageMap() {
       season: "summer" | "winter"
     ) => {
       try {
-        const data = await getStoragesUseNumber(year, season);
+        const data = await getStoragesUseId(year, season);
         setUsedNumbers(data);
         console.log("取得した使用番号:", data);
       } catch (error) {
@@ -93,7 +93,7 @@ export default function StorageMap() {
     loadStorages();
   }, []);
 
-  const handleLinkStorageDetail = (storageId: number) => {
+  const handleLinkStorageDetail = (storageId: string) => {
     const isStoraged = checkStorageUsage(storageId!);
 
     if (isStoraged) {
@@ -102,7 +102,7 @@ export default function StorageMap() {
   };
 
   // Check if storage is in use
-  const checkStorageUsage = (storageId: number | undefined) => {
+  const checkStorageUsage = (storageId: string | undefined) => {
     if (!storageId) return false;
     return usedNumbers.find((item) => item.storage_id === storageId);
   };

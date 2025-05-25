@@ -97,3 +97,10 @@ export type StorageInput = {
   car: Car;
   state: State;
 };
+
+export type Storage = {
+  id?: string;
+  car_id: number;
+  client_id: number;
+  tire_state_id: number;
+};
