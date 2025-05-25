@@ -35,22 +35,28 @@ export interface Inspection {
   note: string;
 }
 
-export interface Task {
+export interface TaskInput {
   id?: number;
-  tire_state_id?: number;
-  car_id: number;
-  client_id: number;
+  car: Car;
+  client: Client;
+  tire_state: State;
   state: number;
 }
 
 export interface StorageLog {
   id?: number;
-  tire_state_id?: number;
-  storage_id: number;
-  client_id: number;
-  car_id: number;
   year: number;
   season: "summer" | "winter";
+}
+
+export interface StorageLogInput {
+  id: number;
+  year: number;
+  season: "summer" | "winter";
+  car: Car;
+  client: Client;
+  state: State;
+  storage: Storage;
 }
 
 export interface Car {
@@ -76,14 +82,7 @@ interface FormField {
   required: boolean;
 }
 
-export type StorageLogsToDisplay = StorageLog & { storage: Storage } & {
-  state: State;
-} & { car: Car } & { client: Client };
-
 // タスク詳細の完全な情報を表す型
-export type TaskInput = Task & { tire_state: State } & { car: Car } & {
-  client: Client;
-};
 
 export type deleteStorageSchema = {
   id: number;

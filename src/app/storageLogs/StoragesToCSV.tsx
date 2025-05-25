@@ -1,12 +1,12 @@
 "use client";
 
-import { StorageLogsToDisplay } from "@/utils/interface";
+import { StorageLogInput } from "@/utils/interface";
 import { CSVLink } from "react-csv";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  storages: StorageLogsToDisplay[];
+  storages: StorageLogInput[];
 }
 
 const StorageToCSV: React.FC<Props> = ({ storages }) => {

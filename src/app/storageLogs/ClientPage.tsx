@@ -1,36 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { DataTableDemo } from "./StorageList";
 import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import StorageToCSV from "./StoragesToCSV";
-import { StorageLogsToDisplay } from "@/utils/interface";
-import { getAllStorages } from "@/utils/supabaseFunction";
+import { StorageLogInput } from "@/utils/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
 import StoragesToPDF from "./StoragesToPDF";
 import DeleteStorages from "./DeleteStorages";
 
 interface StoragePageProps {
-  initialStorages?: StorageLogsToDisplay[];
+  initialStorages?: StorageLogInput[];
 }
 
 const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
-  const [searchKey, setSearchKey] = useState<string>("storage.storage_type");
+  const [searchKey, setSearchKey] = useState<string>("storage.id");
   const [searchValue, setSearchValue] = useState<string>("");
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
-  const [storageList, setStorageList] = useState<StorageLogsToDisplay[]>(
+  const [storageList, setStorageList] = useState<StorageLogInput[]>(
     initialStorages || []
   );
 
-  const [selectedStorages, setSelectedStorages] = useState<
-    StorageLogsToDisplay[]
-  >([]);
+  const [selectedStorages, setSelectedStorages] = useState<StorageLogInput[]>(
+    []
+  );
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
   const [tabText, setTabText] = useState<string>("checkbox");
 

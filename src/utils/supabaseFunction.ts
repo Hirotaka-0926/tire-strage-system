@@ -5,7 +5,7 @@ import {
   State,
   Car,
   Inspection,
-  StorageLogsToDisplay,
+  StorageLogInput,
   TaskInput,
   deleteStorageSchema,
   StorageInput,
@@ -235,7 +235,7 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   return result;
 };
 
-export const getAllStorages = async (): Promise<StorageLogsToDisplay[]> => {
+export const getAllStorages = async (): Promise<StorageLogInput[]> => {
   const { data, error } = await supabase
     .from("storage_logs")
     .select(
@@ -251,7 +251,7 @@ export const getAllStorages = async (): Promise<StorageLogsToDisplay[]> => {
 
 export const getStorageById = async (
   storageId: number
-): Promise<StorageLogsToDisplay> => {
+): Promise<StorageLogInput> => {
   try {
     const { data: storageData, error: storageError } = await supabase
       .from("storage_logs")

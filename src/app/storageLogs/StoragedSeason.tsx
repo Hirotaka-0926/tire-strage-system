@@ -48,7 +48,10 @@ const StoragedSeason: React.FC<Props> = ({
   }, []);
   return (
     <div className="flex flex-col space-y-4 w-full p-4">
-      <Select value={year.toString()} onValueChange={(value) => setYear(Number(value))}>
+      <Select
+        value={year.toString()}
+        onValueChange={(value) => setYear(Number(value))}
+      >
         <SelectTrigger className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
           <SelectValue placeholder="年度" />
         </SelectTrigger>
@@ -56,7 +59,7 @@ const StoragedSeason: React.FC<Props> = ({
           <SelectGroup>
             <SelectLabel>年度</SelectLabel>
             {years.map((year) => (
-              <SelectItem key={year} value={year}>
+              <SelectItem key={year} value={year.toString()}>
                 {year}
               </SelectItem>
             ))}

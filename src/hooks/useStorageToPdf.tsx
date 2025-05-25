@@ -9,7 +9,7 @@ import {
   PDFDownloadLink,
   BlobProvider,
 } from "@react-pdf/renderer";
-import { StorageLogsToDisplay } from "@/utils/interface";
+import { StorageLogInput } from "@/utils/interface";
 
 // PDFのスタイル定義
 
@@ -63,9 +63,7 @@ const pdfStyles = StyleSheet.create({
 });
 
 // PDF文書コンポーネント - 単一のストレージページを生成
-const StoragePage: React.FC<{ storage: StorageLogsToDisplay }> = ({
-  storage,
-}) => (
+const StoragePage: React.FC<{ storage: StorageLogInput }> = ({ storage }) => (
   <Page size="A4" style={pdfStyles.page}>
     <View style={pdfStyles.section}>
       <Text style={pdfStyles.title}>保管庫詳細</Text>
@@ -83,16 +81,9 @@ const StoragePage: React.FC<{ storage: StorageLogsToDisplay }> = ({
       </View>
 
       <View style={pdfStyles.infoRow}>
-        <Text style={pdfStyles.infoLabel}>場所:</Text>
-        <Text style={pdfStyles.infoValue}>
-          {storage.storage?.storage_type || "未設定"}
-        </Text>
-      </View>
-
-      <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
         <Text style={pdfStyles.infoValue}>
-          {storage.storage?.storage_number || "未設定"}
+          {storage.storage?.id || "未設定"}
         </Text>
       </View>
 
@@ -156,7 +147,7 @@ const StoragePage: React.FC<{ storage: StorageLogsToDisplay }> = ({
 
 // 複数のストレージに対応するPDF文書コンポーネント
 const StoragePDFDocument: React.FC<{
-  storages: StorageLogsToDisplay | StorageLogsToDisplay[];
+  storages: StorageLogInput | StorageLogInput[];
 }> = ({ storages }) => {
   const storageArray = Array.isArray(storages) ? storages : [storages];
 
@@ -174,15 +165,15 @@ interface UseStorageToPdfReturn {
   isLoading: boolean;
   error: Error | null;
   StoragePDFDocument: React.FC<{
-    storages: StorageLogsToDisplay | StorageLogsToDisplay[];
+    storages: StorageLogInput | StorageLogInput[];
   }>;
   renderPDFDownloadLink: (
-    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
+    storages: StorageLogInput | StorageLogInput[],
     fileName?: string,
     linkText?: string
   ) => JSX.Element | null;
   renderBlobProvider: (
-    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
+    storages: StorageLogInput | StorageLogInput[],
     children: (params: {
       blob: Blob | null;
       url: string | null;
@@ -216,7 +207,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // PDFダウンロードリンクをレンダリングする関数
   const renderPDFDownloadLink = (
-    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
+    storages: StorageLogInput | StorageLogInput[],
     fileName = `保管庫_${
       Array.isArray(storages) ? "まとめ" : storages.id || "不明"
     }.pdf`,
@@ -242,7 +233,7 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
 
   // BlobProviderも同様に修正
   const renderBlobProvider = (
-    storages: StorageLogsToDisplay | StorageLogsToDisplay[],
+    storages: StorageLogInput | StorageLogInput[],
     children: (params: {
       blob: Blob | null;
       url: string | null;

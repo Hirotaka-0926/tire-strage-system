@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { StorageLogsToDisplay } from "@/utils/interface";
+import { StorageLogInput } from "@/utils/interface";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -38,18 +38,16 @@ interface Props {
   year: number;
   season: "summer" | "winter";
   isSearchBySeason: boolean;
-  storageList: StorageLogsToDisplay[];
-  setStorageList: React.Dispatch<React.SetStateAction<StorageLogsToDisplay[]>>;
-  setSelectedStorages: React.Dispatch<
-    React.SetStateAction<StorageLogsToDisplay[]>
-  >;
-  selectedStorages: StorageLogsToDisplay[];
+  storageList: StorageLogInput[];
+  setStorageList: React.Dispatch<React.SetStateAction<StorageLogInput[]>>;
+  setSelectedStorages: React.Dispatch<React.SetStateAction<StorageLogInput[]>>;
+  selectedStorages: StorageLogInput[];
   isConvertPDF: boolean;
   setTabText: React.Dispatch<React.SetStateAction<string>>;
   tabText: string;
 }
 
-export const columns: ColumnDef<StorageLogsToDisplay>[] = [
+export const columns: ColumnDef<StorageLogInput>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -73,10 +71,10 @@ export const columns: ColumnDef<StorageLogsToDisplay>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "storage.storage_type",
-    header: "保管庫タイプ",
+    accessorKey: "storage.id",
+    header: "保管庫ID",
     cell: ({ row }) => {
-      const storageType = row.original.storage?.storage_type;
+      const storageType = row.original.storage?.id;
       return <div className="capitalize">{storageType || "-"}</div>;
     },
   },
@@ -204,9 +202,7 @@ export const DataTableDemo: React.FC<Props> = ({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [allStorages, setAllStorages] = React.useState<StorageLogsToDisplay[]>(
-    []
-  );
+  const [allStorages, setAllStorages] = React.useState<StorageLogInput[]>([]);
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
@@ -241,7 +237,7 @@ export const DataTableDemo: React.FC<Props> = ({
     if (!searchValue) {
       if (isSearchBySeason) {
         const filteredBySeason = allStorages.filter(
-          (storage: StorageLogsToDisplay) =>
+          (storage: StorageLogInput) =>
             storage.season === season && storage.year === year
         );
         setStorageList(
@@ -253,30 +249,28 @@ export const DataTableDemo: React.FC<Props> = ({
       return;
     }
 
-    const filteredByKey = allStorages.filter(
-      (storage: StorageLogsToDisplay) => {
-        try {
-          const fieldValue = getNestedProperty(storage, searchKey);
+    const filteredByKey = allStorages.filter((storage: StorageLogInput) => {
+      try {
+        const fieldValue = getNestedProperty(storage, searchKey);
 
-          if (fieldValue === undefined || fieldValue === null) return false;
+        if (fieldValue === undefined || fieldValue === null) return false;
 
-          if (typeof fieldValue === "string") {
-            return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
-          } else if (typeof fieldValue === "number") {
-            return fieldValue.toString().includes(searchValue);
-          } else if (fieldValue instanceof Date) {
-            return fieldValue.toISOString().includes(searchValue);
-          }
-        } catch (err) {
-          console.error("フィルタリングエラー:", err);
+        if (typeof fieldValue === "string") {
+          return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
+        } else if (typeof fieldValue === "number") {
+          return fieldValue.toString().includes(searchValue);
+        } else if (fieldValue instanceof Date) {
+          return fieldValue.toISOString().includes(searchValue);
         }
-        return false;
+      } catch (err) {
+        console.error("フィルタリングエラー:", err);
       }
-    );
+      return false;
+    });
 
     if (isSearchBySeason) {
       const filteredBySeason = filteredByKey.filter(
-        (storage: StorageLogsToDisplay) =>
+        (storage: StorageLogInput) =>
           storage.season === season && storage.year === year
       );
       setStorageList(
@@ -296,7 +290,7 @@ export const DataTableDemo: React.FC<Props> = ({
   ]);
 
   const getNestedProperty = useCallback(
-    (obj: StorageLogsToDisplay, path: string): unknown => {
+    (obj: StorageLogInput, path: string): unknown => {
       try {
         return path.split(".").reduce((prev: unknown, curr: string) => {
           if (prev && typeof prev === "object") {
