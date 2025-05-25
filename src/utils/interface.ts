@@ -53,12 +53,6 @@ export interface StorageLog {
   season: "summer" | "winter";
 }
 
-export interface Storage {
-  id?: number;
-  storage_number: number;
-  storage_type: string;
-}
-
 export interface Car {
   id?: number;
   car_model: string;
@@ -87,7 +81,7 @@ export type StorageLogsToDisplay = StorageLog & { storage: Storage } & {
 } & { car: Car } & { client: Client };
 
 // タスク詳細の完全な情報を表す型
-export type TaskWithDetails = Task & { tire_state: State } & { car: Car } & {
+export type TaskInput = Task & { tire_state: State } & { car: Car } & {
   client: Client;
 };
 
@@ -96,4 +90,11 @@ export type deleteStorageSchema = {
   tire_state_id?: number; //tire_state_idが存在する場合はtire_stateテーブルからも削除する
   car_id?: number; //car_idが存在する場合はcarテーブルからも削除する
   client_id?: number; //client_idが存在する場合はclientテーブルからも削除する
+};
+
+export type StorageInput = {
+  id: string;
+  client: Client;
+  car: Car;
+  state: State;
 };

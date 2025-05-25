@@ -120,6 +120,8 @@ export default function StorageMapView() {
     if (isStoraged) {
       router.push("/storage/" + isStoraged.id);
     }
+
+    router.push("/emptyList/storage/" + storageId);
   };
 
   // Check if storage is in use

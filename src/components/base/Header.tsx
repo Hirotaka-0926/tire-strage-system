@@ -19,6 +19,9 @@ export const Header = () => {
             <li>
               <Link href="/storageLogs">保管庫一覧</Link>
             </li>
+            <li>
+              <Link href="/emptyList">保管庫状況確認</Link>
+            </li>
           </ul>
         </nav>
       </div>

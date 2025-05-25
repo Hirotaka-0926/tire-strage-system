@@ -6,8 +6,9 @@ import {
   Car,
   Inspection,
   StorageLogsToDisplay,
-  TaskWithDetails,
+  TaskInput,
   deleteStorageSchema,
+  StorageInput,
 } from "@/utils/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -332,20 +333,19 @@ export const getStoragesUseNumber = async (
 };
 
 export const getStorageByMasterStorageId = async (
-  id: number
-): Promise<StorageLogsToDisplay> => {
+  id: string
+): Promise<StorageInput> => {
   try {
     const { data, error } = await supabase
-      .from("storage_logs")
-      .select(
-        "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
-      )
-      .eq("storage_id", id)
-      .single();
+      .from("storage_master")
+      .select("*, state:tire_state(*), car:car_table(*), client:client_data(*)")
+      .eq("id", id)
+      .maybeSingle();
+
     if (error) {
       throw error;
     }
-    if (!data || data.length === 0) {
+    if (!data) {
       throw new Error("Storage not found");
     }
     return data;
@@ -413,4 +413,22 @@ export const deleteStorages = async (deleteStorages: deleteStorageSchema[]) => {
     console.error("Error deleting storages:", error);
     throw error;
   }
+};
+
+export const getPendingTasks = async (): Promise<TaskInput[] | null> => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .select(
+      "*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)"
+    )
+    .eq("state", "pending");
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+  return data;
 };
