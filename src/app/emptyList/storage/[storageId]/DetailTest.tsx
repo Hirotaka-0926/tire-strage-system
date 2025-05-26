@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-import { StorageInput, TaskInput } from "@/utils/interface";
+import { StorageInput, TaskInput, StorageLogInput } from "@/utils/interface";
 
 import {
   Card,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { DragDropContext, Droppable, Draggable } from "@/lib/drag-drop";
 import {
   Car,
@@ -23,32 +24,53 @@ import {
   AlertCircle,
   User,
   Phone,
+  Loader2,
+  Trash2,
+  Edit3,
+  Package as PackageIcon,
+  Phone as PhoneIcon,
   Mail,
   Tag,
+  CheckCircle,
+  FootprintsIcon as Tire,
+  Save,
+  Clock,
+  Plus,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import LogDisplay from "./LogDisplay";
 import { set } from "react-hook-form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import EditForm from "./EditForm";
 
 // サンプルデータ - 保管庫
 interface Props {
   initialStorageDetail: StorageInput;
-  initialPendingTasks: TaskInput[] | null;
+  initialPendingTasks: TaskInput[];
+  initialLogs: StorageLogInput[];
 }
 
 export const Detail: React.FC<Props> = ({
   initialStorageDetail,
   initialPendingTasks,
+  initialLogs,
 }) => {
   const [currentStorage, setCurrentStorage] = useState<StorageInput | null>(
     initialStorageDetail
   );
-  const [taskList, setTaskList] = useState<TaskInput[]>(
-    initialPendingTasks || []
-  );
+
   const [savedStorage, setSavedStorage] = useState<StorageInput | null>(
     currentStorage
   );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [notification, setNotification] = useState<{
@@ -98,296 +120,430 @@ export const Detail: React.FC<Props> = ({
     setIsSaving(false);
   };
 
-  const storedTire = storageDetail;
+  const handleEditData = (data: StorageInput) => {
+    setCurrentStorage(data);
+    showNotification("info", "保管庫データを更新しました。");
+    setIsEditDialogOpen(false);
+  };
+
   // const storedTire = null;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="font-bold text-2xl mb-6">保管庫管理</h1>
-      <DragDropContext>
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
-          {/*ここから左側のコンポーネントだよ*/}
-          <div className="lg:col-span-2">
-            <div className="bg-muted/30 p-6 rounded-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">保管庫内データ</h2>
-                <Badge variant="outline" className="text-base px-3 py-1">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  位置：
-                  {storageDetail?.id.split("_")[0] +
-                    storageDetail?.id.split("_")[1]}
-                </Badge>
-              </div>
-
-              <Droppable
-                droppableId={storageDetail?.id.toString()}
-                isDropDisabled={true}
-              >
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`border rounded-lg p-6 min-h-[400px] ${
-                      storedTire
-                        ? "bg-white"
-                        : snapshot.isDraggingOver
-                        ? "bg-green-50 border-green-300 border-dashed"
-                        : "bg-muted/50 border-dashed"
-                    }`}
-                  >
-                    {storedTire ? (
-                      <div className="space-y-6">
-                        <div className="bg-muted/20 p-4 rounded-lg">
-                          <h3 className="text-lg font-medium mb-3 flex item-center">
-                            <User className="h-5 w-5 mr-2" />
-                            顧客情報
-                          </h3>
-                          <div className="flex items-center gap-4 mb-4">
-                            <Avatar className="h-16 w-16">
-                              <AvatarFallback>
-                                {storageDetail!.client.client_name.substring(
-                                  0,
-                                  2
-                                )}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-xl font-medium">
-                                {storageDetail!.client.client_name}
-                              </p>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Phone className="h-4 w-4 text-muted-foreground" />
-                                  080-1234-5678
-                                </div>
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Mail className="w-4 h-4 text-muted-foreground" />
-                                  {storageDetail!.client.address}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="bg-muted/20 p-4 rounded-lg">
-                          <h3 className="text-lg font-medium mb-3 flex item-center">
-                            <Car className="h-5 w-5 mr-2" />
-                            車両情報
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-lg font-medium">
-                                {storageDetail!.car.car_model}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {/*年式 表示　まだ未実装*/}
-                                2023年式
-                              </p>
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-1 mb-1">
-                                <Tag className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm font-medium">
-                                  ナンバープレート
-                                </span>
-                              </div>
-                              <p className="text-base">
-                                {storageDetail!.car.car_number}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="bg-muted/20 p-4 rounded-lg">
-                          <h3 className="text-lg font-medium mb-3 flex item-center">
-                            <Package className="h-5 w-5 mr-2" />
-                            タイヤ情報
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-lg font-medium">
-                                {`${storageDetail!.state.tire_maker} ${
-                                  storageDetail!.state.tire_pattern
-                                }`}
-                              </p>
-                              <p className="text-sm ">
-                                {storageDetail!.state.tire_size}
-                              </p>
-                              <div className="flex items-center gap-1 mt-2">
-                                <Badge
-                                  className={`${
-                                    storageDetail!.state.tire_inspection
-                                      ?.state === "良好"
-                                      ? "bg-green-500"
-                                      : storageDetail!.state.tire_inspection
-                                          ?.state === "新品同様"
-                                      ? "bg-blue-500"
-                                      : "bg-yellow-500"
-                                  }`}
-                                >
-                                  {storageDetail!.state.tire_inspection?.state}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold">
-                                  タイヤ溝
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <Ruler className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm font-medium">
-                                    {/* 現在は仮プロパティ */}
-                                    5mm
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold">
-                                  製造年
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm font-medium">
-                                    {storageDetail.state.manufacture_year}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button variant="outline">編集</Button>
-                          <Button variant="destructive">取り出し</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-hull text-muted-foreground">
-                        <AlertCircle className="h-16 w-16 mb-4" />
-                        <p className="text-xl mb-2">ここにタイヤをドロップ</p>
-                        <p className="text-sm">
-                          右側のタスクリストからタイヤをドラックして保管庫データに割り当ててください
-                        </p>
-                      </div>
-                    )}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          </div>
-          <div className="lg:col-span-2">
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <LogDisplay />
-            </div>
-          </div>
-          <div className="lg:col-span-2">
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold mb-3">
-                未割当タスク ({taskList.length})
-              </h2>
-              <Droppable droppableId="taskList">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-4 max-h-[calc(100vh-180px)] overflow-y-auto pr-2"
-                  >
-                    {taskList.map((task, index) => (
-                      <Draggable
-                        key={task.id}
-                        draggableId={task.id}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <Card
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="border-2 border-dashed border-yellow-500/50 bg-yellow-50/50"
-                          >
-                            <CardHeader className="p-4 pb-2">
-                              <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarFallback>
-                                      {task.client.client_name.substring(0, 2)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <CardTitle className="text-sm">
-                                      {task.client.client_name}
-                                    </CardTitle>
-                                    <CardDescription className="text-xs">
-                                      {task.client.address}
-                                    </CardDescription>
-                                  </div>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-yellow-100"
-                                >
-                                  未割当
-                                </Badge>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="p-4 pt-2">
-                              <div className="space-y-2 text-xs">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    <Package className="h-3 w-3" />
-                                    <span className="font-medium">
-                                      {task.tire_state.tire_maker}{" "}
-                                    </span>
-                                  </div>
-                                  <span>{task.tire_state.tire_size}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    <Car className="h-3 w-3" />
-                                    <span>{task.car.car_model}</span>
-                                  </div>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {task.car.car_number}
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    <Ruler className="h-3 w-3" />
-                                    <span>
-                                      溝:{" "}
-                                      {task.tire_state.tire_inspection?.state}mm
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>
-                                      {task.tire_state.tire_inspection?.state}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                            <CardFooter className="p-4 pt-0">
-                              <div className="text-xs text-muted-foreground w-full text-center space-y-1">
-                                <p>ドラッグしてテスト位置に割り当て</p>
-                              </div>
-                            </CardFooter>
-                          </Card>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                    {taskList.length === 0 && (
-                      <div className="text-center p-4 text-muted-foreground">
-                        <p>未割当のタイヤはありません</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {notification && (
+        <div className="fixed top-20 right-4 z-50 w-80">
+          <Alert
+            className={`${
+              notification.type === "success"
+                ? "border-green-500 bg-green-50"
+                : notification.type === "error"
+                ? "border-red-500 bg-red-50"
+                : "border-blue-500 bg-blue-50"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            ) : notification.type === "error" ? (
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+            )}
+            <AlertDescription
+              className={`${
+                notification.type === "success"
+                  ? "text-green-800"
+                  : notification.type === "error"
+                  ? "text-red-800"
+                  : "text-blue-800"
+              }`}
+            >
+              {notification.message}
+            </AlertDescription>
+          </Alert>
         </div>
-      </DragDropContext>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-7xl mx-auto">
+        <div className="lg:w-1/3">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-blue-50 border-b">
+              <CardTitle className="flex items-center text-lg">
+                <MapPin className="w-5 h-5 mr-2 text-blue-600" />
+                保管庫内データ
+                <Badge variant="outline" className="ml-auto rounded-full">
+                  位置: A1
+                </Badge>
+                {hasUnsavedChanges && (
+                  <Badge variant={"destructive"} className="ml-2 rounded-full">
+                    変更あり
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {currentStorage ? (
+                <div className="space-y-6">
+                  {/* Customer Information */}
+                  <div className="space-y-4">
+                    <div className="flex items-center text-base font-semibold text-gray-700">
+                      <User className="w-5 h-5 mr-2 text-blue-600" />
+                      顧客情報
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      <div className="text-xl font-bold text-gray-900">
+                        {currentStorage.client.client_name}
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <Phone className="w-4 h-4 mr-2" />
+                        {currentStorage.client.address}
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <Mail className="w-4 h-4 mr-2" />
+                        {currentStorage.client.post_number}
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <div className="flex items-center text-base font-semibold text-gray-700">
+                      <Car className="w-5 h-5 mr-2 text-green-600" />
+                      車両情報
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">車種:</span>
+                        <span className="font-semibold">
+                          {currentStorage.car.car_model}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">年式:</span>
+                        <span className="font-semibold">
+                          {"年式あとで入れる"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">ナンバープレート:</span>
+                        <span className="font-semibold">
+                          {currentStorage.car.car_number}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <div className="flex items-center text-base font-semibold text-gray-700">
+                      <Tire className="w-5 h-5 mr-2 text-orange-600" />
+                      タイヤ情報
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">ブランド:</span>
+                        <span className="font-semibold">
+                          {currentStorage.state.tire_maker}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">サイズ:</span>
+                        <span className="font-semibold">
+                          {currentStorage.state.tire_size}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">製造年:</span>
+                        <span className="font-semibold">
+                          {"とりあえず2010年"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">タイヤ溝:</span>
+                        <span className="font-semibold">{"とりあえず5mm"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <Dialog
+                        open={isEditDialogOpen}
+                        onOpenChange={setIsEditDialogOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button
+                            className="flex-1"
+                            variant="outline"
+                            size="lg"
+                          >
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            編集
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>保管庫データ編集</DialogTitle>
+                          </DialogHeader>
+                          <EditForm
+                            currentData={currentStorage}
+                            onSave={handleEditData}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                      <Button
+                        className="flex-1"
+                        variant="destructive"
+                        size="lg"
+                        onClick={handleRemoveData}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        取り出し
+                      </Button>
+                    </div>
+                    <Button
+                      onClick={handleSaveToServer}
+                      disabled={isSaving || !hasUnsavedChanges}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      size="lg"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          サーバーに保存中...
+                        </>
+                      ) : hasUnsavedChanges ? (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          変更をサーバーに保存
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          保存済み
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500 text-lg mb-2">保管庫は空です</p>
+                  <p className="text-gray-400 text-sm mb-6">
+                    右側のデータから挿入してください
+                  </p>
+                  <Button
+                    onClick={handleSaveToServer}
+                    disabled={isSaving || !hasUnsavedChanges}
+                    className="bg-green-600 hover:bg-green-700"
+                    size="lg"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        サーバーに保存中...
+                      </>
+                    ) : hasUnsavedChanges ? (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        空の状態をサーバーに保存
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        保存済み
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        <div className="lg:w-2/3 space-y-6">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-green-50 border-b">
+              <CardTitle className="flex items-center text-lg">
+                <Package className="w-5 h-5 mr-2 text-green-600" />
+                過去の保管庫データ
+                <Badge variant="secondary" className="ml-2 rounded-full">
+                  {initialLogs?.length || 0}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {initialLogs && initialLogs.length > 0 ? (
+                    initialLogs.map((log) => (
+                      <Card
+                        key={log.id}
+                        className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="text-lg font-semibold">
+                                {log.client.client_name}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {log.client.address}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {log.client.post_number}
+                              </div>
+                            </div>
+                            <Badge variant={"outline"} className="rounded-full">
+                              {log.year}年
+                              {log.season === "summer" ? "夏" : "冬"}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-col-2 gap-4">
+                            <div>
+                              <span className="text-gray-600">
+                                タイヤメーカー
+                              </span>
+                              <span className="font-medium">
+                                {log.state.tire_maker}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">
+                                タイヤサイズ
+                              </span>
+                              <span className="font-medium">
+                                {log.state.tire_size}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">車両モデル</span>
+                              <span className="font-medium">
+                                {log.car.car_model}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">
+                                ナンバープレート
+                              </span>
+                              <span className="font-medium">
+                                {log.car.car_number}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant={"default"}
+                            className="w-full"
+                            size="sm"
+                            onClick={() => hasInsertData(log)}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            保管庫A1に挿入
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 py-10">
+                      過去の保管庫データはありません
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg">
+            <CardHeader className="bg-orange-50 border-b">
+              <CardTitle className="flex items-center text-lg">
+                <Clock className="w-5 h-5 mr-2 text-orange-600" />
+                未割り当て整備データ
+                <Badge variant={"secondary"} className="ml-2 rounded-full">
+                  {initialPendingTasks?.length || 0}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ScrollArea className="h-64">
+                <div className="space-y-3">
+                  {initialPendingTasks && initialPendingTasks.length > 0 ? (
+                    initialPendingTasks.map((task) => (
+                      <Card
+                        key={task.id}
+                        className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="font-semibold text-lg">
+                                {task.client.client_name}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {task.client.address}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {task.client.post_number}
+                              </div>
+                            </div>
+                            <Badge variant={"outline"} className="rounded-full">
+                              ここに何時に整備したか記録
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                            <div>
+                              <span className="text-gray-600 mr-2">
+                                タイヤメーカー
+                              </span>
+                              <span className="font-medium">
+                                {task.tire_state.tire_maker}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 mr-2">
+                                タイヤサイズ
+                              </span>
+                              <span className="font-medium">
+                                {task.tire_state.tire_size}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 mr-2">
+                                車両モデル
+                              </span>
+                              <span className="font-medium">
+                                {task.car.car_model}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 mr-2">
+                                ナンバープレート
+                              </span>
+                              <span className="font-medium">
+                                {task.car.car_number}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="default"
+                            className="w-full"
+                            size="lg"
+                            onClick={() => hasInsertData(task)}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            保管庫A1に挿入
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 py-10">
+                      過去の保管庫データはありません
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

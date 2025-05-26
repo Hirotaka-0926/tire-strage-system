@@ -413,7 +413,7 @@ export const deleteStorages = async (deleteStorages: deleteStorageSchema[]) => {
   }
 };
 
-export const getPendingTasks = async (): Promise<TaskInput[] | null> => {
+export const getPendingTasks = async (): Promise<TaskInput[]> => {
   const { data, error } = await supabase
     .from("task_list")
     .select(
@@ -423,10 +423,6 @@ export const getPendingTasks = async (): Promise<TaskInput[] | null> => {
 
   if (error) {
     throw error;
-  }
-
-  if (!data) {
-    return null;
   }
   return data;
 };
