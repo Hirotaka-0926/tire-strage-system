@@ -8,7 +8,7 @@ import { getInspectionCount } from "@/utils/supabaseFunction";
  */
 export const getYearAndSeason = (
   date: Date = new Date()
-): Pick<StorageLogInput, "year" | "season"> => {
+): { year: number; season: "summer" | "winter" } => {
   // 年を取得
   const year = date.getFullYear();
 

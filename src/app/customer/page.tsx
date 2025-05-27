@@ -1,37 +1,33 @@
-"use client";
-
 import CustomerList from "@/features/customer/CustomerList";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import SearchCustomer from "@/features/customer/SearchCustomer";
+import { getAllClients, getAllStorages } from "@/utils/supabaseFunction";
+import TireManagementSystem from "./Test";
+import { getYearAndSeason } from "@/utils/globalFunctions";
+import { get } from "http";
+import { inspect } from "util";
+import next from "next";
 
-const Customer = () => {
-  const [key, setKey] = useState<string>("storage_number");
-  const [value, setValue] = useState<string>("");
-  const router = useRouter();
+const Customer = async () => {
+  const customerList = await getAllClients();
+  const yearAndSeason = getYearAndSeason();
+  const storageLogs = await getAllStorages();
+  const initialStorageLogs = storageLogs.map((log) => ({
+    id: log.id,
+    client_id: log.client.id!,
+    year: log.year,
+    season: log.season,
 
-  useEffect(() => {
-    console.log(key, value);
-  }, [key, value]);
-
+    next_theme: log.state?.next_theme || "未設定",
+  }));
   return (
     <React.Fragment>
-      <div className="container mx-auto p-4">
-        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-          <SearchCustomer
-            searchKey={key}
-            setKey={setKey}
-            value={value}
-            setValue={setValue}
-          />
-          <Button className="m-4" onClick={() => router.push("/customer/new")}>
-            新しい顧客を作成
-          </Button>
-        </div>
-
-        <CustomerList searchKey={key} searchValue={value} />
-      </div>
+      <TireManagementSystem
+        initialCustomers={customerList}
+        initialStorageLogs={initialStorageLogs}
+      />
     </React.Fragment>
   );
 };

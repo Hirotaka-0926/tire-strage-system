@@ -235,18 +235,42 @@ export const getStateByTaskId = async (taskId: number): Promise<State> => {
   return result;
 };
 
-export const getAllStorages = async (): Promise<StorageLogInput[]> => {
-  const { data, error } = await supabase
-    .from("storage_logs")
-    .select(
-      "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
-    );
+export const getAllStorages = async (
+  year?: number,
+  season?: "summer" | "winter"
+): Promise<StorageLogInput[]> => {
+  try {
+    // クエリビルダーを初期化
+    let query = supabase
+      .from("storage_logs")
+      .select(
+        "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
+      );
 
-  if (error) {
+    // 条件付きフィルタリングを追加
+    if (year !== undefined) {
+      query = query.eq("year", year);
+    }
+
+    if (season !== undefined) {
+      query = query.eq("season", season);
+    }
+
+    // ソート順を追加
+    query = query.order("year", { ascending: true });
+
+    // クエリを実行
+    const { data, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching all storages:", error);
     throw error;
   }
-
-  return data;
 };
 
 export const getStorageById = async (

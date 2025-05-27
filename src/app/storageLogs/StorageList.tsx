@@ -71,7 +71,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "storage.id",
+    accessorKey: "保管庫ID",
     header: "保管庫ID",
     cell: ({ row }) => {
       const storageType = row.original.storage?.id;
@@ -79,7 +79,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
     },
   },
   {
-    accessorKey: "client.client_name",
+    accessorKey: "顧客名",
     header: ({ column }) => {
       return (
         <Button
@@ -96,7 +96,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
     },
   },
   {
-    accessorKey: "car.car_model",
+    accessorKey: "車種",
     header: ({ column }) => {
       return (
         <Button
@@ -114,7 +114,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
   },
 
   {
-    accessorKey: "car.car_number",
+    accessorKey: "車ナンバー",
     header: ({ column }) => {
       return (
         <Button
@@ -132,7 +132,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
   },
 
   {
-    accessorKey: "state.tire_maker",
+    accessorKey: "タイヤメーカー",
     header: ({ column }) => {
       return (
         <Button
@@ -150,7 +150,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
   },
 
   {
-    accessorKey: "state.tire_pattern",
+    accessorKey: "タイヤパターン",
     header: ({ column }) => {
       return (
         <Button
@@ -168,7 +168,7 @@ export const columns: ColumnDef<StorageLogInput>[] = [
   },
 
   {
-    accessorKey: "state.tire_size",
+    accessorKey: "タイヤサイズ",
     header: ({ column }) => {
       return (
         <Button
@@ -338,7 +338,7 @@ export const DataTableDemo: React.FC<Props> = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
+              表示項目 <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -351,7 +351,7 @@ export const DataTableDemo: React.FC<Props> = ({
                     key={column.id}
                     className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
+                    onCheckedChange={(value: boolean) =>
                       column.toggleVisibility(!!value)
                     }
                   >

@@ -3,22 +3,12 @@ import { useState, useEffect } from "react";
 
 import { StorageInput, TaskInput, StorageLogInput } from "@/utils/interface";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DragDropContext, Droppable, Draggable } from "@/lib/drag-drop";
 import {
   Car,
-  Ruler,
-  Calendar,
   MapPin,
   Package,
   AlertCircle,
@@ -30,7 +20,6 @@ import {
   Package as PackageIcon,
   Phone as PhoneIcon,
   Mail,
-  Tag,
   CheckCircle,
   FootprintsIcon as Tire,
   Save,
@@ -38,8 +27,6 @@ import {
   Plus,
 } from "lucide-react";
 
-import LogDisplay from "./LogDisplay";
-import { set } from "react-hook-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,

@@ -6,7 +6,8 @@ export interface Client {
   client_name_kana: string;
   address: string;
   post_number: string;
-  created_at: Date;
+  phone: string;
+  notes: string;
 }
 
 export interface State {
@@ -22,9 +23,9 @@ export interface State {
   wiper_inspection?: Inspection;
   other_inspection: string;
   state_inspection: string;
-  inspection_date: Date;
+  inspection_date?: Date;
   drive_distance: number;
-  next_theme: string;
+  next_theme?: string;
 }
 
 export interface Inspection {
@@ -92,7 +93,7 @@ export type deleteStorageSchema = {
 };
 
 export type StorageInput = {
-  id: string;
+  id?: string;
   client: Client;
   car: Car;
   state: State;
