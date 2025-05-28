@@ -49,6 +49,8 @@ import { Client } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 import { upsertClient } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/utils/hooks/useNotification";
+import useClientValidation from "@/utils/hooks/useClientValidation";
 
 interface Props {
   initialCustomers: Client[];
@@ -101,6 +103,8 @@ export default function TireManagementSystem({
     phone: "",
     notes: "",
   });
+  const { showNotification, NotificationComponent } = useNotification();
+  const { validate } = useClientValidation();
 
   const thisSeason = getYearAndSeason();
   const lastSeason = getYearAndSeason(
@@ -226,7 +230,11 @@ export default function TireManagementSystem({
       phone: newCustomer!.phone,
       notes: newCustomer!.notes || "",
     };
-
+    const error = validate(customer);
+    if (error) {
+      showNotification("error", error);
+      return;
+    }
     upsertClient(customer);
     router.refresh();
   };
@@ -384,7 +392,7 @@ export default function TireManagementSystem({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ヘッダー */}
+      <NotificationComponent />
 
       <div className="max-w-7xl mx-auto p-6">
         <Card>

@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
-import { useNotification } from "@/hooks/useNotification";
+import { useNotification } from "@/utils/hooks/useNotification";
 
 // サンプルデータ - 保管庫
 interface Props {
@@ -163,7 +163,7 @@ export const Detail: React.FC<Props> = ({
                       <div className="flex justify-between">
                         <span className="text-gray-600">年式:</span>
                         <span className="font-semibold">
-                          {"年式あとで入れる"}
+                          {currentStorage.car.model_year || "不明"}
                         </span>
                       </div>
                       <div className="flex justify-between">

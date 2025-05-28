@@ -2,7 +2,7 @@
 import React from "react";
 import { StorageLogInput } from "@/utils/interface";
 import { Button } from "@/components/ui/button";
-import { useStorageToPdf } from "@/hooks/useStorageToPdf"; // 拡張子を明示的に指定
+import { useStorageToPdf } from "@/utils/hooks/useStorageToPdf"; // 拡張子を明示的に指定
 import { Loader2, FileDown } from "lucide-react";
 
 interface Props {

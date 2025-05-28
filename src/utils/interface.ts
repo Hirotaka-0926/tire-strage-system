@@ -64,6 +64,7 @@ export interface Car {
   id?: number;
   car_model: string;
   car_number: string;
+  model_year: number;
 }
 
 import { FieldValues } from "react-hook-form";
@@ -105,3 +106,6 @@ export type Storage = {
   client_id: number;
   tire_state_id: number;
 };
+interface ValidationErrors {
+  [key: string]: string;
+}

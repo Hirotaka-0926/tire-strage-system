@@ -1,4 +1,4 @@
-import { useStorageToPdf } from "@/hooks/useStorageToPdf";
+import { useStorageToPdf } from "@/utils/hooks/useStorageToPdf";
 import { Button } from "@/components/ui/button";
 import { StorageLogInput } from "@/utils/interface";
 import React from "react";
