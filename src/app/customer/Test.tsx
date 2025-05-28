@@ -47,7 +47,8 @@ import {
 } from "lucide-react";
 import { Client } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
-import { create } from "domain";
+import { upsertClient } from "@/utils/supabaseFunction";
+import { useRouter } from "next/navigation";
 
 interface Props {
   initialCustomers: Client[];
@@ -105,6 +106,7 @@ export default function TireManagementSystem({
   const lastSeason = getYearAndSeason(
     new Date(new Date().setMonth(new Date().getMonth() - 6))
   );
+  const router = useRouter();
 
   const createMapFromClients = () => {
     const clientMap: ClientMap = {};
@@ -124,9 +126,11 @@ export default function TireManagementSystem({
 
           next_theme: log.next_theme,
         };
-        targetCustomers[targetId].exchangeHistory
-          ? targetCustomers[targetId].exchangeHistory.push(newHistory)
-          : (targetCustomers[targetId].exchangeHistory = [newHistory]);
+        if (targetCustomers[targetId].exchangeHistory) {
+          targetCustomers[targetId].exchangeHistory.push(newHistory);
+        } else {
+          targetCustomers[targetId].exchangeHistory = [newHistory];
+        }
 
         if (log.season === thisSeason.season && log.year === thisSeason.year) {
           targetCustomers[targetId].thisSeasonExchange = true;
@@ -222,17 +226,9 @@ export default function TireManagementSystem({
       phone: newCustomer!.phone,
       notes: newCustomer!.notes || "",
     };
-    const newId = Math.max(...Object.keys(customers).map(Number), 0) + 1;
-    setCustomers({ ...customers, [newId]: { ...customer, id: newId } });
-    setNewCustomer({
-      client_name: "",
-      client_name_kana: "",
-      post_number: "",
-      address: "",
-      phone: "",
-      notes: "",
-    });
-    setIsCreateDialogOpen(false);
+
+    upsertClient(customer);
+    router.refresh();
   };
 
   // 顧客編集

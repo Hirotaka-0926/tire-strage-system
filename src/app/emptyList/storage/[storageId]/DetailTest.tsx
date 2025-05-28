@@ -11,7 +11,6 @@ import {
   Car,
   MapPin,
   Package,
-  AlertCircle,
   User,
   Phone,
   Loader2,
@@ -27,7 +26,6 @@ import {
   Plus,
 } from "lucide-react";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
+import { useNotification } from "@/hooks/useNotification";
 
 // サンプルデータ - 保管庫
 interface Props {
@@ -60,24 +59,13 @@ export const Detail: React.FC<Props> = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [notification, setNotification] = useState<{
-    type: "success" | "error" | "info";
-    message: string;
-  } | null>(null);
+  const { showNotification, NotificationComponent } = useNotification();
 
   useEffect(() => {
     const hasChanges =
       JSON.stringify(currentStorage) !== JSON.stringify(savedStorage);
     setHasUnsavedChanges(hasChanges);
   }, [currentStorage, savedStorage]);
-
-  const showNotification = (
-    type: "success" | "error" | "info",
-    message: string
-  ) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
-  };
 
   const hasInsertData = (data: StorageInput) => {
     if (currentStorage) {
@@ -117,39 +105,7 @@ export const Detail: React.FC<Props> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {notification && (
-        <div className="fixed top-20 right-4 z-50 w-80">
-          <Alert
-            className={`${
-              notification.type === "success"
-                ? "border-green-500 bg-green-50"
-                : notification.type === "error"
-                ? "border-red-500 bg-red-50"
-                : "border-blue-500 bg-blue-50"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            ) : notification.type === "error" ? (
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-            )}
-            <AlertDescription
-              className={`${
-                notification.type === "success"
-                  ? "text-green-800"
-                  : notification.type === "error"
-                  ? "text-red-800"
-                  : "text-blue-800"
-              }`}
-            >
-              {notification.message}
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
+      <NotificationComponent />
       <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-7xl mx-auto">
         <div className="lg:w-1/3">
           <Card className="shadow-lg">
