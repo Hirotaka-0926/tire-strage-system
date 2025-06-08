@@ -22,7 +22,7 @@ export const useNotification = () => {
   const NotificationComponent = () => (
     <React.Fragment>
       {notification && (
-        <div className="fixed top-20 right-4  w-80 z-[100]">
+        <div className="fixed top-20 right-4  w-80 z-900 m-4">
           <Alert
             className={`${
               notification.type === "success"

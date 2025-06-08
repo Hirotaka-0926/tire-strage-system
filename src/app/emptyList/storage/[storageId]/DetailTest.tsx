@@ -92,13 +92,34 @@ export const Detail: React.FC<Props> = ({
   const handleSaveToServer = async () => {
     setIsSaving(true);
     setSavedStorage(currentStorage);
+    showNotification("success", "保管庫データをサーバーに保存しました。");
     setIsSaving(false);
   };
 
   const handleEditData = (data: StorageInput) => {
     setCurrentStorage(data);
     showNotification("info", "保管庫データを更新しました。");
+    showNotification("info", "保管庫データを更新しました。");
     setIsEditDialogOpen(false);
+  };
+
+  const hasInsertLog = (log: StorageLogInput) => {
+    const newStorage: StorageInput = {
+      client: log.client,
+      car: log.car,
+      state: log.state,
+    };
+
+    hasInsertData(newStorage);
+  };
+
+  const hasInsertTask = (data: TaskInput) => {
+    const newStorage: StorageInput = {
+      client: data.client,
+      car: data.car,
+      state: data.tire_state,
+    };
+    hasInsertData(newStorage);
   };
 
   // const storedTire = null;
@@ -106,6 +127,7 @@ export const Detail: React.FC<Props> = ({
   return (
     <div className="min-h-screen bg-gray-50">
       <NotificationComponent />
+
       <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-7xl mx-auto">
         <div className="lg:w-1/3">
           <Card className="shadow-lg">
@@ -376,7 +398,7 @@ export const Detail: React.FC<Props> = ({
                             variant={"default"}
                             className="w-full"
                             size="sm"
-                            onClick={() => hasInsertData(log)}
+                            onClick={() => hasInsertLog(log)}
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             保管庫A1に挿入
@@ -410,7 +432,7 @@ export const Detail: React.FC<Props> = ({
                   {initialPendingTasks && initialPendingTasks.length > 0 ? (
                     initialPendingTasks.map((task) => (
                       <Card
-                        key={task.id}
+                        key={task.client.id}
                         className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
                       >
                         <CardContent className="p-4">
@@ -468,7 +490,7 @@ export const Detail: React.FC<Props> = ({
                             variant="default"
                             className="w-full"
                             size="lg"
-                            onClick={() => hasInsertData(task)}
+                            onClick={() => hasInsertTask(task)}
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             保管庫A1に挿入

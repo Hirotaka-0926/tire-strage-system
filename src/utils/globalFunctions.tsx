@@ -1,4 +1,3 @@
-import { StorageLogInput } from "./interface";
 import { getInspectionCount } from "@/utils/supabaseFunction";
 
 /**
