@@ -1,14 +1,7 @@
-import CustomerList from "@/features/customer/CustomerList";
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import SearchCustomer from "@/features/customer/SearchCustomer";
+import React from "react";
 import { getAllClients, getAllStorages } from "@/utils/supabaseFunction";
-import TireManagementSystem from "./Test";
+import CustomerManage from "./CustomerManage";
 import { getYearAndSeason } from "@/utils/globalFunctions";
-import { get } from "http";
-import { inspect } from "util";
-import next from "next";
 
 const Customer = async () => {
   const customerList = await getAllClients();
@@ -24,7 +17,7 @@ const Customer = async () => {
   }));
   return (
     <React.Fragment>
-      <TireManagementSystem
+      <CustomerManage
         initialCustomers={customerList}
         initialStorageLogs={initialStorageLogs}
       />

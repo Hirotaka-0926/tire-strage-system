@@ -116,9 +116,9 @@ export const Detail: React.FC<Props> = ({
     const newLog: StorageLogOutput = {
       storage: {
         id: storageId,
-        car_id: savedStorage?.car?.id || null,
-        client_id: savedStorage?.client?.id || null,
-        tire_state_id: savedStorage?.state?.id || null,
+        car_id: currentStorage?.car?.id || null,
+        client_id: currentStorage?.client?.id || null,
+        tire_state_id: currentStorage?.state?.id || null,
       },
       year: year,
       season: season,
@@ -129,7 +129,11 @@ export const Detail: React.FC<Props> = ({
     await upsertStorage(newStorage); // awaitを追加
     showNotification("success", "保管庫データをサーバーに保存しました。");
 
-    if (currentStorage != savedStorage && savedStorage != null) {
+    if (
+      currentStorage &&
+      (!savedStorage ||
+        JSON.stringify(currentStorage) == JSON.stringify(savedStorage))
+    ) {
       await pushNewStorageLog(newLog); // awaitを追加
       showNotification("info", "保管庫ログも作成されました");
     }

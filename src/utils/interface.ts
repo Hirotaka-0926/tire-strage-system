@@ -40,8 +40,8 @@ export interface TaskInput {
   id?: number;
   car: Car;
   client: Client;
-  tire_state: State;
-  state: number;
+  tire_state?: State;
+  status: string;
 }
 
 export interface StorageLog {

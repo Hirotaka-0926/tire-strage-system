@@ -89,14 +89,15 @@ export const upsertClient = async (client: Client) => {
     const { data, error } = await supabase
       .from("client_data")
       .upsert(client)
-      .select();
+      .select()
+      .single();
     if (error) {
       throw error;
     }
     return data;
   } catch (e) {
     console.error("Unexpected error:", e);
-    return [];
+    return null;
   }
 };
 

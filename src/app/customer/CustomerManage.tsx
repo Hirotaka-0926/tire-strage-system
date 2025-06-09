@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,106 +38,52 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Home,
   Users,
-  CalendarDays,
-  Package,
-  BarChart3,
   Eye,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { Client } from "@/utils/interface";
+import { getYearAndSeason } from "@/utils/globalFunctions";
+import { upsertClient } from "@/utils/supabaseFunction";
+import { useRouter } from "next/navigation";
+import { useNotification } from "@/utils/hooks/useNotification";
 
-大量のサンプルデータを生成;
-const generateSampleCustomers = () => {
-  const customers = [];
-  const prefectures = [
-    "東京都",
-    "神奈川県",
-    "千葉県",
-    "埼玉県",
-    "大阪府",
-    "愛知県",
-    "福岡県",
-  ];
-  const areas = ["○○区", "△△市", "□□町"];
+interface Props {
+  initialCustomers: Client[];
+  initialStorageLogs: {
+    id: number;
+    client_id: number;
+    year: number;
+    season: "summer" | "winter";
 
-  for (let i = 1; i <= 350; i++) {
-    const thisSeasonExchange = Math.random() > 0.4;
-    const lastSeasonExchange = Math.random() > 0.3;
-    const prefecture =
-      prefectures[Math.floor(Math.random() * prefectures.length)];
-    const area = areas[Math.floor(Math.random() * areas.length)];
+    next_theme: string;
+  }[];
+}
 
-    // 交換履歴を生成
-    const exchangeHistory = [];
-    const currentYear = new Date().getFullYear();
+interface ClientWithExchangeHistory extends Client {
+  thisSeasonExchange?: boolean;
+  lastSeasonExchange?: boolean;
+  exchangeHistory?: {
+    id: number;
+    season: "winter" | "summer";
+    year: number;
 
-    if (lastSeasonExchange) {
-      exchangeHistory.push({
-        id: `${i}-1`,
-        date: `${currentYear - 1}/11/${Math.floor(Math.random() * 28) + 1}`,
-        type: "冬タイヤ → 夏タイヤ",
-        notes: "定期交換",
-        season: "前シーズン",
-      });
-      exchangeHistory.push({
-        id: `${i}-2`,
-        date: `${currentYear - 1}/04/${Math.floor(Math.random() * 28) + 1}`,
-        type: "夏タイヤ → 冬タイヤ",
-        notes: "定期交換",
-        season: "前シーズン",
-      });
-    }
+    next_theme: string;
+  }[];
+}
 
-    if (thisSeasonExchange) {
-      exchangeHistory.push({
-        id: `${i}-3`,
-        date: `${currentYear}/11/${Math.floor(Math.random() * 28) + 1}`,
-        type: "冬タイヤ → 夏タイヤ",
-        notes: "定期交換",
-        season: "今シーズン",
-      });
-    }
+interface ClientMap {
+  [id: number]: ClientWithExchangeHistory;
+}
 
-    customers.push({
-      id: i,
-      updateDate: `2024/${Math.floor(Math.random() * 12) + 1}/${
-        Math.floor(Math.random() * 28) + 1
-      }`,
-      customerName: `顧客${i.toString().padStart(3, "0")}`,
-      customerNameKana: `カナ${i.toString().padStart(3, "0")}`,
-      postalCode: `${Math.floor(Math.random() * 900) + 100}-${
-        Math.floor(Math.random() * 9000) + 1000
-      }`,
-      address: `${prefecture}${area}${Math.floor(Math.random() * 99) + 1}丁目`,
-      lastExchange: thisSeasonExchange
-        ? `2024/${Math.floor(Math.random() * 12) + 1}/${
-            Math.floor(Math.random() * 28) + 1
-          }`
-        : "",
-      thisSeasonExchange,
-      lastSeasonExchange,
-      phone: `0${Math.floor(Math.random() * 9) + 1}-${
-        Math.floor(Math.random() * 9000) + 1000
-      }-${Math.floor(Math.random() * 9000) + 1000}`,
-      notes:
-        Math.random() > 0.7
-          ? ["要連絡", "新規顧客", "VIP顧客", ""][Math.floor(Math.random() * 4)]
-          : "",
-      exchangeHistory: exchangeHistory.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      ),
-    });
-  }
-
-  return customers;
-};
-
-export default function TireManagementSystem() {
-  const [customers, setCustomers] = useState();
+export default function CustomerManage({
+  initialCustomers,
+  initialStorageLogs,
+}: Props) {
+  const [customers, setCustomers] = useState<ClientMap>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,44 +92,131 @@ export default function TireManagementSystem() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isExchangeDialogOpen, setIsExchangeDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [newCustomer, setNewCustomer] = useState({
-    customerName: "",
-    customerNameKana: "",
-    postalCode: "",
+  const [selectedCustomer, setSelectedCustomer] =
+    useState<ClientWithExchangeHistory | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [newCustomer, setNewCustomer] = useState<Client>({
+    client_name: "",
+    client_name_kana: "",
+    post_number: "",
     address: "",
     phone: "",
     notes: "",
   });
+  const { showNotification, NotificationComponent } = useNotification();
+  const thisSeason = getYearAndSeason();
+  const lastSeason = getYearAndSeason(
+    new Date(new Date().setMonth(new Date().getMonth() - 6))
+  );
+  const router = useRouter();
+
+  const createMapFromClients = () => {
+    const clientMap: ClientMap = {};
+    initialCustomers.map((customer) => (clientMap[customer.id!] = customer));
+    return clientMap;
+  };
+
+  const handleCreateCustomer = async () => {
+    if (isLoading) return;
+    //２連続実行させないため
+    setIsLoading(true);
+
+    try {
+      const result = await upsertClient(newCustomer);
+
+      if (result) {
+        const savedCustomer = result;
+
+        setCustomers((prev) => ({
+          ...prev,
+          [savedCustomer.id!]: savedCustomer,
+        }));
+
+        setNewCustomer({
+          client_name: "",
+          client_name_kana: "",
+          post_number: "",
+          address: "",
+          phone: "",
+          notes: "",
+        });
+
+        setIsCreateDialogOpen(false);
+        showNotification("success", "顧客を正常に作成しました");
+
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error creating customer:", error);
+      showNotification("error", "顧客の作成に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createStatusAndHistoryFromLogs = () => {
+    const targetCustomers: ClientMap = createMapFromClients();
+    initialStorageLogs.forEach((log) => {
+      const targetId = log.client_id;
+      if (targetCustomers[targetId]) {
+        const newHistory = {
+          id: log.id,
+          season: log.season,
+          year: log.year,
+
+          next_theme: log.next_theme,
+        };
+        if (targetCustomers[targetId].exchangeHistory) {
+          targetCustomers[targetId].exchangeHistory.push(newHistory);
+        } else {
+          targetCustomers[targetId].exchangeHistory = [newHistory];
+        }
+
+        if (log.season === thisSeason.season && log.year === thisSeason.year) {
+          targetCustomers[targetId].thisSeasonExchange = true;
+        }
+        if (log.season === lastSeason.season && log.year === lastSeason.year) {
+          targetCustomers[targetId].lastSeasonExchange = true;
+        }
+      }
+    });
+    setCustomers(targetCustomers);
+  };
+
+  useEffect(() => {
+    createStatusAndHistoryFromLogs();
+  }, [initialCustomers, initialStorageLogs]);
 
   // フィルタリングされた顧客リスト
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.customerNameKana
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      customer.postalCode.includes(searchTerm) ||
-      customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredCustomers = Object.values(customers).filter(
+    (customer: ClientWithExchangeHistory) => {
+      const matchesSearch =
+        customer.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.client_name_kana
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        customer.post_number.includes(searchTerm) ||
+        customer.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (filterStatus === "this-season") {
-      return matchesSearch && customer.thisSeasonExchange;
-    } else if (filterStatus === "needs-contact") {
-      return (
-        matchesSearch &&
-        customer.lastSeasonExchange &&
-        !customer.thisSeasonExchange
-      );
-    } else if (filterStatus === "not-used") {
-      return (
-        matchesSearch &&
-        !customer.lastSeasonExchange &&
-        !customer.thisSeasonExchange
-      );
+      if (filterStatus === "this-season") {
+        return matchesSearch && customer.thisSeasonExchange;
+      } else if (filterStatus === "needs-contact") {
+        return (
+          matchesSearch &&
+          customer.lastSeasonExchange &&
+          !customer.thisSeasonExchange
+        );
+      } else if (filterStatus === "not-used") {
+        return (
+          matchesSearch &&
+          !customer.lastSeasonExchange &&
+          !customer.thisSeasonExchange
+        );
+      }
+
+      return matchesSearch;
     }
-
-    return matchesSearch;
-  });
+  );
 
   // ページネーション計算
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
@@ -192,23 +225,23 @@ export default function TireManagementSystem() {
   const currentCustomers = filteredCustomers.slice(startIndex, endIndex);
 
   // ページ変更時の処理
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
 
   // 検索やフィルター変更時にページをリセット
-  const handleSearchChange = (value) => {
+  const handleSearchChange = (value: string): void => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const handleFilterChange = (value) => {
+  const handleFilterChange = (value: string): void => {
     setFilterStatus(value);
     setCurrentPage(1);
   };
 
   // 顧客ステータスの取得
-  const getCustomerStatus = (customer) => {
+  const getCustomerStatus = (customer: ClientWithExchangeHistory) => {
     if (customer.thisSeasonExchange) {
       return {
         type: "success",
@@ -223,68 +256,91 @@ export default function TireManagementSystem() {
     return null;
   };
 
-  // 新規顧客作成
-  const handleCreateCustomer = () => {
-    const newId = Math.max(...customers.map((c) => c.id)) + 1;
-    const customer = {
-      ...newCustomer,
-      id: newId,
-      updateDate: new Date().toLocaleDateString("ja-JP"),
-      lastExchange: "",
-      thisSeasonExchange: false,
-      lastSeasonExchange: false,
-      exchangeHistory: [],
-    };
-    setCustomers([...customers, customer]);
-    setNewCustomer({
-      customerName: "",
-      customerNameKana: "",
-      postalCode: "",
-      address: "",
-      phone: "",
-      notes: "",
-    });
-    setIsCreateDialogOpen(false);
-  };
-
   // 顧客編集
-  const handleEditCustomer = () => {
-    setCustomers(
-      customers.map((c) =>
-        c.id === selectedCustomer.id ? selectedCustomer : c
-      )
-    );
-    setIsEditDialogOpen(false);
-    setSelectedCustomer(null);
+  const handleEditCustomer = async () => {
+    if (!selectedCustomer || isLoading) return;
+    //２連続実行を防ぐ
+    setIsLoading(true);
+
+    try {
+      const result = await upsertClient(selectedCustomer);
+
+      if (result) {
+        //nullチェック
+        const updatedCustomer = result;
+
+        setCustomers((prev) => ({
+          ...prev,
+          [updatedCustomer.id!]: {
+            ...prev[updatedCustomer.id!],
+            ...updatedCustomer,
+          },
+        }));
+
+        setIsEditDialogOpen(false);
+        setSelectedCustomer(null);
+        showNotification("success", "顧客情報を正常に更新しました");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      showNotification("error", "顧客情報の更新に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 顧客削除
-  const handleDeleteCustomer = (customerId) => {
-    setCustomers(customers.filter((c) => c.id !== customerId));
+  const handleDeleteCustomer = (customerId: number) => {
+    setCustomers(Object.values(customers).filter((c) => c.id !== customerId));
   };
 
   // タイヤ交換受付
-  const handleTireExchange = () => {
-    const newExchangeRecord = {
-      id: `${selectedCustomer.id}-${Date.now()}`,
-      date: new Date().toLocaleDateString("ja-JP"),
-      type: "タイヤ交換",
-      notes: "受付処理",
-      season: "今シーズン",
-    };
+  const handleTireExchange = async () => {
+    if (!selectedCustomer || isLoading) return;
 
-    const updatedCustomer = {
-      ...selectedCustomer,
-      thisSeasonExchange: true,
-      lastExchange: new Date().toLocaleDateString("ja-JP"),
-      updateDate: new Date().toLocaleDateString("ja-JP"),
-      exchangeHistory: [newExchangeRecord, ...selectedCustomer.exchangeHistory],
-    };
-    setCustomers(
-      customers.map((c) => (c.id === selectedCustomer.id ? updatedCustomer : c))
-    );
-    setIsExchangeDialogOpen(false);
-    setSelectedCustomer(null);
+    setIsLoading(true);
+
+    try {
+      // 新しいタスクを作成
+      const newTask = {
+        client_id: selectedCustomer.id!,
+        state: "pending",
+      };
+
+      await upsertTask(newTask);
+
+      const newExchangeRecord = {
+        id: Date.now(),
+        season: thisSeason.season,
+        year: thisSeason.year,
+        next_theme: "タイヤ交換受付",
+      };
+
+      const updatedCustomer = {
+        ...selectedCustomer,
+        thisSeasonExchange: true,
+        exchangeHistory: [
+          newExchangeRecord,
+          ...(selectedCustomer.exchangeHistory || []),
+        ],
+      };
+
+      setCustomers((prev) => ({
+        ...prev,
+        [selectedCustomer.id!]: updatedCustomer,
+      }));
+
+      setIsExchangeDialogOpen(false);
+      setSelectedCustomer(null);
+      showNotification("success", "タイヤ交換を受付しました");
+      router.refresh();
+    } catch (error) {
+      console.error("Error creating tire exchange task:", error);
+      showNotification("error", "タイヤ交換受付に失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ページネーションコンポーネント
@@ -391,49 +447,7 @@ export default function TireManagementSystem() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ヘッダー */}
-      <header className="bg-gray-800 text-white p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold">タイヤ保管管理システム</h1>
-          <nav className="flex space-x-6">
-            <a
-              href="#"
-              className="flex items-center space-x-1 hover:text-gray-300"
-            >
-              <Home className="w-4 h-4" />
-              <span>ホーム</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center space-x-1 bg-gray-700 px-3 py-1 rounded"
-            >
-              <Users className="w-4 h-4" />
-              <span>顧客リスト</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center space-x-1 hover:text-gray-300"
-            >
-              <CalendarDays className="w-4 h-4" />
-              <span>タイヤ交換予約リスト</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center space-x-1 hover:text-gray-300"
-            >
-              <Package className="w-4 h-4" />
-              <span>保管庫一覧</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center space-x-1 hover:text-gray-300"
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>保管庫状況確認</span>
-            </a>
-          </nav>
-        </div>
-      </header>
+      <NotificationComponent />
 
       <div className="max-w-7xl mx-auto p-6">
         <Card>
@@ -486,11 +500,11 @@ export default function TireManagementSystem() {
                       <Label htmlFor="customerName">顧客名</Label>
                       <Input
                         id="customerName"
-                        value={newCustomer.customerName}
+                        value={newCustomer!.client_name}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
-                            customerName: e.target.value,
+                            ...newCustomer!,
+                            client_name: e.target.value,
                           })
                         }
                       />
@@ -499,11 +513,11 @@ export default function TireManagementSystem() {
                       <Label htmlFor="customerNameKana">顧客名（カナ）</Label>
                       <Input
                         id="customerNameKana"
-                        value={newCustomer.customerNameKana}
+                        value={newCustomer!.client_name_kana}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
-                            customerNameKana: e.target.value,
+                            ...newCustomer!,
+                            client_name_kana: e.target.value,
                           })
                         }
                       />
@@ -512,11 +526,11 @@ export default function TireManagementSystem() {
                       <Label htmlFor="postalCode">郵便番号</Label>
                       <Input
                         id="postalCode"
-                        value={newCustomer.postalCode}
+                        value={newCustomer!.post_number}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
-                            postalCode: e.target.value,
+                            ...newCustomer!,
+                            post_number: e.target.value,
                           })
                         }
                       />
@@ -525,10 +539,10 @@ export default function TireManagementSystem() {
                       <Label htmlFor="address">住所</Label>
                       <Input
                         id="address"
-                        value={newCustomer.address}
+                        value={newCustomer!.address}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
+                            ...newCustomer!,
                             address: e.target.value,
                           })
                         }
@@ -538,10 +552,10 @@ export default function TireManagementSystem() {
                       <Label htmlFor="phone">電話番号</Label>
                       <Input
                         id="phone"
-                        value={newCustomer.phone}
+                        value={newCustomer!.phone}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
+                            ...newCustomer!,
                             phone: e.target.value,
                           })
                         }
@@ -551,10 +565,10 @@ export default function TireManagementSystem() {
                       <Label htmlFor="notes">備考</Label>
                       <Textarea
                         id="notes"
-                        value={newCustomer.notes}
+                        value={newCustomer!.notes}
                         onChange={(e) =>
                           setNewCustomer({
-                            ...newCustomer,
+                            ...newCustomer!,
                             notes: e.target.value,
                           })
                         }
@@ -610,10 +624,10 @@ export default function TireManagementSystem() {
                         </TableCell>
                         <TableCell>{customer.updateDate}</TableCell>
                         <TableCell className="font-medium">
-                          {customer.customerName}
+                          {customer.client_name}
                         </TableCell>
-                        <TableCell>{customer.customerNameKana}</TableCell>
-                        <TableCell>{customer.postalCode}</TableCell>
+                        <TableCell>{customer.client_name_kana}</TableCell>
+                        <TableCell>{customer.post_number}</TableCell>
                         <TableCell>{customer.address}</TableCell>
                         <TableCell>
                           {status && (
@@ -684,7 +698,7 @@ export default function TireManagementSystem() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDeleteCustomer(customer.id)}
+                              onClick={() => handleDeleteCustomer(customer.id!)}
                               title="削除"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -712,7 +726,11 @@ export default function TireManagementSystem() {
                         今シーズン交換済み
                       </p>
                       <p className="text-2xl font-bold text-green-600">
-                        {customers.filter((c) => c.thisSeasonExchange).length}
+                        {
+                          Object.values(customers).filter(
+                            (c) => c.thisSeasonExchange
+                          ).length
+                        }
                       </p>
                     </div>
                   </div>
@@ -726,7 +744,7 @@ export default function TireManagementSystem() {
                       <p className="text-sm text-gray-600">要連絡</p>
                       <p className="text-2xl font-bold text-yellow-600">
                         {
-                          customers.filter(
+                          Object.values(customers).filter(
                             (c) => c.lastSeasonExchange && !c.thisSeasonExchange
                           ).length
                         }
@@ -743,7 +761,7 @@ export default function TireManagementSystem() {
                       <p className="text-sm text-gray-600">長期未利用</p>
                       <p className="text-2xl font-bold text-red-600">
                         {
-                          customers.filter(
+                          Object.values(customers).filter(
                             (c) =>
                               !c.lastSeasonExchange && !c.thisSeasonExchange
                           ).length
@@ -760,7 +778,7 @@ export default function TireManagementSystem() {
                     <div>
                       <p className="text-sm text-gray-600">総顧客数</p>
                       <p className="text-2xl font-bold text-blue-600">
-                        {customers.length}
+                        {Object.values(customers).length}
                       </p>
                     </div>
                   </div>
@@ -785,20 +803,20 @@ export default function TireManagementSystem() {
                       顧客名
                     </Label>
                     <p className="text-lg font-semibold">
-                      {selectedCustomer.customerName}
+                      {selectedCustomer.client_name}
                     </p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">
                       顧客名（カナ）
                     </Label>
-                    <p>{selectedCustomer.customerNameKana}</p>
+                    <p>{selectedCustomer.client_name_kana}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">
                       郵便番号
                     </Label>
-                    <p>{selectedCustomer.postalCode}</p>
+                    <p>{selectedCustomer.post_number}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">
@@ -890,10 +908,10 @@ export default function TireManagementSystem() {
                                   {record.date}
                                 </span>
                               </div>
-                              <p className="font-medium">{record.type}</p>
-                              {record.notes && (
+                              <p className="font-medium">{record.year}</p>
+                              {record.next_theme && (
                                 <p className="text-sm text-gray-600 mt-1">
-                                  {record.notes}
+                                  {record.next_theme}
                                 </p>
                               )}
                             </div>
@@ -951,11 +969,11 @@ export default function TireManagementSystem() {
                   <Label htmlFor="editCustomerName">顧客名</Label>
                   <Input
                     id="editCustomerName"
-                    value={selectedCustomer.customerName}
+                    value={selectedCustomer.client_name}
                     onChange={(e) =>
                       setSelectedCustomer({
                         ...selectedCustomer,
-                        customerName: e.target.value,
+                        client_name: e.target.value,
                       })
                     }
                   />
@@ -964,11 +982,11 @@ export default function TireManagementSystem() {
                   <Label htmlFor="editCustomerNameKana">顧客名（カナ）</Label>
                   <Input
                     id="editCustomerNameKana"
-                    value={selectedCustomer.customerNameKana}
+                    value={selectedCustomer.client_name_kana}
                     onChange={(e) =>
                       setSelectedCustomer({
                         ...selectedCustomer,
-                        customerNameKana: e.target.value,
+                        client_name_kana: e.target.value,
                       })
                     }
                   />
@@ -977,11 +995,11 @@ export default function TireManagementSystem() {
                   <Label htmlFor="editPostalCode">郵便番号</Label>
                   <Input
                     id="editPostalCode"
-                    value={selectedCustomer.postalCode}
+                    value={selectedCustomer.post_number}
                     onChange={(e) =>
                       setSelectedCustomer({
                         ...selectedCustomer,
-                        postalCode: e.target.value,
+                        post_number: e.target.value,
                       })
                     }
                   />
@@ -1046,10 +1064,10 @@ export default function TireManagementSystem() {
               <div className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium">
-                    {selectedCustomer.customerName}
+                    {selectedCustomer.client_name}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {selectedCustomer.customerNameKana}
+                    {selectedCustomer.client_name_kana}
                   </p>
                   <p className="text-sm text-gray-600">
                     {selectedCustomer.address}
