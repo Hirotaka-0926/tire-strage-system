@@ -18,6 +18,19 @@ const StorageDetail = async ({ params }: StorageParams) => {
   const storageDetail = await getStorageByMasterStorageId(storageId);
   const pendingTasks = await getPendingTasks();
   const storageLogs = await getLogsByStorageId(storageId);
+  if (
+    (storageDetail.car === null && storageDetail.client === null) ||
+    storageDetail.state === null
+  ) {
+    console.log("storageDetail", storageDetail);
+    return (
+      <Detail
+        initialStorageDetail={null}
+        initialPendingTasks={pendingTasks}
+        initialLogs={storageLogs}
+      />
+    );
+  }
   return (
     <Detail
       initialStorageDetail={storageDetail}

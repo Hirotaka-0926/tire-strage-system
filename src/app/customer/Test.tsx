@@ -50,7 +50,6 @@ import { getYearAndSeason } from "@/utils/globalFunctions";
 import { upsertClient } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/utils/hooks/useNotification";
-import useClientValidation from "@/utils/hooks/useClientValidation";
 
 interface Props {
   initialCustomers: Client[];
@@ -105,7 +104,6 @@ export default function TireManagementSystem({
   });
   const { showNotification, NotificationComponent } = useNotification();
   const { validate } = useClientValidation();
-
   const thisSeason = getYearAndSeason();
   const lastSeason = getYearAndSeason(
     new Date(new Date().setMonth(new Date().getMonth() - 6))

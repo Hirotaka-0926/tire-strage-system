@@ -1,7 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 
-import { StorageInput, TaskInput, StorageLogInput } from "@/utils/interface";
+import {
+  StorageInput,
+  TaskInput,
+  StorageLogInput,
+  StorageData,
+  StorageLogOutput,
+} from "@/utils/interface";
+import { getYearAndSeason } from "@/utils/globalFunctions";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +23,6 @@ import {
   Loader2,
   Trash2,
   Edit3,
-  Package as PackageIcon,
-  Phone as PhoneIcon,
   Mail,
   CheckCircle,
   FootprintsIcon as Tire,
@@ -36,10 +41,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
 import { useNotification } from "@/utils/hooks/useNotification";
+import { pushNewStorageLog, upsertStorage } from "@/utils/supabaseFunction";
+import { useParams } from "next/navigation";
 
 // サンプルデータ - 保管庫
 interface Props {
-  initialStorageDetail: StorageInput;
+  initialStorageDetail: StorageInput | null;
   initialPendingTasks: TaskInput[];
   initialLogs: StorageLogInput[];
 }
@@ -52,7 +59,7 @@ export const Detail: React.FC<Props> = ({
   const [currentStorage, setCurrentStorage] = useState<StorageInput | null>(
     initialStorageDetail
   );
-
+  const { year, season } = getYearAndSeason();
   const [savedStorage, setSavedStorage] = useState<StorageInput | null>(
     currentStorage
   );
@@ -60,6 +67,8 @@ export const Detail: React.FC<Props> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { showNotification, NotificationComponent } = useNotification();
+  const params = useParams();
+  const storageId = params.storageId as string;
 
   useEffect(() => {
     const hasChanges =
@@ -68,7 +77,7 @@ export const Detail: React.FC<Props> = ({
   }, [currentStorage, savedStorage]);
 
   const hasInsertData = (data: StorageInput) => {
-    if (currentStorage) {
+    if (currentStorage != null) {
       showNotification(
         "error",
         "既に保管庫にはデータが格納されています。先に取り出してください"
@@ -76,11 +85,10 @@ export const Detail: React.FC<Props> = ({
       return;
     }
 
-    const newStorage = data;
-    setCurrentStorage(newStorage);
+    setCurrentStorage(data);
     showNotification(
       "success",
-      `${data.client.client_name}のデータを保管庫A1に挿入しました。`
+      `${data.client!.client_name}のデータを保管庫A1に挿入しました。`
     );
   };
 
@@ -90,9 +98,35 @@ export const Detail: React.FC<Props> = ({
   };
 
   const handleSaveToServer = async () => {
+    const newStorage: StorageData = {
+      id: storageId,
+      car_id: currentStorage?.car?.id || null,
+      client_id: currentStorage?.client?.id || null,
+      tire_state_id: currentStorage?.state?.id || null,
+    };
+    console.log("storageId", storageId);
+    const newLog: StorageLogOutput = {
+      storage: {
+        id: storageId,
+        car_id: savedStorage?.car?.id || null,
+        client_id: savedStorage?.client?.id || null,
+        tire_state_id: savedStorage?.state?.id || null,
+      },
+      year: year,
+      season: season,
+    };
+
     setIsSaving(true);
-    setSavedStorage(currentStorage);
+
+    await upsertStorage(newStorage); // awaitを追加
     showNotification("success", "保管庫データをサーバーに保存しました。");
+
+    if (currentStorage != savedStorage && savedStorage != null) {
+      await pushNewStorageLog(newLog); // awaitを追加
+      showNotification("info", "保管庫ログも作成されました");
+    }
+    setSavedStorage(currentStorage);
+
     setIsSaving(false);
   };
 
@@ -105,6 +139,7 @@ export const Detail: React.FC<Props> = ({
 
   const hasInsertLog = (log: StorageLogInput) => {
     const newStorage: StorageInput = {
+      id: storageId,
       client: log.client,
       car: log.car,
       state: log.state,
@@ -115,6 +150,7 @@ export const Detail: React.FC<Props> = ({
 
   const hasInsertTask = (data: TaskInput) => {
     const newStorage: StorageInput = {
+      id: storageId,
       client: data.client,
       car: data.car,
       state: data.tire_state,
@@ -146,7 +182,9 @@ export const Detail: React.FC<Props> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              {currentStorage ? (
+              {currentStorage?.client &&
+              currentStorage?.car &&
+              currentStorage?.state ? (
                 <div className="space-y-6">
                   {/* Customer Information */}
                   <div className="space-y-4">
@@ -339,73 +377,90 @@ export const Detail: React.FC<Props> = ({
               <ScrollArea className="h-64">
                 <div className="space-y-3">
                   {initialLogs && initialLogs.length > 0 ? (
-                    initialLogs.map((log) => (
-                      <Card
-                        key={log.id}
-                        className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <div className="text-lg font-semibold">
-                                {log.client.client_name}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                {log.client.address}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                {log.client.post_number}
-                              </div>
-                            </div>
-                            <Badge variant={"outline"} className="rounded-full">
-                              {log.year}年
-                              {log.season === "summer" ? "夏" : "冬"}
-                            </Badge>
-                          </div>
-                          <div className="grid grid-col-2 gap-4">
-                            <div>
-                              <span className="text-gray-600">
-                                タイヤメーカー
-                              </span>
-                              <span className="font-medium">
-                                {log.state.tire_maker}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                タイヤサイズ
-                              </span>
-                              <span className="font-medium">
-                                {log.state.tire_size}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">車両モデル</span>
-                              <span className="font-medium">
-                                {log.car.car_model}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                ナンバープレート
-                              </span>
-                              <span className="font-medium">
-                                {log.car.car_number}
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            variant={"default"}
-                            className="w-full"
-                            size="sm"
-                            onClick={() => hasInsertLog(log)}
+                    initialLogs.map((log) => {
+                      if (!log.client || !log.car || !log.state) {
+                        return (
+                          <div
+                            key={log.id}
+                            className="text-red-500 text-sm text-center py-4"
                           >
-                            <Plus className="w-4 h-4 mr-2" />
-                            保管庫A1に挿入
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))
+                            データが不完全な保管庫ログがあります。詳細を確認してください。
+                          </div>
+                        );
+                      }
+                      return (
+                        <Card
+                          key={log.id}
+                          className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <div className="text-lg font-semibold">
+                                  {log.client.client_name}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  {log.client.address}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  {log.client.post_number}
+                                </div>
+                              </div>
+                              <Badge
+                                variant={"outline"}
+                                className="rounded-full"
+                              >
+                                {log.year}年
+                                {log.season === "summer" ? "夏" : "冬"}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-col-2 gap-4">
+                              <div>
+                                <span className="text-gray-600">
+                                  タイヤメーカー
+                                </span>
+                                <span className="font-medium">
+                                  {log.state.tire_maker}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  タイヤサイズ
+                                </span>
+                                <span className="font-medium">
+                                  {log.state.tire_size}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  車両モデル
+                                </span>
+                                <span className="font-medium">
+                                  {log.car.car_model}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  ナンバープレート
+                                </span>
+                                <span className="font-medium">
+                                  {log.car.car_number}
+                                </span>
+                              </div>
+                            </div>
+                            <Button
+                              variant={"default"}
+                              className="w-full"
+                              size="sm"
+                              onClick={() => hasInsertLog(log)}
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              保管庫A1に挿入
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
                   ) : (
                     <div className="text-center text-gray-500 py-10">
                       過去の保管庫データはありません

@@ -9,6 +9,8 @@ import {
   TaskInput,
   deleteStorageSchema,
   StorageInput,
+  StorageData,
+  StorageLogOutput,
 } from "@/utils/interface";
 
 export const getAllClients = async (): Promise<Client[]> => {
@@ -465,4 +467,35 @@ export const getLogsByStorageId = async (
     throw error;
   }
   return data || [];
+};
+
+export const pushNewStorageLog = async (newLog: StorageLogOutput) => {
+  const newLogData = {
+    year: newLog.year,
+    season: newLog.season,
+    storage_id: newLog.storage.id,
+    tire_state_id: newLog.storage.tire_state_id,
+    car_id: newLog.storage.car_id,
+    client_id: newLog.storage.client_id,
+  };
+  const { data, error } = await supabase
+    .from("storage_logs")
+    .insert([newLogData]);
+
+  if (error) {
+    throw error;
+  }
+};
+
+export const upsertStorage = async (upsertData: StorageData) => {
+  const { data, error } = await supabase
+    .from("storage_master")
+    .update(upsertData)
+    .eq("id", upsertData.id)
+    .select();
+  if (error) {
+    throw error;
+  }
+  console.log("Upserted storage data:", data);
+  return data;
 };

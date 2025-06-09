@@ -50,6 +50,12 @@ export interface StorageLog {
   season: "summer" | "winter";
 }
 
+export interface StorageLogOutput {
+  year: number;
+  season: "summer" | "winter";
+  storage: StorageData;
+}
+
 export interface StorageLogInput {
   id: number;
   year: number;
@@ -57,7 +63,7 @@ export interface StorageLogInput {
   car: Car;
   client: Client;
   state: State;
-  storage: Storage;
+  storage: StorageData;
 }
 
 export interface Car {
@@ -95,17 +101,17 @@ export type deleteStorageSchema = {
 
 export type StorageInput = {
   id?: string;
-  client: Client;
-  car: Car;
-  state: State;
+  client?: Client;
+  car?: Car;
+  state?: State;
 };
 
-export type Storage = {
-  id?: string;
-  car_id: number;
-  client_id: number;
-  tire_state_id: number;
+export type StorageData = {
+  id: string;
+  car_id: number | null;
+  client_id: number | null;
+  tire_state_id: number | null;
 };
-interface ValidationErrors {
+export interface ValidationErrors {
   [key: string]: string;
 }
