@@ -45,9 +45,13 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { Client } from "@/utils/interface";
+import { Client, Car } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
-import { upsertClient } from "@/utils/supabaseFunction";
+import {
+  upsertClient,
+  deleteClient,
+  upsertTask,
+} from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/utils/hooks/useNotification";
 
@@ -58,7 +62,7 @@ interface Props {
     client_id: number;
     year: number;
     season: "summer" | "winter";
-
+    car: Car;
     next_theme: string;
   }[];
 }
@@ -66,6 +70,7 @@ interface Props {
 interface ClientWithExchangeHistory extends Client {
   thisSeasonExchange?: boolean;
   lastSeasonExchange?: boolean;
+  cars?: Car[];
   exchangeHistory?: {
     id: number;
     season: "winter" | "summer";
@@ -168,10 +173,20 @@ export default function CustomerManage({
         };
         if (targetCustomers[targetId].exchangeHistory) {
           targetCustomers[targetId].exchangeHistory.push(newHistory);
+          // タイヤ交換履歴を追加
         } else {
           targetCustomers[targetId].exchangeHistory = [newHistory];
+        } // タイヤ交換履歴を初期化
+
+        if (targetCustomers[targetId].cars) {
+          if (!targetCustomers[targetId].cars.includes(log.car)) {
+            targetCustomers[targetId].cars.push(log.car);
+          }
+        } else {
+          targetCustomers[targetId].cars = [log.car];
         }
 
+        // 今シーズンと前シーズンの交換ステータスを設定
         if (log.season === thisSeason.season && log.year === thisSeason.year) {
           targetCustomers[targetId].thisSeasonExchange = true;
         }

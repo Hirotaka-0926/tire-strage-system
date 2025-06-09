@@ -12,7 +12,7 @@ const Customer = async () => {
     client_id: log.client.id!,
     year: log.year,
     season: log.season,
-
+    car: log.car!,
     next_theme: log.state?.next_theme || "未設定",
   }));
   return (
