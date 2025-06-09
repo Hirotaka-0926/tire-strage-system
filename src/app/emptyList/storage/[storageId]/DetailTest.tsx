@@ -30,6 +30,7 @@ import {
   Clock,
   Plus,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import {
   Dialog,
@@ -41,7 +42,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
 import { useNotification } from "@/utils/hooks/useNotification";
-import { pushNewStorageLog, upsertStorage } from "@/utils/supabaseFunction";
+import {
+  pushNewStorageLog,
+  upsertStorage,
+  deletePendingTasks,
+} from "@/utils/supabaseFunction";
 import { useParams } from "next/navigation";
 
 // サンプルデータ - 保管庫
@@ -66,9 +71,11 @@ export const Detail: React.FC<Props> = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingTaskId, setPendingTaskId] = useState<number>(0);
   const { showNotification, NotificationComponent } = useNotification();
   const params = useParams();
   const storageId = params.storageId as string;
+  const router = useRouter();
 
   useEffect(() => {
     const hasChanges =
@@ -94,6 +101,7 @@ export const Detail: React.FC<Props> = ({
 
   const handleRemoveData = () => {
     setCurrentStorage(null);
+    setPendingTaskId(0);
     showNotification("info", "保管庫のデータを取り出しました。");
   };
 
@@ -127,13 +135,20 @@ export const Detail: React.FC<Props> = ({
     }
     setSavedStorage(currentStorage);
 
+    if (pendingTaskId > 0) {
+      await deletePendingTasks(pendingTaskId);
+      showNotification("info", "未割り当て整備データを削除しました。");
+      setPendingTaskId(0);
+    }
+
     setIsSaving(false);
+    router.refresh();
   };
 
   const handleEditData = (data: StorageInput) => {
     setCurrentStorage(data);
     showNotification("info", "保管庫データを更新しました。");
-    showNotification("info", "保管庫データを更新しました。");
+
     setIsEditDialogOpen(false);
   };
 
@@ -155,6 +170,7 @@ export const Detail: React.FC<Props> = ({
       car: data.car,
       state: data.tire_state,
     };
+    setPendingTaskId(data.id!);
     hasInsertData(newStorage);
   };
 

@@ -499,3 +499,16 @@ export const upsertStorage = async (upsertData: StorageData) => {
   console.log("Upserted storage data:", data);
   return data;
 };
+
+export const deletePendingTasks = async (id: number) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .delete()
+    .eq("id", id)
+    .select("*");
+  if (error) {
+    throw error;
+  }
+  console.log("Deleted pending task:", data);
+  return data;
+};
