@@ -51,6 +51,7 @@ import {
   upsertClient,
   deleteClient,
   upsertTask,
+  upsertCar,
 } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/utils/hooks/useNotification";
@@ -59,10 +60,10 @@ interface Props {
   initialCustomers: Client[];
   initialStorageLogs: {
     id: number;
-    client_id: number;
+    client_id: number | null;
     year: number;
     season: "summer" | "winter";
-    car: Car;
+    car: Car | null;
     next_theme: string;
   }[];
 }
@@ -100,6 +101,11 @@ export default function CustomerManage({
   const [selectedCustomer, setSelectedCustomer] =
     useState<ClientWithExchangeHistory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car>({
+    car_model: "",
+    car_number: "",
+    model_year: 0,
+  });
   const [newCustomer, setNewCustomer] = useState<Client>({
     client_name: "",
     client_name_kana: "",
@@ -163,7 +169,7 @@ export default function CustomerManage({
     const targetCustomers: ClientMap = createMapFromClients();
     initialStorageLogs.forEach((log) => {
       const targetId = log.client_id;
-      if (targetCustomers[targetId]) {
+      if (targetId && targetCustomers && targetCustomers[targetId]) {
         const newHistory = {
           id: log.id,
           season: log.season,
@@ -177,13 +183,14 @@ export default function CustomerManage({
         } else {
           targetCustomers[targetId].exchangeHistory = [newHistory];
         } // タイヤ交換履歴を初期化
-
-        if (targetCustomers[targetId].cars) {
-          if (!targetCustomers[targetId].cars.includes(log.car)) {
-            targetCustomers[targetId].cars.push(log.car);
+        if (log.car) {
+          if (targetCustomers[targetId].cars) {
+            if (!targetCustomers[targetId].cars.includes(log.car)) {
+              targetCustomers[targetId].cars.push(log.car);
+            }
+          } else {
+            targetCustomers[targetId].cars = [log.car];
           }
-        } else {
-          targetCustomers[targetId].cars = [log.car];
         }
 
         // 今シーズンと前シーズンの交換ステータスを設定
@@ -306,21 +313,44 @@ export default function CustomerManage({
   };
 
   // 顧客削除
-  const handleDeleteCustomer = (customerId: number) => {
-    setCustomers(Object.values(customers).filter((c) => c.id !== customerId));
+  const handleDeleteCustomer = async (customerId: number) => {
+    if (isLoading) return;
+    setIsLoading(true);
+    await deleteClient(customerId);
+    showNotification("success", "顧客を削除しました");
+    router.refresh();
   };
 
   // タイヤ交換受付
   const handleTireExchange = async () => {
     if (!selectedCustomer || isLoading) return;
 
+    // 車が選択されていない場合はエラー表示
+    if (!selectedCar) {
+      setIsExchangeDialogOpen(false);
+      showNotification("error", "車の情報を入力してください");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       // 新しいタスクを作成
+
+      // 新しい車の場合はDBに保存
+      const isExistCar = selectedCustomer.cars?.includes(selectedCar) ?? false;
+
+      if (isExistCar) {
+        const newCar = await upsertCar(selectedCar);
+        if (newCar) {
+          setSelectedCar(newCar);
+        }
+      }
+
       const newTask = {
         client_id: selectedCustomer.id!,
-        state: "pending",
+        car_id: selectedCar.id,
+        state: "incomplete",
       };
 
       await upsertTask(newTask);
@@ -346,8 +376,11 @@ export default function CustomerManage({
         [selectedCustomer.id!]: updatedCustomer,
       }));
 
+      // リセット
       setIsExchangeDialogOpen(false);
       setSelectedCustomer(null);
+      setSelectedCar({ car_model: "", car_number: "", model_year: 2003 });
+
       showNotification("success", "タイヤ交換を受付しました");
       router.refresh();
     } catch (error) {
@@ -1071,7 +1104,7 @@ export default function CustomerManage({
           open={isExchangeDialogOpen}
           onOpenChange={setIsExchangeDialogOpen}
         >
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lgs">
             <DialogHeader>
               <DialogTitle>タイヤ交換受付</DialogTitle>
             </DialogHeader>
@@ -1088,6 +1121,62 @@ export default function CustomerManage({
                     {selectedCustomer.address}
                   </p>
                 </div>
+
+                {selectedCustomer.cars && selectedCustomer.cars.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium">
+                      車両情報を入力してください
+                    </Label>
+                    <div className="space-y-2 mt-2 flex flex-col md:flex-row gap-4">
+                      {selectedCustomer.cars.map((car) => (
+                        <div
+                          key={car.id}
+                          className="p-2 border rounded"
+                          onClick={() => setSelectedCar(car)}
+                        >
+                          <p className="font-medium">{car.car_model}</p>
+                          <p className="text-sm text-gray-600">
+                            {car.car_number}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2 rounded-md bg-gray-50 p-4">
+                  <Input
+                    placeholder="車両モデル"
+                    value={selectedCar.car_model}
+                    onChange={(e) => {
+                      setSelectedCar((prev) => ({
+                        ...prev,
+                        car_model: e.target.value,
+                      }));
+                    }}
+                  />
+                  <Input
+                    placeholder="車両番号"
+                    value={selectedCar.car_number}
+                    onChange={(e) => {
+                      setSelectedCar((prev) => ({
+                        ...prev,
+                        car_number: e.target.value,
+                      }));
+                    }}
+                  />
+                  <Input
+                    placeholder="年式"
+                    value={selectedCar.model_year}
+                    onChange={(e) => {
+                      setSelectedCar((prev) => ({
+                        ...prev,
+                        model_year: Number(e.target.value),
+                      }));
+                    }}
+                  />
+                </div>
+
                 <p>この顧客のタイヤ交換を受付しますか？</p>
                 <div className="flex space-x-2">
                   <Button onClick={handleTireExchange} className="flex-1">

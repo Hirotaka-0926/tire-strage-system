@@ -65,13 +65,13 @@ export const getCarCandidate = async (clientId: number): Promise<Car[]> => {
   return data;
 };
 
-export const upsertCar = async (car: Car) => {
+export const upsertCar = async (car: Car): Promise<Car> => {
   const { data, error } = await supabase.from("car_table").upsert(car).select();
   if (error) {
     throw error;
   }
 
-  return data;
+  return data[0];
 };
 
 export const insertTireState = async (tireData: State): Promise<void> => {
@@ -90,7 +90,7 @@ export const upsertClient = async (client: Client) => {
       .from("client_data")
       .upsert(client)
       .select()
-      .single();
+      .single(); //要素は１つだけなので確約してあげる
     if (error) {
       throw error;
     }
@@ -511,5 +511,18 @@ export const deletePendingTasks = async (id: number) => {
     throw error;
   }
   console.log("Deleted pending task:", data);
+  return data;
+};
+
+export const deleteClient = async (id: number) => {
+  const { data, error } = await supabase
+    .from("client_data")
+    .delete()
+    .eq("id", id)
+    .select("*");
+  if (error) {
+    throw error;
+  }
+  console.log("Deleted client:", data);
   return data;
 };
