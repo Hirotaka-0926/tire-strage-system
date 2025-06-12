@@ -44,6 +44,14 @@ export interface TaskInput {
   status: string;
 }
 
+export interface TaskOutput {
+  id?: number;
+  car_id: number;
+  client_id: number;
+  tire_state_id?: number;
+  status: string;
+}
+
 export interface StorageLog {
   id?: number;
   year: number;

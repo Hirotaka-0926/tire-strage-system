@@ -285,7 +285,16 @@ export default function CustomerManage({
     setIsLoading(true);
 
     try {
-      const result = await upsertClient(selectedCustomer);
+      const updatedCustomer = {
+        id: selectedCustomer.id,
+        client_name: selectedCustomer.client_name,
+        client_name_kana: selectedCustomer.client_name_kana,
+        post_number: selectedCustomer.post_number,
+        address: selectedCustomer.address,
+        phone: selectedCustomer.phone,
+        notes: selectedCustomer.notes,
+      };
+      const result = await upsertClient(updatedCustomer);
 
       if (result) {
         //nullチェック
@@ -326,7 +335,12 @@ export default function CustomerManage({
     if (!selectedCustomer || isLoading) return;
 
     // 車が選択されていない場合はエラー表示
-    if (!selectedCar) {
+    if (
+      !selectedCar ||
+      !selectedCar.car_model ||
+      !selectedCar.car_number ||
+      selectedCar.model_year === 0
+    ) {
       setIsExchangeDialogOpen(false);
       showNotification("error", "車の情報を入力してください");
       return;
@@ -340,7 +354,7 @@ export default function CustomerManage({
       // 新しい車の場合はDBに保存
       const isExistCar = selectedCustomer.cars?.includes(selectedCar) ?? false;
 
-      if (isExistCar) {
+      if (!isExistCar) {
         const newCar = await upsertCar(selectedCar);
         if (newCar) {
           setSelectedCar(newCar);
@@ -350,36 +364,15 @@ export default function CustomerManage({
       const newTask = {
         client_id: selectedCustomer.id!,
         car_id: selectedCar.id,
-        state: "incomplete",
+        status: "incomplete",
       };
 
       await upsertTask(newTask);
 
-      const newExchangeRecord = {
-        id: Date.now(),
-        season: thisSeason.season,
-        year: thisSeason.year,
-        next_theme: "タイヤ交換受付",
-      };
-
-      const updatedCustomer = {
-        ...selectedCustomer,
-        thisSeasonExchange: true,
-        exchangeHistory: [
-          newExchangeRecord,
-          ...(selectedCustomer.exchangeHistory || []),
-        ],
-      };
-
-      setCustomers((prev) => ({
-        ...prev,
-        [selectedCustomer.id!]: updatedCustomer,
-      }));
-
       // リセット
+      setSelectedCar({ car_model: "", car_number: "", model_year: 2003 });
       setIsExchangeDialogOpen(false);
       setSelectedCustomer(null);
-      setSelectedCar({ car_model: "", car_number: "", model_year: 2003 });
 
       showNotification("success", "タイヤ交換を受付しました");
       router.refresh();

@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import {
-  Task,
+  TaskOutput,
   Client,
   State,
   Car,
@@ -101,7 +101,7 @@ export const upsertClient = async (client: Client) => {
   }
 };
 
-export const upsertTask = async (task: Task) => {
+export const upsertTask = async (task: TaskOutput) => {
   try {
     console.log("Upserting task:", task);
 
