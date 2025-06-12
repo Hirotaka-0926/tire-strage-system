@@ -446,7 +446,7 @@ export const getPendingTasks = async (): Promise<TaskInput[]> => {
     .select(
       "*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)"
     )
-    .eq("state", "pending");
+    .eq("status", "pending");
 
   if (error) {
     throw error;
