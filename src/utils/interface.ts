@@ -39,7 +39,7 @@ export interface Inspection {
 export interface TaskInput {
   id?: number;
   car: Car;
-  client: Client;
+  client?: Client;
   tire_state?: State;
   status: string;
 }
