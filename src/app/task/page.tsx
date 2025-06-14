@@ -2,15 +2,8 @@ import NumberOfStatus from "./NumberOfStatus";
 import ReceptionList from "./ReceptionList";
 import { getAllTasks } from "@/utils/supabaseFunction";
 
-const TaskPage = () => {
-  const fetchTasks = async () => {
-    try {
-      const tasks = await getAllTasks();
-      console.log("取得したタスク:", tasks);
-    } catch (error) {
-      console.error("タスクの取得に失敗:", error);
-    }
-  };
+const TaskPage = async () => {
+  const tasks = await getAllTasks();
 
   return (
     <div className=" p-4 bg-gray-50 min-h-screen min-w-h-screen">
@@ -25,7 +18,7 @@ const TaskPage = () => {
         </div>
 
         <NumberOfStatus />
-        <ReceptionList />
+        <ReceptionList tasks={tasks} />
       </div>
     </div>
   );

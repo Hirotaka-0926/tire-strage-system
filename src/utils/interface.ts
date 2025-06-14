@@ -41,6 +41,7 @@ export interface TaskInput {
   car: Car;
   client?: Client;
   tire_state?: State;
+  storage_id?: number;
   status: string;
 }
 
