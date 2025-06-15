@@ -22,16 +22,18 @@ const ReceptionList = ({ tasks }: Props) => {
     if (item.status === "incomplete") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button size="sm">整備データ入力</Button>
+          <Button size="default" className="p-4">
+            整備データ入力
+          </Button>
         </div>
       );
     } else if (item.status === "complete") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="default">
             編集
           </Button>
-          <Button size="sm">
+          <Button size="default">
             {item.storage_id ? "保管庫ID変更" : "保管庫ID割当"}
           </Button>
         </div>
@@ -39,10 +41,10 @@ const ReceptionList = ({ tasks }: Props) => {
     } else if (item.status === "pending") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="default">
             編集
           </Button>
-          <Button size="sm">{"保管庫ID割当"}</Button>
+          <Button size="default">{"保管庫ID割当"}</Button>
         </div>
       );
     }
@@ -102,7 +104,7 @@ const ReceptionList = ({ tasks }: Props) => {
                   </div>
                 </TableHead>
                 <TableHead>ステータス</TableHead>
-                <TableHead className="w-[200px]">操作</TableHead>
+                <TableHead className="w-[400px]">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

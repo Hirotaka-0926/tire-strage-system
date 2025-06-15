@@ -26,12 +26,12 @@ function EditForm({
           <Label htmlFor="customer">顧客名</Label>
           <Input
             id="customer"
-            value={formData.client.client_name}
+            value={formData.client?.client_name}
             onChange={(e) =>
               setFormData({
                 ...formData,
                 client: {
-                  ...formData.client,
+                  ...formData.client!,
                   client_name: e.target.value,
                 },
               })
@@ -42,12 +42,12 @@ function EditForm({
           <Label htmlFor="phone">電話番号</Label>
           <Input
             id="phone"
-            value={formData.client.post_number}
+            value={formData.client?.post_number}
             onChange={(e) =>
               setFormData({
                 ...formData,
                 client: {
-                  ...formData.client,
+                  ...formData.client!,
                   post_number: e.target.value,
                 },
               })
@@ -60,12 +60,12 @@ function EditForm({
         <Label htmlFor="address">住所</Label>
         <Textarea
           id="address"
-          value={formData.client.address}
+          value={formData.client?.address}
           onChange={(e) =>
             setFormData({
               ...formData,
               client: {
-                ...formData.client,
+                ...formData.client!,
                 address: e.target.value,
               },
             })
@@ -78,12 +78,12 @@ function EditForm({
           <Label htmlFor="model">車種</Label>
           <Input
             id="model"
-            value={formData.car.car_model}
+            value={formData.car?.car_model}
             onChange={(e) =>
               setFormData({
                 ...formData,
                 car: {
-                  ...formData.car,
+                  ...formData.car!,
                   car_model: e.target.value,
                 },
               })
@@ -104,12 +104,12 @@ function EditForm({
         <Label htmlFor="plateNumber">ナンバープレート</Label>
         <Input
           id="plateNumber"
-          value={formData.car.car_number}
+          value={formData.car?.car_number}
           onChange={(e) =>
             setFormData({
               ...formData,
               car: {
-                ...formData.car,
+                ...formData.car!,
                 car_number: e.target.value,
               },
             })
@@ -122,11 +122,11 @@ function EditForm({
           <Label htmlFor="brand">タイヤブランド</Label>
           <Input
             id="brand"
-            value={formData.state.tire_maker}
+            value={formData.state?.tire_maker}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                state: { ...formData.state, tire_maker: e.target.value },
+                state: { ...formData.state!, tire_maker: e.target.value },
               })
             }
           />
@@ -135,11 +135,11 @@ function EditForm({
           <Label htmlFor="size">タイヤサイズ</Label>
           <Input
             id="size"
-            value={formData.state.tire_size}
+            value={formData.state?.tire_size}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                state: { ...formData.state, tire_size: e.target.value },
+                state: { ...formData.state!, tire_size: e.target.value },
               })
             }
           />
@@ -151,12 +151,12 @@ function EditForm({
           <Label htmlFor="manufacturingYear">製造年</Label>
           <Input
             id="manufacturingYear"
-            value={formData.state.manufacture_year}
+            value={formData.state?.manufacture_year}
             onChange={(e) =>
               setFormData({
                 ...formData,
                 state: {
-                  ...formData.state,
+                  ...formData.state!,
                   manufacture_year: Number(e.target.value),
                 },
               })

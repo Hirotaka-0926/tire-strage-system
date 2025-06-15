@@ -507,20 +507,20 @@ export const Detail: React.FC<Props> = ({
                   {initialPendingTasks && initialPendingTasks.length > 0 ? (
                     initialPendingTasks.map((task) => (
                       <Card
-                        key={task.client.id}
+                        key={task.id}
                         className="border-l-4 border-l-orange-500 hover:shadow-md transition-shadow"
                       >
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <div className="font-semibold text-lg">
-                                {task.client.client_name}
+                                {task.client?.client_name || "不明な顧客"}
                               </div>
                               <div className="text-sm text-gray-600">
-                                {task.client.address}
+                                {task.client?.address || "不明な住所"}
                               </div>
                               <div className="text-sm text-gray-600">
-                                {task.client.post_number}
+                                {task.client?.post_number || "不明な郵便番号"}
                               </div>
                             </div>
                             <Badge variant={"outline"} className="rounded-full">
@@ -533,7 +533,8 @@ export const Detail: React.FC<Props> = ({
                                 タイヤメーカー
                               </span>
                               <span className="font-medium">
-                                {task.tire_state.tire_maker}
+                                {task.tire_state?.tire_maker ||
+                                  "不明なタイヤメーカー"}
                               </span>
                             </div>
                             <div>
@@ -541,7 +542,8 @@ export const Detail: React.FC<Props> = ({
                                 タイヤサイズ
                               </span>
                               <span className="font-medium">
-                                {task.tire_state.tire_size}
+                                {task.tire_state?.tire_size ||
+                                  "不明なタイヤサイズ"}
                               </span>
                             </div>
                             <div>
