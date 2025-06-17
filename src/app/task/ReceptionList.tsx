@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,17 +14,30 @@ import { TaskInput } from "@/utils/interface";
 import { Clock, User, Hash, Car, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import EditForm from "./EditForm"; // Assuming EditForm is in the same directory
 
 interface Props {
   tasks: TaskInput[];
 }
 
 const ReceptionList = ({ tasks }: Props) => {
+  const [selectedItem, setSelectedItem] = useState<TaskInput | null>(null);
+  const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
+
+  const handleMaintenanceEdit = (item: TaskInput) => {
+    setSelectedItem(item);
+    setIsMaintenanceDialogOpen(true);
+  };
+
   const getActionButton = (item: TaskInput) => {
     if (item.status === "incomplete") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button size="default" className="p-4">
+          <Button
+            size="default"
+            className="p-4"
+            onClick={() => handleMaintenanceEdit(item)}
+          >
             整備データ入力
           </Button>
         </div>
@@ -30,7 +45,11 @@ const ReceptionList = ({ tasks }: Props) => {
     } else if (item.status === "complete") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button variant="outline" size="default">
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => handleMaintenanceEdit(item)}
+          >
             編集
           </Button>
           <Button size="default">
@@ -41,10 +60,14 @@ const ReceptionList = ({ tasks }: Props) => {
     } else if (item.status === "pending") {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <Button variant="outline" size="default">
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => handleMaintenanceEdit(item)}
+          >
             編集
           </Button>
-          <Button size="default">{"保管庫ID割当"}</Button>
+          <Button size="default">保管庫ID割当</Button>
         </div>
       );
     }
@@ -68,6 +91,12 @@ const ReceptionList = ({ tasks }: Props) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        <EditForm
+          isMaintenanceDialogOpen={isMaintenanceDialogOpen}
+          setIsMaintenanceDialogOpen={setIsMaintenanceDialogOpen}
+          selectedItem={selectedItem}
+          setSelectedItem={setSelectedItem}
+        />
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

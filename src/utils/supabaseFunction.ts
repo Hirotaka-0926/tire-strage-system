@@ -33,7 +33,7 @@ export const getAllClients = async (): Promise<Client[]> => {
   }
 };
 
-export const getAllTasks = async (): Promise<TaskWithDetails[]> => {
+export const getAllTasks = async (): Promise<TaskInput[]> => {
   try {
     const { data, error } = await supabase
       .from("task_list")
@@ -525,4 +525,39 @@ export const deleteClient = async (id: number) => {
   }
   console.log("Deleted client:", data);
   return data;
+};
+
+export const getInspectionData = async (tire_state: State) => {
+  const { data: tireData, error: tireError } = await supabase
+    .from("inspection")
+    .select("*")
+    .eq("id", tire_state.id);
+
+  if (tireError) {
+    throw tireError;
+  }
+
+  tireData?.forEach((inspection) => {
+    switch (inspection.type) {
+      case "tire":
+        tire_state.tire_inspection = inspection;
+        break;
+
+      case "wiper":
+        tire_state.wiper_inspection = inspection;
+        break;
+
+      case "oil":
+        tire_state.oil_inspection = inspection;
+        break;
+      case "battery":
+        tire_state.battery_inspection = inspection;
+        break;
+      default:
+        console.warn(`Unknown inspection type: ${inspection.type}`);
+        break;
+    }
+  });
+
+  return tire_state;
 };
