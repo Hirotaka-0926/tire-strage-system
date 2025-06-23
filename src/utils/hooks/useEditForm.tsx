@@ -156,38 +156,40 @@ export const useEditForm = ({
       return { ...prev, ...updates };
     });
   }, []); // タイヤ状態データの更新（ネストしたパスに対応）
-  const updateTireState = useCallback(
-    (updates: Record<string, string | number | boolean | Date>) => {
-      setFormData((prev) => {
-        if (!prev) return null;
+  const updateTireState = (
+    updates: Record<string, string | number | boolean | Date>
+  ) => {
+    setFormData((prev) => {
+      if (!prev) return null;
 
-        const updatedTireState = { ...(prev || {}) };
+      const updatedTireState = { ...(prev || {}) };
 
-        Object.entries(updates).forEach(([path, value]) => {
-          const pathArray = path.split(".");
+      Object.entries(updates).forEach(([path, value]) => {
+        const pathArray = path.split(".");
 
-          if (pathArray.length === 1) {
-            // 単純なパス (例: tire_maker)
-            (updatedTireState as Record<string, unknown>)[path] = value;
-          } else if (pathArray.length === 2) {
-            // ネストしたパス (例: tire_inspection.state)
-            const [parentKey, childKey] = pathArray;
-            const parent =
-              ((updatedTireState as Record<string, unknown>)[
-                parentKey
-              ] as Record<string, unknown>) || {};
-            parent[childKey] = value;
-            (updatedTireState as Record<string, unknown>)[parentKey] = parent;
-          }
-        });
-        return {
-          ...prev,
-          tire_state: updatedTireState as typeof prev,
-        };
+        if (pathArray.length === 1) {
+          // 単純なパス (例: tire_maker)
+          (updatedTireState as Record<string, unknown>)[path] = value;
+        } else if (pathArray.length === 2) {
+          // ネストしたパス (例: tire_inspection.state)
+          const [parentKey, childKey] = pathArray;
+          const parent =
+            ((updatedTireState as Record<string, unknown>)[parentKey] as Record<
+              string,
+              unknown
+            >) || {};
+          parent[childKey] = value;
+          (updatedTireState as Record<string, unknown>)[parentKey] = parent;
+        }
       });
-    },
-    []
-  );
+      return {
+        ...prev,
+        tire_state: updatedTireState as typeof prev,
+      };
+    });
+
+    console.log("Updated tire state:", formData);
+  };
   // フォーム送信処理
   const handleSubmit = useCallback(async () => {
     if (!formData || !formData.id) {

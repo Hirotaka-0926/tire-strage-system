@@ -22,6 +22,7 @@ import { Save, Settings, Loader2, AlertCircle } from "lucide-react";
 import { TaskInput } from "@/utils/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEditForm } from "@/utils/hooks/useEditForm";
+import { useRouter } from "next/navigation";
 
 interface Props {
   isMaintenanceDialogOpen: boolean;
@@ -50,8 +51,11 @@ const EditForm = ({
     onSuccess: () => {
       setIsMaintenanceDialogOpen(false);
       setSelectedItem(null);
+      router.refresh(); // 変更後にページをリフレッシュ
     },
   });
+
+  const router = useRouter();
 
   // ダイアログが開かれた時にデータを初期化
   useEffect(() => {
@@ -93,7 +97,7 @@ const EditForm = ({
       open={isMaintenanceDialogOpen}
       onOpenChange={setIsMaintenanceDialogOpen}
     >
-      <DialogContent className="max-w-2xl w-full bg-gray-50">
+      <DialogContent className="max-w-5xl w-full bg-gray-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -192,27 +196,6 @@ const EditForm = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {" "}
                   <div>
-                    <Label>タイヤ状態</Label>
-                    <Select
-                      value={formData?.state_inspection || ""}
-                      onValueChange={(value) =>
-                        updateField("state_inspection", value)
-                      }
-                      disabled={loading}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="タイヤ状態を選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5mm(良好)</SelectItem>
-                        <SelectItem value="4">4mm</SelectItem>
-                        <SelectItem value="3">3mm(交換おすすめ)</SelectItem>
-                        <SelectItem value="2">2mm</SelectItem>
-                        <SelectItem value="1">1mm(交換時期)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
                     <Label>エアプレッシャー</Label>
                     <Input
                       type="number"
@@ -248,14 +231,24 @@ const EditForm = ({
                   <div className="grid grid-cols-1 md:grid-cols-10 gap-2 p-2 border-b border-gray-500">
                     <div className="col-span-2">タイヤ</div>
                     <div className="col-span-2">
-                      <Input
-                        type="text"
+                      <Select
                         value={formData?.tire_inspection?.state || ""}
-                        onChange={(e) =>
-                          updateField("tire_inspection.state", e.target.value)
+                        onValueChange={(value) =>
+                          updateField("tire_inspection.state", value)
                         }
                         disabled={loading}
-                      />
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="タイヤ状態を選択" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5mm">5mm(良好)</SelectItem>
+                          <SelectItem value="4mm">4mm</SelectItem>
+                          <SelectItem value="3mm">3mm(交換おすすめ)</SelectItem>
+                          <SelectItem value="2mm">2mm</SelectItem>
+                          <SelectItem value="1mm">1mm(交換時期)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="col-span-1">
                       <Input
