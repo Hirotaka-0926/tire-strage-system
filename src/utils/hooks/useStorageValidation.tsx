@@ -30,7 +30,10 @@ const useStorageValidation = () => {
     }
 
     if (newErrors && Object.keys(newErrors).length > 0) {
-      showNotification("error", newErrors[0]!); // エラーの最初のメッセージを返す
+      const firstKey = Object.keys(newErrors)[0];
+      if (firstKey) {
+        showNotification("error", newErrors[firstKey]);
+      }
     }
 
     return newErrors;
