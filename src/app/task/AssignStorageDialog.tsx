@@ -25,19 +25,24 @@ import {
 import { Check, ChevronsUpDown, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TaskInput } from "@/utils/interface";
+
 import useAssignStorage from "@/utils/hooks/useAssignStorage";
+
 
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   selectedItem: TaskInput | null;
+
   onAssigned?: (storageId: string) => void;
+
 }
 
 const AssignStorageDialog = ({
   open,
   setOpen,
   selectedItem,
+
   onAssigned,
 }: Props) => {
   const [selectedStorageId, setSelectedStorageId] = useState("");
@@ -48,6 +53,7 @@ const AssignStorageDialog = ({
     if (!selectedStorageId || !selectedItem) return;
     await assignStorage(selectedItem, selectedStorageId);
     onAssigned?.(selectedStorageId);
+
     setSelectedStorageId("");
     setOpen(false);
   };
@@ -93,7 +99,10 @@ const AssignStorageDialog = ({
                 <CommandList>
                   <CommandEmpty>該当する保管庫が見つかりません。</CommandEmpty>
                   <CommandGroup>
+
                     {options.map((id) => (
+
+
                       <CommandItem
                         key={id}
                         value={id}
@@ -124,7 +133,10 @@ const AssignStorageDialog = ({
           <Button variant="outline" onClick={() => setOpen(false)}>
             キャンセル
           </Button>
+
           <Button onClick={handleAssign} disabled={!selectedStorageId || loading}>
+
+
             割当
           </Button>
         </div>
