@@ -14,7 +14,8 @@ import { TaskInput } from "@/utils/interface";
 import { Clock, User, Hash, Car, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import EditForm from "./EditForm"; // Assuming EditForm is in the same directory
+import EditForm from "./EditForm";
+import AssignStorageDialog from "./AssignStorageDialog";
 
 interface Props {
   tasks: TaskInput[];
@@ -23,10 +24,28 @@ interface Props {
 const ReceptionList = ({ tasks }: Props) => {
   const [selectedItem, setSelectedItem] = useState<TaskInput | null>(null);
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
+  const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
+  const [taskList, setTaskList] = useState<TaskInput[]>(tasks);
 
   const handleMaintenanceEdit = (item: TaskInput) => {
     setSelectedItem(item);
     setIsMaintenanceDialogOpen(true);
+  };
+
+  const handleStorageAssignOpen = (item: TaskInput) => {
+    setSelectedItem(item);
+    setIsStorageDialogOpen(true);
+  };
+
+  const handleStorageAssign = (storageId: string) => {
+    if (!selectedItem) return;
+    setTaskList((prev) =>
+      prev.map((t) =>
+        t.id === selectedItem.id
+          ? { ...t, storage_id: storageId, status: "complete" }
+          : t
+      )
+    );
   };
 
   const getActionButton = (item: TaskInput) => {
@@ -52,7 +71,7 @@ const ReceptionList = ({ tasks }: Props) => {
           >
             編集
           </Button>
-          <Button size="default">
+          <Button size="default" onClick={() => handleStorageAssignOpen(item)}>
             {item.storage_id ? "保管庫ID変更" : "保管庫ID割当"}
           </Button>
         </div>
@@ -67,7 +86,9 @@ const ReceptionList = ({ tasks }: Props) => {
           >
             編集
           </Button>
-          <Button size="default">保管庫ID割当</Button>
+          <Button size="default" onClick={() => handleStorageAssignOpen(item)}>
+            保管庫ID割当
+          </Button>
         </div>
       );
     }
@@ -87,7 +108,7 @@ const ReceptionList = ({ tasks }: Props) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          受付済み予約 ({tasks.length}件)
+          受付済み予約 ({taskList.length}件)
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -96,6 +117,15 @@ const ReceptionList = ({ tasks }: Props) => {
           setIsMaintenanceDialogOpen={setIsMaintenanceDialogOpen}
           selectedItem={selectedItem}
           setSelectedItem={setSelectedItem}
+        />
+        <AssignStorageDialog
+          open={isStorageDialogOpen}
+          setOpen={setIsStorageDialogOpen}
+          selectedItem={selectedItem}
+          storageOptions={Array.from({ length: 20 }, (_, i) =>
+            `S-${(i + 1).toString().padStart(3, "0")}`
+          )}
+          onAssign={handleStorageAssign}
         />
         <div className="overflow-x-auto">
           <Table>
@@ -137,7 +167,7 @@ const ReceptionList = ({ tasks }: Props) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.map((item) => (
+              {taskList.map((item) => (
                 <TableRow key={item.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
                     #{item.id?.toString().padStart(3, "0") || "未割当"}
