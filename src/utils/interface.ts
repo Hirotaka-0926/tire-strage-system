@@ -22,7 +22,6 @@ export interface State {
   battery_inspection?: Inspection;
   wiper_inspection?: Inspection;
   other_inspection: string;
-  state_inspection: string;
   inspection_date?: Date;
   drive_distance: number;
   next_theme?: string;

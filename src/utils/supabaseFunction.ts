@@ -133,7 +133,7 @@ export const getSpecificClient = async (
   return data;
 };
 
-export const upsertTire = async (data: State, taskId: number) => {
+export const upsertTire = async (data: State) => {
   const {
     tire_inspection,
     oil_inspection,
@@ -144,10 +144,7 @@ export const upsertTire = async (data: State, taskId: number) => {
   delete data.oil_inspection;
   delete data.battery_inspection;
   delete data.wiper_inspection;
-  if (tire_inspection) tire_inspection.tire_state_id = data.id;
-  if (oil_inspection) oil_inspection.tire_state_id = data.id;
-  if (battery_inspection) battery_inspection.tire_state_id = data.id;
-  if (wiper_inspection) wiper_inspection.tire_state_id = data.id;
+
   const inspectionArray = [
     tire_inspection,
     oil_inspection,
@@ -163,6 +160,12 @@ export const upsertTire = async (data: State, taskId: number) => {
     throw tireError;
   }
 
+  const tireStateId = tireData[0].id;
+  if (tire_inspection) tire_inspection.tire_state_id = tireStateId;
+  if (oil_inspection) oil_inspection.tire_state_id = tireStateId;
+  if (battery_inspection) battery_inspection.tire_state_id = tireStateId;
+  if (wiper_inspection) wiper_inspection.tire_state_id = tireStateId;
+
   const { error: inspectionError } = await supabase
     .from("inspection")
     .upsert(inspectionArray);
@@ -175,7 +178,7 @@ export const upsertTire = async (data: State, taskId: number) => {
     const { error: taskError } = await supabase
       .from("task_list")
       .update({ tire_state_id: tireId })
-      .eq("id", taskId);
+      .eq("id", tireStateId);
     if (taskError) {
       throw taskError;
     }

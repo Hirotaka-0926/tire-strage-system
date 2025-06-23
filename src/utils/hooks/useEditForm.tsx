@@ -59,29 +59,29 @@ export const useEditForm = ({
             manufacture_year: 0,
             air_pressure: 0,
             other_inspection: "",
-            state_inspection: "",
+
             inspection_date: new Date(),
             oil_inspection: {
-              type: "",
+              type: "oil",
               state: "",
               is_exchange: false,
               note: "",
             },
             battery_inspection: {
-              type: "",
+              type: "battery",
               state: "",
               is_exchange: false,
               note: "",
             },
             wiper_inspection: {
-              type: "",
+              type: "wiper",
               state: "",
               is_exchange: false,
               note: "",
             },
 
             tire_inspection: {
-              type: "",
+              type: "tire",
               state: "",
               is_exchange: false,
               note: "",
@@ -105,29 +105,28 @@ export const useEditForm = ({
           manufacture_year: 0,
           air_pressure: 0,
           other_inspection: "",
-          state_inspection: "",
           inspection_date: new Date(),
           oil_inspection: {
-            type: "",
+            type: "oil",
             state: "",
             is_exchange: false,
             note: "",
           },
           battery_inspection: {
-            type: "",
+            type: "battery",
             state: "",
             is_exchange: false,
             note: "",
           },
           wiper_inspection: {
-            type: "",
+            type: "wiper",
             state: "",
             is_exchange: false,
             note: "",
           },
 
           tire_inspection: {
-            type: "",
+            type: "tire",
             state: "",
             is_exchange: false,
             note: "",
@@ -198,8 +197,8 @@ export const useEditForm = ({
     try {
       // タイヤデータを更新
       console.log("Submitting form data:", formData);
-      if (formData && formData.id) {
-        await upsertTire(formData, formData.id);
+      if (formData) {
+        await upsertTire(formData);
       }
 
       if (
