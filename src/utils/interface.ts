@@ -32,7 +32,7 @@ export interface Inspection {
   id?: number;
   type: string;
   state: string;
-  isExchange?: boolean;
+  is_exchange?: boolean;
   note: string;
 }
 

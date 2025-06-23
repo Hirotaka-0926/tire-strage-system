@@ -479,9 +479,7 @@ export const pushNewStorageLog = async (newLog: StorageLogOutput) => {
     car_id: newLog.storage.car_id,
     client_id: newLog.storage.client_id,
   };
-  const { data, error } = await supabase
-    .from("storage_logs")
-    .insert([newLogData]);
+  const error = await supabase.from("storage_logs").insert([newLogData]);
 
   if (error) {
     throw error;
@@ -531,33 +529,73 @@ export const getInspectionData = async (tire_state: State) => {
   const { data: tireData, error: tireError } = await supabase
     .from("inspection")
     .select("*")
-    .eq("id", tire_state.id);
+    .eq("tire_state_id", tire_state.id);
 
   if (tireError) {
     throw tireError;
   }
-
+  let tire_flag: boolean = false;
+  let wiper_flag: boolean = false;
+  let oil_flag: boolean = false;
+  let battery_flag: boolean = false;
   tireData?.forEach((inspection) => {
     switch (inspection.type) {
       case "tire":
         tire_state.tire_inspection = inspection;
+        tire_flag = true;
         break;
 
       case "wiper":
         tire_state.wiper_inspection = inspection;
+        wiper_flag = true;
         break;
 
       case "oil":
         tire_state.oil_inspection = inspection;
+        oil_flag = true;
         break;
       case "battery":
         tire_state.battery_inspection = inspection;
+        battery_flag = true;
         break;
       default:
         console.warn(`Unknown inspection type: ${inspection.type}`);
         break;
     }
   });
+
+  if (!tire_flag) {
+    tire_state.tire_inspection = {
+      type: "tire",
+      state: "",
+      is_exchange: false,
+      note: "",
+    };
+  }
+  if (!wiper_flag) {
+    tire_state.wiper_inspection = {
+      type: "wiper",
+      state: "",
+      is_exchange: false,
+      note: "",
+    };
+  }
+  if (!oil_flag) {
+    tire_state.oil_inspection = {
+      type: "oil",
+      state: "",
+      is_exchange: false,
+      note: "",
+    };
+  }
+  if (!battery_flag) {
+    tire_state.battery_inspection = {
+      type: "battery",
+      state: "",
+      is_exchange: false,
+      note: "",
+    };
+  }
 
   return tire_state;
 };

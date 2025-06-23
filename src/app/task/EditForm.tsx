@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Car, Save, Settings } from "lucide-react";
+import { Save, Settings, Loader2, AlertCircle } from "lucide-react";
 import { TaskInput } from "@/utils/interface";
-import { getInspectionData } from "@/utils/supabaseFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEditForm } from "@/utils/hooks/useEditForm";
 
 interface Props {
   isMaintenanceDialogOpen: boolean;
@@ -36,21 +36,57 @@ const EditForm = ({
   selectedItem,
   setSelectedItem,
 }: Props) => {
-  const [maintenanceFormData, setMaintenanceFormData] =
-    useState<TaskInput | null>(selectedItem);
+  const {
+    formData,
+    isLoading,
+    isSubmitting,
+    error,
+    updateFormData,
+    updateTireState,
+    handleSubmit,
+    resetForm,
+  } = useEditForm({
+    selectedItem,
+    onSuccess: () => {
+      setIsMaintenanceDialogOpen(false);
+      setSelectedItem(null);
+    },
+  });
 
+  // ダイアログが開かれた時にデータを初期化
   useEffect(() => {
-    const fetchInspectionData = async () => {
-      if (selectedItem?.tire_state) {
-        const data = await getInspectionData(selectedItem.tire_state);
+    if (isMaintenanceDialogOpen && selectedItem) {
+      // フックが自動的に初期化するので、特別な処理は不要
+    }
+  }, [isMaintenanceDialogOpen, selectedItem]);
 
-        setMaintenanceFormData({
-          ...selectedItem,
-          tire_state: data,
-        });
+  // 保存処理
+  const handleSave = async () => {
+    await handleSubmit();
+  };
+
+  // キャンセル処理
+  const handleCancel = () => {
+    setIsMaintenanceDialogOpen(false);
+    setSelectedItem(null);
+    resetForm();
+  }; // フィールド更新のヘルパー関数
+  const updateField = useCallback(
+    (path: string, value: string | boolean | number | Date) => {
+      const pathArray = path.split(".");
+
+      if (pathArray.length > 1) {
+        console.log("tireStatePath:", pathArray.join("."));
+        console.log("value:", value);
+        updateTireState({ [pathArray.join(".")]: value });
+      } else {
+        updateFormData({ [path]: value });
       }
-    };
-  }, [selectedItem]);
+    },
+    [updateFormData, updateTireState]
+  );
+
+  const loading = isLoading || isSubmitting;
 
   return (
     <Dialog
@@ -62,8 +98,20 @@ const EditForm = ({
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             整備データ入力
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           </DialogTitle>
         </DialogHeader>
+
+        {/* エラー表示 */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertCircle className="h-4 w-4" />
+              <span className="font-medium">エラー</span>
+            </div>
+            <p className="text-red-600 text-sm mt-1">{error}</p>
+          </div>
+        )}
 
         <div className="space-y-4 py-4 overflow-y-scroll h-[calc(100vh-200px)]">
           {/* 顧客情報 */}
@@ -85,7 +133,6 @@ const EditForm = ({
               </div>
             </CardContent>
           </Card>
-
           {/* フォーム */}
           <form className="space-y-4">
             <Card>
@@ -93,21 +140,28 @@ const EditForm = ({
                 <CardTitle className="text-lg font-semibold">
                   タイヤ基礎情報
                 </CardTitle>
-              </CardHeader>
+              </CardHeader>{" "}
               <CardContent>
+                {" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>タイヤメーカー</Label>
                     <Input
-                      className=""
-                      value={maintenanceFormData?.tire_state?.tire_maker}
+                      value={formData?.tire_maker || ""}
+                      onChange={(e) =>
+                        updateField("tire_maker", e.target.value)
+                      }
+                      disabled={loading}
                     />
                   </div>
                   <div>
                     <Label>タイヤパターン</Label>
                     <Input
-                      className=""
-                      value={maintenanceFormData?.tire_state?.tire_pattern}
+                      value={formData?.tire_pattern || ""}
+                      onChange={(e) =>
+                        updateField("tire_pattern", e.target.value)
+                      }
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -115,22 +169,37 @@ const EditForm = ({
                   <div>
                     <Label>タイヤサイズ</Label>
                     <Input
-                      className=""
-                      value={maintenanceFormData?.tire_state?.tire_size}
+                      value={formData?.tire_size || ""}
+                      onChange={(e) => updateField("tire_size", e.target.value)}
+                      disabled={loading}
                     />
                   </div>
                   <div>
                     <Label>製造年</Label>
                     <Input
-                      className=""
-                      value={maintenanceFormData?.tire_state?.manufacture_year}
+                      type="number"
+                      value={formData?.manufacture_year || ""}
+                      onChange={(e) =>
+                        updateField(
+                          "manufacture_year",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={loading}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {" "}
                   <div>
                     <Label>タイヤ状態</Label>
-                    <Select>
+                    <Select
+                      value={formData?.state_inspection || ""}
+                      onValueChange={(value) =>
+                        updateField("state_inspection", value)
+                      }
+                      disabled={loading}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="タイヤ状態を選択" />
                       </SelectTrigger>
@@ -144,8 +213,18 @@ const EditForm = ({
                     </Select>
                   </div>
                   <div>
-                    <Label>お預かり品</Label>
-                    <Input />
+                    <Label>エアプレッシャー</Label>
+                    <Input
+                      type="number"
+                      value={formData?.air_pressure || ""}
+                      onChange={(e) =>
+                        updateField(
+                          "air_pressure",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={loading}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -165,34 +244,43 @@ const EditForm = ({
                     <div className="col-span-2">状態</div>
                     <div className="col-span-1">交換</div>
                     <div className="col-span-5">備考</div>
-                  </div>
+                  </div>{" "}
                   <div className="grid grid-cols-1 md:grid-cols-10 gap-2 p-2 border-b border-gray-500">
                     <div className="col-span-2">タイヤ</div>
                     <div className="col-span-2">
                       <Input
-                        type="number"
-                        value={
-                          maintenanceFormData?.tire_state?.tire_inspection
-                            ?.state || ""
+                        type="text"
+                        value={formData?.tire_inspection?.state || ""}
+                        onChange={(e) =>
+                          updateField("tire_inspection.state", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                     <div className="col-span-1">
                       <Input
                         type="checkbox"
                         checked={
-                          maintenanceFormData?.tire_state?.tire_inspection
-                            ?.isExchange || false
+                          formData?.tire_inspection?.is_exchange || false
                         }
+                        onChange={(e) =>
+                          updateField(
+                            "tire_inspection.is_exchange",
+                            e.target.checked
+                          )
+                        }
+                        disabled={loading}
+                        className="w-4 h-4"
                       />
                     </div>
                     <div className="col-span-5">
                       <Input
                         type="text"
-                        value={
-                          maintenanceFormData?.tire_state?.tire_inspection
-                            ?.note || ""
+                        value={formData?.tire_inspection?.note || ""}
+                        onChange={(e) =>
+                          updateField("tire_inspection.note", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -200,59 +288,78 @@ const EditForm = ({
                     <div className="col-span-2 text-sm">エンジンオイル</div>
                     <div className="col-span-2">
                       <Input
-                        type="number"
-                        value={
-                          maintenanceFormData?.tire_state?.oil_inspection
-                            ?.state || ""
+                        type="text"
+                        value={formData?.oil_inspection?.state || ""}
+                        onChange={(e) =>
+                          updateField("oil_inspection.state", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                     <div className="col-span-1">
-                      <Input
+                      <input
                         type="checkbox"
-                        checked={
-                          maintenanceFormData?.tire_state?.oil_inspection
-                            ?.isExchange || false
+                        checked={formData?.oil_inspection?.is_exchange || false}
+                        onChange={(e) =>
+                          updateField(
+                            "oil_inspection.is_exchange",
+                            e.target.checked
+                          )
                         }
+                        disabled={loading}
+                        className="w-4 h-4"
                       />
                     </div>
                     <div className="col-span-5">
                       <Input
                         type="text"
-                        value={
-                          maintenanceFormData?.tire_state?.oil_inspection
-                            ?.note || ""
+                        value={formData?.oil_inspection?.note || ""}
+                        onChange={(e) =>
+                          updateField("oil_inspection.note", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
-                  </div>
+                  </div>{" "}
                   <div className="grid grid-cols-1 md:grid-cols-10 gap-4 p-2 border-b border-gray-500">
                     <div className="col-span-2">バッテリー</div>
                     <div className="col-span-2">
                       <Input
-                        type="number"
-                        value={
-                          maintenanceFormData?.tire_state?.battery_inspection
-                            ?.state || ""
+                        type="text"
+                        value={formData?.battery_inspection?.state || ""}
+                        onChange={(e) =>
+                          updateField(
+                            "battery_inspection.state",
+                            e.target.value
+                          )
                         }
+                        disabled={loading}
                       />
                     </div>
                     <div className="col-span-1">
-                      <Input
+                      <input
                         type="checkbox"
                         checked={
-                          maintenanceFormData?.tire_state?.battery_inspection
-                            ?.isExchange || false
+                          formData?.battery_inspection?.is_exchange || false
                         }
+                        onChange={(e) =>
+                          updateField(
+                            "battery_inspection.is_exchange",
+                            e.target.checked
+                          )
+                        }
+                        disabled={loading}
+                        className="w-4 h-4"
                       />
                     </div>
                     <div className="col-span-5">
                       <Input
                         type="text"
-                        value={
-                          maintenanceFormData?.tire_state?.battery_inspection
-                            ?.note || ""
+                        value={formData?.battery_inspection?.note || ""}
+                        onChange={(e) =>
+                          updateField("battery_inspection.note", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -260,29 +367,38 @@ const EditForm = ({
                     <div className="col-span-2">ワイパーゴム</div>
                     <div className="col-span-2">
                       <Input
-                        type="number"
-                        value={
-                          maintenanceFormData?.tire_state?.wiper_inspection
-                            ?.state || ""
+                        type="text"
+                        value={formData?.wiper_inspection?.state || ""}
+                        onChange={(e) =>
+                          updateField("wiper_inspection.state", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                     <div className="col-span-1">
-                      <Input
+                      <input
                         type="checkbox"
                         checked={
-                          maintenanceFormData?.tire_state?.wiper_inspection
-                            ?.isExchange || false
+                          formData?.wiper_inspection?.is_exchange || false
                         }
+                        onChange={(e) =>
+                          updateField(
+                            "wiper_inspection.is_exchange",
+                            e.target.checked
+                          )
+                        }
+                        disabled={loading}
+                        className="w-4 h-4"
                       />
                     </div>
                     <div className="col-span-5">
                       <Input
                         type="text"
-                        value={
-                          maintenanceFormData?.tire_state?.wiper_inspection
-                            ?.note || ""
+                        value={formData?.wiper_inspection?.note || ""}
+                        onChange={(e) =>
+                          updateField("wiper_inspection.note", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -291,10 +407,11 @@ const EditForm = ({
                     <div className="col-span-8">
                       <Input
                         type="text"
-                        value={
-                          maintenanceFormData?.tire_state?.other_inspection ||
-                          ""
+                        value={formData?.other_inspection || ""}
+                        onChange={(e) =>
+                          updateField("other_inspection", e.target.value)
                         }
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -305,16 +422,42 @@ const EditForm = ({
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">メモ</CardTitle>
-              </CardHeader>
+              </CardHeader>{" "}
               <CardContent>
+                {" "}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="flex flex-col gap-2">
                     <Label>車検期日</Label>
-                    <Input type="date" />
+                    <Input
+                      type="date"
+                      value={
+                        formData?.inspection_date
+                          ? formData.inspection_date instanceof Date
+                            ? formData.inspection_date
+                                .toISOString()
+                                .split("T")[0]
+                            : formData.inspection_date
+                          : ""
+                      }
+                      onChange={(e) =>
+                        updateField("inspection_date", new Date(e.target.value))
+                      }
+                      disabled={loading}
+                    />
                   </div>
                   <div className="flex flex-col gap-2 mb-2">
                     <Label>入庫時距離数</Label>
-                    <Input type="number" />
+                    <Input
+                      type="number"
+                      value={formData?.drive_distance || ""}
+                      onChange={(e) =>
+                        updateField(
+                          "drive_distance",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      disabled={loading}
+                    />
                   </div>
                 </div>
                 <Label className="mt-2">次回のテーマ</Label>
@@ -322,31 +465,24 @@ const EditForm = ({
                   className="mt-2"
                   placeholder="ここにメモを入力してください"
                   rows={4}
-                  value={maintenanceFormData?.tire_state?.next_theme || ""}
-                  onChange={(e) =>
-                    setMaintenanceFormData({
-                      ...maintenanceFormData,
-                      tire_state: {
-                        ...maintenanceFormData.tire_state,
-                        next_theme: e.target.value,
-                      },
-                    })
-                  }
+                  value={formData?.next_theme || ""}
+                  onChange={(e) => updateField("next_theme", e.target.value)}
+                  disabled={loading}
                 />
               </CardContent>
             </Card>
-          </form>
-
+          </form>{" "}
           {/* ボタン */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setIsMaintenanceDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={handleCancel} disabled={loading}>
               キャンセル
             </Button>
-            <Button>
-              <Save className="h-4 w-4 mr-2" />
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
               保存
             </Button>
           </div>
