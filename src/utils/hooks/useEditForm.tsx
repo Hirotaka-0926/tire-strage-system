@@ -162,33 +162,25 @@ export const useEditForm = ({
     setFormData((prev) => {
       if (!prev) return null;
 
-      const updatedTireState = { ...(prev || {}) };
+      const updated = { ...prev } as Record<string, any>;
 
       Object.entries(updates).forEach(([path, value]) => {
         const pathArray = path.split(".");
 
         if (pathArray.length === 1) {
           // 単純なパス (例: tire_maker)
-          (updatedTireState as Record<string, unknown>)[path] = value;
+          updated[pathArray[0]] = value;
         } else if (pathArray.length === 2) {
           // ネストしたパス (例: tire_inspection.state)
           const [parentKey, childKey] = pathArray;
-          const parent =
-            ((updatedTireState as Record<string, unknown>)[parentKey] as Record<
-              string,
-              unknown
-            >) || {};
+          const parent = (updated[parentKey] ?? {}) as Record<string, any>;
           parent[childKey] = value;
-          (updatedTireState as Record<string, unknown>)[parentKey] = parent;
+          updated[parentKey] = parent;
         }
       });
-      return {
-        ...prev,
-        tire_state: updatedTireState as typeof prev,
-      };
-    });
 
-    console.log("Updated tire state:", formData);
+      return updated as State;
+    });
   };
   // フォーム送信処理
   const handleSubmit = useCallback(async () => {
