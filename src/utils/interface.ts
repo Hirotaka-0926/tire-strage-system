@@ -34,6 +34,7 @@ export interface Inspection {
   state: string;
   is_exchange?: boolean;
   note: string;
+  tire_state_id?: number;
 }
 
 export interface TaskInput {

@@ -144,6 +144,10 @@ export const upsertTire = async (data: State, taskId: number) => {
   delete data.oil_inspection;
   delete data.battery_inspection;
   delete data.wiper_inspection;
+  if (tire_inspection) tire_inspection.tire_state_id = data.id;
+  if (oil_inspection) oil_inspection.tire_state_id = data.id;
+  if (battery_inspection) battery_inspection.tire_state_id = data.id;
+  if (wiper_inspection) wiper_inspection.tire_state_id = data.id;
   const inspectionArray = [
     tire_inspection,
     oil_inspection,
