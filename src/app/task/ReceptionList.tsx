@@ -46,6 +46,10 @@ const ReceptionList = ({ tasks }: Props) => {
           : t
       )
     );
+
+    setIsStorageDialogOpen(false);
+    setSelectedItem(null);
+
   };
 
   const getActionButton = (item: TaskInput) => {
@@ -122,10 +126,9 @@ const ReceptionList = ({ tasks }: Props) => {
           open={isStorageDialogOpen}
           setOpen={setIsStorageDialogOpen}
           selectedItem={selectedItem}
-          storageOptions={Array.from({ length: 20 }, (_, i) =>
-            `S-${(i + 1).toString().padStart(3, "0")}`
-          )}
-          onAssign={handleStorageAssign}
+
+          onAssigned={handleStorageAssign}
+
         />
         <div className="overflow-x-auto">
           <Table>
