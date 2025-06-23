@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { TaskInput, State } from "@/utils/interface";
-import { getInspectionData, upsertTire } from "@/utils/supabaseFunction";
+import {
+  getInspectionData,
+  upsertTire,
+  updateTaskStatus,
+} from "@/utils/supabaseFunction";
 import { useNotification } from "./useNotification";
 
 interface UseEditFormProps {
@@ -184,8 +188,8 @@ export const useEditForm = ({
   };
   // フォーム送信処理
   const handleSubmit = useCallback(async () => {
-    if (!formData || !formData.id) {
-      showNotification("error", "保存するデータがありません");
+    if (!formData) {
+      setError("未入力の項目があります");
       return;
     }
 
@@ -196,6 +200,16 @@ export const useEditForm = ({
       console.log("Submitting form data:", formData);
       if (formData && formData.id) {
         await upsertTire(formData, formData.id);
+      }
+
+      if (
+        selectedItem &&
+        selectedItem.id &&
+        selectedItem.status === "incomplete"
+      ) {
+        // ステータスを更新
+        const status = "pending";
+        await updateTaskStatus(selectedItem.id, status);
       }
 
       if (onSuccess) {

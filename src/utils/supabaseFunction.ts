@@ -603,3 +603,16 @@ export const getInspectionData = async (tire_state: State) => {
 
   return tire_state;
 };
+
+export const updateTaskStatus = async (taskId: number, status: string) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .update({ status: status })
+    .eq("id", taskId)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
