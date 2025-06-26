@@ -321,7 +321,7 @@ export const getStoragedYear = async () => {
 export const getAllMasterStorages = async () => {
   const { data, error } = await supabase
     .from("storage_master")
-    .select("*")
+    .select("*, car:car_table(*), client:client_data(*), state:tire_state(*)")
     .order("id", { ascending: true });
 
   if (error) {

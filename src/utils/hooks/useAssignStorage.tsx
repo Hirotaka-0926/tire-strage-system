@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { TaskInput, StorageData } from "@/utils/interface";
+import {
+  TaskInput,
+  StorageLogInput,
+  StorageData,
+  StorageInput,
+} from "@/utils/interface";
 import {
   getAllMasterStorages,
   pushNewStorageLog,
@@ -9,43 +14,60 @@ import {
   updateTaskStatus,
 } from "@/utils/supabaseFunction";
 import { getYearAndSeason } from "@/utils/globalFunctions";
-import { useNotification } from "./useNotification";
 
 interface UseAssignStorageReturn {
-  options: string[];
+  emptyOptions: StorageInput[];
+  embeddedOptions: StorageInput[];
   loading: boolean;
   assignStorage: (task: TaskInput, storageId: string) => Promise<void>;
+  error: string | null;
+  customerHistory?: StorageInput[];
 }
 
-const useAssignStorage = (): UseAssignStorageReturn => {
-  const [options, setOptions] = useState<string[]>([]);
+const useAssignStorage = (
+  open: boolean,
+  customerId: number | null
+): UseAssignStorageReturn => {
+  const [emptyOptions, setEmptyOptions] = useState<StorageInput[]>([]);
+  const [embeddedOptions, setEmbeddedOptions] = useState<StorageInput[]>([]);
+  const [customerHistory, setCustomerHistory] = useState<StorageInput[]>([]);
   const [loading, setLoading] = useState(false);
-  const { showNotification } = useNotification();
+  const [error, setError] = useState<string | null>(null);
 
   const fetchOptions = useCallback(async () => {
-    try {
-      setLoading(true);
-      const storages = await getAllMasterStorages();
-      const available = storages
-        .filter(
-          (s) => !s.car_id && !s.client_id && !s.tire_state_id
-        )
-        .map((s) => s.id as string);
-      setOptions(available);
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "保管庫情報の取得に失敗しました";
-      showNotification("error", msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [showNotification]);
+    setLoading(true);
+    const storages = await getAllMasterStorages();
+    console.log("Fetched storages:", storages);
+    const available = storages.filter(
+      (s: StorageInput) => !s.car && !s.client && !s.state
+    );
+
+    const embedded = storages.filter(
+      (s: StorageInput) => s.car || s.client || s.state
+    );
+
+    const history: StorageInput[] = storages
+      .filter((s: StorageLogInput) => s.client?.id === customerId)
+      .map((s: StorageLogInput) => ({
+        id: s.storage.id,
+        client: s.client,
+        car: s.car,
+        state: s.state,
+      }));
+
+    setEmptyOptions(available);
+    setEmbeddedOptions(embedded);
+    setCustomerHistory(history);
+    console.log("embeddedOptions:", embedded);
+    console.log("emptyOptions:", available);
+
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
+    if (!open) return;
     fetchOptions();
-  }, [fetchOptions]);
+  }, [open]);
 
   const assignStorage = useCallback(
     async (task: TaskInput, storageId: string) => {
@@ -64,24 +86,26 @@ const useAssignStorage = (): UseAssignStorageReturn => {
         if (task.id) {
           await updateTaskStatus(task.id, "complete");
         }
-        showNotification("success", "保管庫を割り当てました");
         fetchOptions();
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "保管庫割り当てに失敗しました";
-        showNotification("error", msg);
+        setError(msg);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fetchOptions, showNotification]
+    [fetchOptions]
   );
 
   return {
-    options,
+    emptyOptions,
+    embeddedOptions,
+    error,
     loading,
     assignStorage,
+    customerHistory,
   };
 };
 
