@@ -36,12 +36,14 @@ const useAssignStorage = (
   const [error, setError] = useState<string | null>(null);
 
   const fetchOptions = useCallback(async () => {
-    setLoading(true);
-    if (!customerId) {
-      setError("顧客IDが指定されていません");
-      setLoading(false);
+    if (!open || !customerId) {
+      setEmptyOptions([]);
+      setEmbeddedOptions([]);
+      setCustomerHistory([]);
       return;
     }
+    setLoading(true);
+
     const storages = await getAllMasterStorages();
     const history = await getLogsByClientId(customerId);
     console.log("Fetched storages:", storages);
@@ -60,7 +62,7 @@ const useAssignStorage = (
     console.log("emptyOptions:", available);
 
     setLoading(false);
-  }, []);
+  }, [customerId]);
 
   useEffect(() => {
     if (!open) return;
