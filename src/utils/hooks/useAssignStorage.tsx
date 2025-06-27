@@ -12,6 +12,7 @@ import {
   pushNewStorageLog,
   upsertStorage,
   updateTaskStatus,
+  getLogsByClientId,
 } from "@/utils/supabaseFunction";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 
@@ -21,7 +22,7 @@ interface UseAssignStorageReturn {
   loading: boolean;
   assignStorage: (task: TaskInput, storageId: string) => Promise<void>;
   error: string | null;
-  customerHistory?: StorageInput[];
+  customerHistory?: StorageLogInput[];
 }
 
 const useAssignStorage = (
@@ -30,13 +31,19 @@ const useAssignStorage = (
 ): UseAssignStorageReturn => {
   const [emptyOptions, setEmptyOptions] = useState<StorageInput[]>([]);
   const [embeddedOptions, setEmbeddedOptions] = useState<StorageInput[]>([]);
-  const [customerHistory, setCustomerHistory] = useState<StorageInput[]>([]);
+  const [customerHistory, setCustomerHistory] = useState<StorageLogInput[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchOptions = useCallback(async () => {
     setLoading(true);
+    if (!customerId) {
+      setError("顧客IDが指定されていません");
+      setLoading(false);
+      return;
+    }
     const storages = await getAllMasterStorages();
+    const history = await getLogsByClientId(customerId);
     console.log("Fetched storages:", storages);
     const available = storages.filter(
       (s: StorageInput) => !s.car && !s.client && !s.state
@@ -45,15 +52,6 @@ const useAssignStorage = (
     const embedded = storages.filter(
       (s: StorageInput) => s.car || s.client || s.state
     );
-
-    const history: StorageInput[] = storages
-      .filter((s: StorageLogInput) => s.client?.id === customerId)
-      .map((s: StorageLogInput) => ({
-        id: s.storage.id,
-        client: s.client,
-        car: s.car,
-        state: s.state,
-      }));
 
     setEmptyOptions(available);
     setEmbeddedOptions(embedded);

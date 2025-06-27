@@ -619,3 +619,19 @@ export const updateTaskStatus = async (taskId: number, status: string) => {
   }
   return data;
 };
+
+export const getLogsByClientId = async (
+  clientId: number
+): Promise<StorageLogInput[]> => {
+  const { data, error } = await supabase
+    .from("storage_logs")
+    .select(
+      "*, storage:storage_master(*), state:tire_state(*), car:car_table(*), client:client_data(*)"
+    )
+    .eq("client_id", clientId)
+    .order("year", { ascending: true });
+  if (error) {
+    throw error;
+  }
+  return data || [];
+};

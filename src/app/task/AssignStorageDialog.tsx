@@ -11,12 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import {
   Check,
@@ -28,15 +34,8 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  TaskInput,
-  Client,
-  Car,
-  StorageLogInput,
-  StorageInput,
-} from "@/utils/interface";
+import { TaskInput, StorageInput, StorageLogInput } from "@/utils/interface";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
 
 import useAssignStorage from "@/utils/hooks/useAssignStorage";
 
@@ -71,19 +70,28 @@ const AssignStorageDialog = ({
 
   const handleAssign = async () => {
     if (!selectedStorage || !selectedItem) return;
-    await assignStorage(selectedItem, selectedStorage.storage.id);
-    onAssigned?.(selectedStorage.storage.id);
+    await assignStorage(selectedItem, selectedStorage.id!);
+    onAssigned?.(selectedStorage.id!);
 
     setSelectedStorage(null);
     setOpen(false);
   };
 
-  const handleSelectStorage = (storage: string) => {
+  const handleSelectStorage = (storageId: string) => {
+    // ヘッダー項目は無視
+    if (storageId.endsWith("-header")) return;
+
     const foundStorage =
-      embeddedOptions.find((s) => s.id === storage) ||
-      emptyOptions.find((s) => s.id === storage);
+      emptyOptions.find((s) => s.id === storageId) ||
+      embeddedOptions.find((s) => s.id === storageId);
+
     console.log("Selected storage:", foundStorage);
     if (!foundStorage) return;
+
+    // 使用中の保管庫の場合は警告を表示
+    const isOccupied = embeddedOptions.find((s) => s.id === storageId);
+    setShowOverwriteWarning(!!isOccupied);
+
     setSelectedStorage(foundStorage);
   };
 
@@ -118,12 +126,14 @@ const AssignStorageDialog = ({
                 </span>
               </div>
               <div className="space-y-1">
-                {customerHistory.slice(0, 3).map((log: StorageInput, index) => (
-                  <div key={index} className="text-sm text-blue-700">
-                    {log.id}
-                    {/* ({new Date(log.usedDate).toLocaleDateString("ja-JP")}) */}
-                  </div>
-                ))}
+                {customerHistory
+                  .slice(0, 3)
+                  .map((log: StorageLogInput, index) => (
+                    <div key={index} className="text-sm text-blue-700">
+                      {log.id}
+                      {/* ({new Date(log.usedDate).toLocaleDateString("ja-JP")}) */}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -162,84 +172,132 @@ const AssignStorageDialog = ({
           {/* 保管庫選択 - Combobox */}
           <div>
             <Label>保管庫ID</Label>
-            <Input />
-            <Select
-              value={selectedStorage?.id || ""}
-              onValueChange={handleSelectStorage}
+            <Popover
+              open={comboboxOpen}
+              onOpenChange={setComboboxOpen}
+              modal={true}
             >
-              <SelectTrigger asChild>
-                <div>
-                  <SelectValue placeholder="保管庫を選択..." />
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={comboboxOpen}
+                  className="w-full justify-between"
+                >
+                  {selectedStorage?.id || "保管庫を選択..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {/* セクション区切り用の無効化されたアイテム */}
-                {customerHistory && customerHistory.length > 0 && (
-                  <>
-                    <SelectItem value="history-header" disabled>
-                      📝 過去の使用履歴
-                    </SelectItem>
-                    {customerHistory.map((storage, index) => {
-                      if (!storage.id) return null;
-                      return (
-                        <SelectItem
-                          key={`history-${storage.id}-${index}`}
-                          value={storage.id}
-                          className="pl-4"
-                        >
-                          {storage.id}
-                        </SelectItem>
-                      );
-                    })}
-                  </>
-                )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0">
+                <Command>
+                  <CommandInput placeholder="保管庫IDを検索..." />
+                  <CommandList>
+                    <CommandEmpty>
+                      該当する保管庫が見つかりません。
+                    </CommandEmpty>
 
-                <SelectItem value="available-header" disabled>
-                  ✅ 利用可能な保管庫
-                </SelectItem>
-                {emptyOptions
-                  .filter(
-                    (storage) =>
-                      !customerHistory!.map((s) => s.id).includes(storage.id)
-                  )
-                  .map((storage) => {
-                    if (!storage.id) return null;
-                    return (
-                      <SelectItem
-                        key={`empty-${storage.id}`}
-                        value={storage.id}
-                        className="pl-4"
-                      >
-                        {storage.id}
-                      </SelectItem>
-                    );
-                  })}
+                    {/* 過去の使用履歴 */}
+                    {customerHistory && customerHistory.length > 0 && (
+                      <CommandGroup heading="📝 過去の使用履歴">
+                        {customerHistory.map((storage, index) => {
+                          if (!storage.id) return null;
+                          return (
+                            <CommandItem
+                              key={`history-${storage.id}-${index}`}
+                              value={storage.storage.id}
+                              onSelect={() => {
+                                handleSelectStorage(storage.storage.id!);
+                                setComboboxOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedStorage?.id === storage.storage.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              <History className="mr-2 h-4 w-4 text-blue-500" />
+                              {storage.id}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    )}
 
-                <SelectItem value="occupied-header" disabled>
-                  ⚠️ 使用中の保管庫
-                </SelectItem>
-                {embeddedOptions
-                  .filter(
-                    (storage) =>
-                      !customerHistory!
-                        .map((log) => log.id)
-                        .includes(storage.id)
-                  )
-                  .map((storage) => {
-                    if (!storage.id) return null;
-                    return (
-                      <SelectItem
-                        key={`embedded-${storage.id}`}
-                        value={storage.id}
-                        className="pl-4 text-orange-600"
-                      >
-                        {storage.id} (使用中)
-                      </SelectItem>
-                    );
-                  })}
-              </SelectContent>
-            </Select>
+                    {/* 利用可能な保管庫 */}
+                    <CommandGroup heading="✅ 利用可能な保管庫">
+                      {emptyOptions
+                        .filter(
+                          (storage) =>
+                            !customerHistory!
+                              .map((s) => s.storage.id)
+                              .includes(storage.id!)
+                        )
+                        .map((storage) => {
+                          if (!storage.id) return null;
+                          return (
+                            <CommandItem
+                              key={`empty-${storage.id}`}
+                              value={storage.id}
+                              onSelect={() => {
+                                handleSelectStorage(storage.id!);
+                                setComboboxOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedStorage?.id === storage.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {storage.id}
+                            </CommandItem>
+                          );
+                        })}
+                    </CommandGroup>
+
+                    {/* 使用中の保管庫 */}
+                    <CommandGroup heading="⚠️ 使用中の保管庫">
+                      {embeddedOptions
+                        .filter(
+                          (storage) =>
+                            !customerHistory!
+                              .map((log) => log.storage.id)
+                              .includes(storage.id!)
+                        )
+                        .map((storage) => {
+                          if (!storage.id) return null;
+                          return (
+                            <CommandItem
+                              key={`embedded-${storage.id}`}
+                              value={storage.id}
+                              onSelect={() => {
+                                handleSelectStorage(storage.id!);
+                                setComboboxOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedStorage?.id === storage.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              <User className="mr-2 h-4 w-4 text-orange-500" />
+                              {storage.id} (使用中)
+                            </CommandItem>
+                          );
+                        })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
             <p className="text-sm text-gray-500 mt-1">
               利用可能: {emptyOptions.length}箇所 / 使用中:{" "}
@@ -255,10 +313,20 @@ const AssignStorageDialog = ({
 
           {/* ボタン */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline">キャンセル</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setSelectedStorage(null);
+                setShowOverwriteWarning(false);
+              }}
+            >
+              キャンセル
+            </Button>
             <Button
               disabled={!selectedStorage}
               variant={showOverwriteWarning ? "destructive" : "default"}
+              onClick={handleAssign}
             >
               <Save className="h-4 w-4 mr-2" />
               {showOverwriteWarning ? "上書き割当" : "割当"}
