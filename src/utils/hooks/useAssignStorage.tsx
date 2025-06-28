@@ -13,6 +13,9 @@ import {
   upsertStorage,
   updateTaskStatus,
   getLogsByClientId,
+  getStorageByMasterStorageId,
+  clearStorageData,
+  updateTaskStorageId,
 } from "@/utils/supabaseFunction";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 
@@ -73,6 +76,14 @@ const useAssignStorage = (
     async (task: TaskInput, storageId: string) => {
       try {
         setLoading(true);
+        // if task already has storage and it contains data, clear it
+        if (task.status === "complete" && task.storage_id) {
+          const prev = await getStorageByMasterStorageId(task.storage_id);
+          if (prev.car || prev.client || prev.state) {
+            await clearStorageData(task.storage_id);
+          }
+        }
+
         const storageData: StorageData = {
           id: storageId,
           car_id: task.car?.id ?? null,
@@ -84,6 +95,7 @@ const useAssignStorage = (
         const { year, season } = getYearAndSeason();
         await pushNewStorageLog({ year, season, storage: storageData });
         if (task.id) {
+          await updateTaskStorageId(task.id, storageId);
           await updateTaskStatus(task.id, "complete");
         }
         fetchOptions();
