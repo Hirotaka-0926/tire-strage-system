@@ -506,6 +506,33 @@ export const upsertStorage = async (upsertData: StorageData) => {
   return data;
 };
 
+export const clearStorageData = async (storageId: string) => {
+  const { data, error } = await supabase
+    .from("storage_master")
+    .update({ car_id: null, client_id: null, tire_state_id: null })
+    .eq("id", storageId)
+    .select();
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
+export const updateTaskStorageId = async (
+  taskId: number,
+  storageId: string
+) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .update({ storage_id: storageId })
+    .eq("id", taskId)
+    .select();
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
 export const deletePendingTasks = async (id: number) => {
   const { data, error } = await supabase
     .from("task_list")
