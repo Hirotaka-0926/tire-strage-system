@@ -210,6 +210,9 @@ export const useEditForm = ({
         const status = "pending";
         await updateTaskStatus(selectedItem.id, status);
       }
+      if (selectedItem) {
+        selectedItem.tire_state = formData;
+      }
 
       if (onSuccess) {
         onSuccess();

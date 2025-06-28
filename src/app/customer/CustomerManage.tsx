@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -363,7 +364,7 @@ export default function CustomerManage({
 
       const newTask = {
         client_id: selectedCustomer.id!,
-        car_id: selectedCar.id,
+        car_id: selectedCar.id!,
         status: "incomplete",
       };
 

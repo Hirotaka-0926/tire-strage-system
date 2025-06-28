@@ -50,17 +50,17 @@ import {
 import { useParams } from "next/navigation";
 
 // サンプルデータ - 保管庫
-interface Props {
+interface DetailProps {
   initialStorageDetail: StorageInput | null;
-  initialPendingTasks: TaskInput[];
-  initialLogs: StorageLogInput[];
+  initialPendingTasks: TaskInput[] | null;
+  initialLogs: StorageLogInput[] | null;
 }
 
-export const Detail: React.FC<Props> = ({
+export const Detail = ({
   initialStorageDetail,
   initialPendingTasks,
   initialLogs,
-}) => {
+}: DetailProps) => {
   const [currentStorage, setCurrentStorage] = useState<StorageInput | null>(
     initialStorageDetail
   );
