@@ -7,13 +7,13 @@ import {
 } from "@/utils/supabaseFunction";
 
 interface StorageParams {
-  params: {
+  params: Promise<{
     storageId: string;
-  };
+  }>;
 }
 
 const StorageDetail = async ({ params }: StorageParams) => {
-  const { storageId } = params;
+  const { storageId } = await params;
   console.log("storageId", storageId);
   const storageDetail = await getStorageByMasterStorageId(storageId);
   const pendingTasks = await getPendingTasks();
