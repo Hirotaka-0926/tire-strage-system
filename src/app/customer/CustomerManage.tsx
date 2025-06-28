@@ -876,7 +876,7 @@ export default function CustomerManage({
                     <Label className="text-sm font-medium text-gray-600">
                       最終更新日
                     </Label>
-                    <p>{selectedCustomer.updateDate}</p>
+                    {/* <p>{selectedCustomer.updateDate}</p> */}
                   </div>
                   {selectedCustomer.notes && (
                     <div className="col-span-2">
@@ -947,7 +947,7 @@ export default function CustomerManage({
                                   {record.season}
                                 </Badge>
                                 <span className="text-sm text-gray-600">
-                                  {record.date}
+                                  {/* {record.date} */}
                                 </span>
                               </div>
                               <p className="font-medium">{record.year}</p>

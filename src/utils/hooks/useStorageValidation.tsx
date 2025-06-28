@@ -8,22 +8,25 @@ const useStorageValidation = () => {
     const newErrors: ValidationErrors = {};
 
     // 顧客名チェック
-    if (!data.client.client_name || !data.client.client_name.trim()) {
+    if (!data?.client?.client_name || !data.client.client_name.trim()) {
       newErrors.client_name = "顧客名は必須です";
     }
 
     // 顧客名（カナ）チェック
-    if (!data.client.client_name_kana || !data.client.client_name_kana.trim()) {
+    if (
+      !data?.client?.client_name_kana ||
+      !data.client.client_name_kana.trim()
+    ) {
       newErrors.client_name_kana = "顧客名（カナ）は必須です";
     }
 
     // 住所チェック
-    if (!data.client.address || !data.client.address.trim()) {
+    if (!data?.client?.address || !data.client.address.trim()) {
       newErrors.address = "住所は必須です";
     }
 
     // 電話番号チェック
-    if (!data.client.phone || !data.client.phone.trim()) {
+    if (!data?.client?.phone || !data?.client?.phone.trim()) {
       newErrors.phone = "電話番号は必須です";
     } else if (!/^[\d-]+$/.test(data.client.phone)) {
       newErrors.phone = "電話番号の形式が正しくありません";

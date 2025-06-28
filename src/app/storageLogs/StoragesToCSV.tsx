@@ -37,7 +37,6 @@ const StorageToCSV: React.FC<Props> = ({ storages }) => {
 
   const data = storages.map((storage) => ({
     id: storage.id,
-    created_at: storage.client?.created_at,
     "state.tire_maker": storage.state?.tire_maker,
     "state.tire_pattern": storage.state?.tire_pattern,
     "state.tire_size": storage.state?.tire_size,

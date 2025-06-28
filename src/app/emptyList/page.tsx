@@ -21,7 +21,7 @@ import {
   getStoragesType,
   getStoragesUseId,
 } from "@/utils/supabaseFunction";
-import { Storage } from "@/utils/interface";
+import { StorageInput } from "@/utils/interface";
 import {
   TransformWrapper,
   TransformComponent,
@@ -30,7 +30,9 @@ import {
 import { Search, ZoomIn, ZoomOut, Filter } from "lucide-react";
 
 export default function StorageMapView() {
-  const [storageList, setStorageList] = useState<Record<string, Storage[]>>({});
+  const [storageList, setStorageList] = useState<
+    Record<string, StorageInput[]>
+  >({});
   const [storagesTypes, setStoragesTypes] = useState<string[]>([]);
   const [displayLocation, setDisplayLocation] = useState<string>("A");
   const router = useRouter();
@@ -61,9 +63,9 @@ export default function StorageMapView() {
       }
     };
 
-    const divideStoragesByLocation = (storages: Storage[]) => {
+    const divideStoragesByLocation = (storages: StorageInput[]) => {
       const dividedStorages = storages.reduce(
-        (acc: Record<string, Storage[]>, item: Storage) => {
+        (acc: Record<string, StorageInput[]>, item: StorageInput) => {
           const type = item.id!.split("_")[0];
           if (!acc[type]) {
             acc[type] = [];
@@ -113,7 +115,7 @@ export default function StorageMapView() {
     const isStoraged = checkStorageUsage(storageId!);
 
     if (isStoraged) {
-      router.push("/storage/" + isStoraged.id);
+      router.push("/storage/" + isStoraged);
     }
 
     router.push("/emptyList/storage/" + storageId);

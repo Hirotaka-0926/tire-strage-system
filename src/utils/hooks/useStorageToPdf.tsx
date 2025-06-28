@@ -89,11 +89,11 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({ storage }) => (
 
       <View style={pdfStyles.infoRow}>
         <Text style={pdfStyles.infoLabel}>作成日:</Text>
-        <Text style={pdfStyles.infoValue}>
+        {/* <Text style={pdfStyles.infoValue}>
           {storage.client?.created_at
             ? new Date(storage.client.created_at).toLocaleDateString("ja-JP")
             : "未設定"}
-        </Text>
+        </Text> */}
       </View>
 
       <Text style={pdfStyles.subtitle}>保管タイヤ情報</Text>

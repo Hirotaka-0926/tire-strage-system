@@ -13,23 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getYearAndSeason } from "@/utils/globalFunctions";
 import {
   getAllMasterStorages,
   getStoragesType,
   getStoragesUseId,
 } from "@/utils/supabaseFunction";
-import { Storage } from "@/utils/interface";
+import { StorageData } from "@/utils/interface";
 
 export default function StorageMap() {
-  const [storageList, setStorageList] = useState<Record<string, Storage[]>>({});
+  const [storageList, setStorageList] = useState<Record<string, StorageData[]>>(
+    {}
+  );
   const [storagesTypes, setStoragesTypes] = useState<string[]>([]);
   const [displayLocation, setDisplayLocation] = useState<string>("A");
   const router = useRouter();
-  const [usedNumbers, setUsedNumbers] = useState<
-    { id: string; storage_id: string }[]
-  >([]);
-  const { year, season } = getYearAndSeason();
+  const [usedNumbers, setUsedNumbers] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchStorages = async () => {
@@ -42,9 +40,9 @@ export default function StorageMap() {
       }
     };
 
-    const divideStoragesByLocation = (storages: Storage[]) => {
+    const divideStoragesByLocation = (storages: StorageData[]) => {
       const dividedStorages = storages.reduce(
-        (acc: Record<string, Storage[]>, item: Storage) => {
+        (acc: Record<string, StorageData[]>, item: StorageData) => {
           const type = item.id!.split("_")[0]; // Assuming the type is determined by the first part of the ID
           if (!acc[type]) {
             acc[type] = [];
@@ -76,35 +74,32 @@ export default function StorageMap() {
       }
     };
 
-    const fetchStoragesUseNumber = async (
-      year: number,
-      season: "summer" | "winter"
-    ) => {
+    const fetchStoragesUseNumber = async () => {
       try {
-        const data = await getStoragesUseId(year, season);
+        const data = await getStoragesUseId();
         setUsedNumbers(data);
         console.log("取得した使用番号:", data);
       } catch (error) {
         console.error("データ取得エラー:", error);
       }
     };
-    fetchStoragesUseNumber(year, season);
+    fetchStoragesUseNumber();
     fetchStoragesTypes();
     loadStorages();
   }, []);
 
   const handleLinkStorageDetail = (storageId: string) => {
-    const isStoraged = checkStorageUsage(storageId!);
+    const isStoraged = checkStorageUsage(storageId);
 
     if (isStoraged) {
-      router.push("/storageLogs/" + isStoraged.id);
+      router.push("/emptyList/storage/" + storageId);
     }
   };
 
   // Check if storage is in use
   const checkStorageUsage = (storageId: string | undefined) => {
     if (!storageId) return false;
-    return usedNumbers.find((item) => item.storage_id === storageId);
+    return usedNumbers.find((item) => item === storageId);
   };
 
   return (
@@ -151,7 +146,7 @@ export default function StorageMap() {
                   }}
                 >
                   <span className="font-semibold text-center">
-                    {storage.storage_type}-{storage.storage_number}
+                    {storage.id}
                   </span>
                   <Badge
                     variant={
