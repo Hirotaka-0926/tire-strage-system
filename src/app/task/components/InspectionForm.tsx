@@ -25,9 +25,7 @@ const InspectionForm = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          点検・整備項目
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold">点検・整備項目</CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <div className="border border-gray-500 rounded-md">
@@ -57,8 +55,8 @@ const InspectionForm = ({
                   <SelectItem value="5mm">5mm(良好)</SelectItem>
                   <SelectItem value="4mm">4mm</SelectItem>
                   <SelectItem value="3mm">3mm(交換おすすめ)</SelectItem>
-                  <SelectItem value="2mm">2mm</SelectItem>
-                  <SelectItem value="1mm">1mm(交換時期)</SelectItem>
+                  <SelectItem value="2mm">2mm(交換時期)</SelectItem>
+                  <SelectItem value="1mm">1mm(要交換)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

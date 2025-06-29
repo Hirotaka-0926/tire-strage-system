@@ -90,7 +90,11 @@ export default function CustomerManage({
 
   const createMapFromClients = () => {
     const clientMap: ClientMap = {};
-    initialCustomers.map((customer) => (clientMap[customer.id!] = customer));
+    initialCustomers.forEach((customer) => {
+      if (customer.id && !clientMap[customer.id]) {
+        clientMap[customer.id] = customer;
+      }
+    });
     return clientMap;
   };
 
@@ -152,8 +156,11 @@ export default function CustomerManage({
         } // タイヤ交換履歴を初期化
         if (log.car) {
           if (targetCustomers[targetId].cars) {
-            if (!targetCustomers[targetId].cars.includes(log.car)) {
-              targetCustomers[targetId].cars.push(log.car);
+            const existingCar = targetCustomers[targetId].cars!.find(
+              (car) => car.id === log.car!.id
+            );
+            if (!existingCar) {
+              targetCustomers[targetId].cars!.push(log.car);
             }
           } else {
             targetCustomers[targetId].cars = [log.car];
@@ -176,9 +183,13 @@ export default function CustomerManage({
     createStatusAndHistoryFromLogs();
   }, [initialCustomers, initialStorageLogs]);
 
-  // フィルタリングされた顧客リスト
-  const filteredCustomers = Object.values(customers).filter(
-    (customer: ClientWithExchangeHistory) => {
+  // フィルタリングされた顧客リスト（重複除去も含む）
+  const filteredCustomers = Object.values(customers)
+    .filter((customer, index, array) => {
+      // 重複除去: 同じIDの最初の要素のみを残す
+      return array.findIndex((c) => c.id === customer.id) === index;
+    })
+    .filter((customer: ClientWithExchangeHistory) => {
       const matchesSearch =
         customer.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.client_name_kana
@@ -204,8 +215,7 @@ export default function CustomerManage({
       }
 
       return matchesSearch;
-    }
-  );
+    });
 
   // ページネーション計算
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
