@@ -43,7 +43,7 @@ export const StorageCombobox = ({
   return (
     <div>
       <Label>保管庫ID</Label>
-      <Popover open={open} onOpenChange={setOpen} modal={true}>
+      <Popover open={open} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

@@ -67,7 +67,7 @@ const AssignStorageDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} modal={true}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
