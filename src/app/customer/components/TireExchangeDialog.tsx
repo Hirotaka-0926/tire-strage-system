@@ -13,24 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
 import { Car } from "@/utils/interface";
 
-interface ClientWithExchangeHistory {
-  id?: number;
-  client_name: string;
-  client_name_kana: string;
-  post_number: string;
-  address: string;
-  phone: string;
-  notes: string;
-  thisSeasonExchange?: boolean;
-  lastSeasonExchange?: boolean;
-  cars?: Car[];
-  exchangeHistory?: {
-    id: number;
-    season: "winter" | "summer";
-    year: number;
-    next_theme: string;
-  }[];
-}
+import { ClientWithExchangeHistory } from "@/utils/interface";
 
 interface TireExchangeDialogProps {
   isOpen: boolean;

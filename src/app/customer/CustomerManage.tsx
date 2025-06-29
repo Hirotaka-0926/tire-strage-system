@@ -3,7 +3,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Client, Car } from "@/utils/interface";
+import { Client, Car, ClientWithExchangeHistory } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 import {
   upsertClient,
@@ -32,18 +32,6 @@ interface Props {
     year: number;
     season: "summer" | "winter";
     car: Car | null;
-    next_theme: string;
-  }[];
-}
-
-export interface ClientWithExchangeHistory extends Client {
-  thisSeasonExchange?: boolean;
-  lastSeasonExchange?: boolean;
-  cars?: Car[];
-  exchangeHistory?: {
-    id: number;
-    season: "winter" | "summer";
-    year: number;
     next_theme: string;
   }[];
 }
@@ -313,18 +301,26 @@ export default function CustomerManage({
       // 新しいタスクを作成
 
       // 新しい車の場合はDBに保存
-      const isExistCar = selectedCustomer.cars?.includes(selectedCar) ?? false;
-
+      const isExistCar = selectedCustomer.cars?.find(
+        (car) => car.id == selectedCar.id
+      );
+      let finalCar = selectedCar; // 最終的に使用する車のデータを保持
       if (!isExistCar) {
+        setSelectedCar((prev) => ({
+          ...prev,
+          id: undefined,
+        }));
+        console.log("新しい車を登録します", selectedCar);
         const newCar = await upsertCar(selectedCar);
         if (newCar) {
+          finalCar = newCar; // 新しい車のデータを最終的な車として設定
           setSelectedCar(newCar);
         }
       }
 
       const newTask = {
         client_id: selectedCustomer.id!,
-        car_id: selectedCar.id!,
+        car_id: finalCar.id!,
         status: "incomplete",
       };
 

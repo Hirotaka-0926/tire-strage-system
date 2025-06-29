@@ -124,3 +124,16 @@ export type StorageData = {
 export interface ValidationErrors {
   [key: string]: string;
 }
+
+export interface ClientWithExchangeHistory extends Client {
+  thisSeasonExchange?: boolean;
+  lastSeasonExchange?: boolean;
+  cars?: Car[];
+
+  exchangeHistory?: {
+    id: number;
+    season: "winter" | "summer";
+    year: number;
+    next_theme: string;
+  }[];
+}
