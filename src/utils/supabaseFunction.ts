@@ -486,11 +486,15 @@ export const pushNewStorageLog = async (newLog: StorageLogOutput) => {
     car_id: newLog.storage.car_id,
     client_id: newLog.storage.client_id,
   };
-  const error = await supabase.from("storage_logs").insert([newLogData]);
+  const { data, error } = await supabase
+    .from("storage_logs")
+    .insert([newLogData]);
 
   if (error) {
     throw error;
   }
+
+  return data;
 };
 
 export const upsertStorage = async (upsertData: StorageData) => {
@@ -526,7 +530,7 @@ export const updateTaskStorageId = async (
     .from("task_list")
     .update({ storage_id: storageId })
     .eq("id", taskId)
-    .select();
+    .select("*");
   if (error) {
     throw error;
   }
@@ -662,3 +666,7 @@ export const getLogsByClientId = async (
   }
   return data || [];
 };
+
+// export const getStorageByKeyValue = async(key:string, value : string|number) : Promise<StorageInput> => {
+
+// }

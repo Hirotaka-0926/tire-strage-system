@@ -89,7 +89,11 @@ const useAssignStorage = (
       try {
         setLoading(true);
         // if task already has storage and it contains data, clear it
-        if (task.status === "complete" && task.storage_id) {
+        if (
+          task.storage_id &&
+          task.storage_id !== "" &&
+          task.storage_id !== storageId
+        ) {
           const prev = await getStorageByMasterStorageId(task.storage_id);
           if (prev.car || prev.client || prev.state) {
             await clearStorageData(task.storage_id);
@@ -107,10 +111,10 @@ const useAssignStorage = (
         const { year, season } = getYearAndSeason();
         await pushNewStorageLog({ year, season, storage: storageData });
         if (task.id) {
-          await updateTaskStorageId(task.id, storageId);
+          const updated = await updateTaskStorageId(task.id, storageId);
           await updateTaskStatus(task.id, "complete");
+          return updated;
         }
-        fetchOptions();
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "保管庫割り当てに失敗しました";
