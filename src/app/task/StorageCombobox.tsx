@@ -65,10 +65,10 @@ export const StorageCombobox = ({
               {customerHistory && customerHistory.length > 0 && (
                 <CommandGroup heading="📝 過去の使用履歴">
                   {customerHistory.map((storage, index) => {
-                    if (!storage.id) return null;
+                    if (!storage.storage.id) return null;
                     return (
                       <CommandItem
-                        key={`history-${storage.id}-${index}`}
+                        key={`history-${storage.storage.id}-${index}`}
                         value={storage.storage.id}
                         onSelect={() => handleSelect(storage.storage.id!)}
                       >
@@ -81,7 +81,7 @@ export const StorageCombobox = ({
                           )}
                         />
                         <History className="mr-2 h-4 w-4 text-blue-500" />
-                        {storage.id}
+                        {storage.storage.id}
                       </CommandItem>
                     );
                   })}

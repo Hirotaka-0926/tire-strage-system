@@ -19,7 +19,8 @@ export const UsageHistory = ({ customerHistory }: UsageHistoryProps) => {
       <div className="space-y-1">
         {customerHistory.slice(0, 3).map((log: StorageLogInput, index) => (
           <div key={index} className="text-sm text-blue-700">
-            {log.id}
+            {log.storage?.id || "保管庫IDが不正です"} -------- [{log.year}年
+            {log.season}]
           </div>
         ))}
       </div>

@@ -58,9 +58,21 @@ const useAssignStorage = (
       (s: StorageInput) => s.car || s.client || s.state
     );
 
+    const filteredHistory = (() => {
+      const seenIds = new Set<string>();
+      return history.filter((log) => {
+        const id = log.storage.id;
+        if (seenIds.has(id)) {
+          return false;
+        }
+        seenIds.add(id);
+        return true;
+      });
+    })();
+
     setEmptyOptions(available);
     setEmbeddedOptions(embedded);
-    setCustomerHistory(history);
+    setCustomerHistory(filteredHistory);
     console.log("embeddedOptions:", embedded);
     console.log("emptyOptions:", available);
 
