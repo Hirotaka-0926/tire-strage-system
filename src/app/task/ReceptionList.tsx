@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
+import { useRouter } from "next/navigation";
 
 interface Props {
   tasks: TaskInput[];
@@ -26,6 +27,7 @@ const ReceptionList = ({ tasks }: Props) => {
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [taskList, setTaskList] = useState<TaskInput[]>(tasks);
+  const router = useRouter();
 
   const handleMaintenanceEdit = (item: TaskInput) => {
     setSelectedItem(item);
@@ -49,7 +51,7 @@ const ReceptionList = ({ tasks }: Props) => {
 
     setIsStorageDialogOpen(false);
     setSelectedItem(null);
-
+    router.refresh(); // Refresh the page to reflect changes
   };
 
   const getActionButton = (item: TaskInput) => {
@@ -126,9 +128,7 @@ const ReceptionList = ({ tasks }: Props) => {
           open={isStorageDialogOpen}
           setOpen={setIsStorageDialogOpen}
           selectedItem={selectedItem}
-
           onAssigned={handleStorageAssign}
-
         />
         <div className="overflow-x-auto">
           <Table>

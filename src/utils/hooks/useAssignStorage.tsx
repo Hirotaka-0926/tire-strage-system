@@ -111,9 +111,8 @@ const useAssignStorage = (
         const { year, season } = getYearAndSeason();
         await pushNewStorageLog({ year, season, storage: storageData });
         if (task.id) {
-          const updated = await updateTaskStorageId(task.id, storageId);
+          await updateTaskStorageId(task.id, storageId);
           await updateTaskStatus(task.id, "complete");
-          return updated;
         }
       } catch (err) {
         const msg =
