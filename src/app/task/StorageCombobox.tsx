@@ -24,6 +24,7 @@ interface StorageComboboxProps {
   embeddedOptions: StorageInput[];
   customerHistory: StorageLogInput[] | null;
   onSelect: (storageId: string) => void;
+  dialogOpen?: boolean;
 }
 
 export const StorageCombobox = ({
@@ -32,8 +33,10 @@ export const StorageCombobox = ({
   embeddedOptions,
   customerHistory,
   onSelect,
+  dialogOpen,
 }: StorageComboboxProps) => {
   const [open, setOpen] = useState(false);
+  const isOpenCombobox = dialogOpen && open;
 
   const handleSelect = (storageId: string) => {
     onSelect(storageId);
@@ -43,7 +46,7 @@ export const StorageCombobox = ({
   return (
     <div>
       <Label>保管庫ID</Label>
-      <Popover open={open} onOpenChange={setOpen} modal>
+      <Popover open={isOpenCombobox} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

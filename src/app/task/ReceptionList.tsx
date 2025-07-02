@@ -11,11 +11,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TaskInput } from "@/utils/interface";
-import { Clock, User, Hash, Car, Package } from "lucide-react";
+import {
+  Clock,
+  User,
+  Hash,
+  Car,
+  Package,
+  Save,
+  FilePenLine,
+  MapPin,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
+import SaveTaskDialog from "./SaveTaskDialog";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -26,6 +36,7 @@ const ReceptionList = ({ tasks }: Props) => {
   const [selectedItem, setSelectedItem] = useState<TaskInput | null>(null);
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [taskList, setTaskList] = useState<TaskInput[]>(tasks);
   const router = useRouter();
 
@@ -37,6 +48,11 @@ const ReceptionList = ({ tasks }: Props) => {
   const handleStorageAssignOpen = (item: TaskInput) => {
     setSelectedItem(item);
     setIsStorageDialogOpen(true);
+  };
+
+  const handleSaveDialogOpen = (item: TaskInput) => {
+    setSelectedItem(item);
+    setIsSaveDialogOpen(true);
   };
 
   const handleStorageAssign = (storageId: string) => {
@@ -57,7 +73,7 @@ const ReceptionList = ({ tasks }: Props) => {
   const getActionButton = (item: TaskInput) => {
     if (item.status === "incomplete") {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <Button
             size="default"
             className="p-4"
@@ -69,31 +85,43 @@ const ReceptionList = ({ tasks }: Props) => {
       );
     } else if (item.status === "complete") {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <Button
             variant="outline"
             size="default"
             onClick={() => handleMaintenanceEdit(item)}
           >
+            <FilePenLine className="mr-2 h-4 w-4" />
             編集
           </Button>
           <Button size="default" onClick={() => handleStorageAssignOpen(item)}>
-            {item.storage_id ? "保管庫ID変更" : "保管庫ID割当"}
+            <MapPin className="mr-2 h-4 w-4" />
+            {item.storage_id ? "保管庫変更" : "保管庫割当"}
+          </Button>
+          <Button
+            variant="default"
+            size="default"
+            onClick={() => handleSaveDialogOpen(item)}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            保存
           </Button>
         </div>
       );
     } else if (item.status === "pending") {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <Button
             variant="outline"
             size="default"
             onClick={() => handleMaintenanceEdit(item)}
           >
+            <FilePenLine className="mr-2 h-4 w-4" />
             編集
           </Button>
           <Button size="default" onClick={() => handleStorageAssignOpen(item)}>
-            保管庫ID割当
+            <MapPin className="mr-2 h-4 w-4" />
+            保管庫割当
           </Button>
         </div>
       );
@@ -129,6 +157,16 @@ const ReceptionList = ({ tasks }: Props) => {
           setOpen={setIsStorageDialogOpen}
           selectedItem={selectedItem}
           onAssigned={handleStorageAssign}
+        />
+        <SaveTaskDialog
+          open={isSaveDialogOpen}
+          setOpen={setIsSaveDialogOpen}
+          selectedItem={selectedItem}
+          onSave={() => {
+            setIsSaveDialogOpen(false);
+            setSelectedItem(null);
+            router.refresh(); // Refresh the page to reflect changes
+          }}
         />
         <div className="overflow-x-auto">
           <Table>

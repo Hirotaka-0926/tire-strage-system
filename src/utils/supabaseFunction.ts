@@ -667,6 +667,19 @@ export const getLogsByClientId = async (
   return data || [];
 };
 
+export const clearStorageIdFromTask = async (storageId: string) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .update({ storage_id: null })
+    .eq("storage_id", storageId)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
 // export const getStorageByKeyValue = async(key:string, value : string|number) : Promise<StorageInput> => {
 
 // }

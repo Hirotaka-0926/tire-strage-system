@@ -16,6 +16,7 @@ import {
   getStorageByMasterStorageId,
   clearStorageData,
   updateTaskStorageId,
+  clearStorageIdFromTask,
 } from "@/utils/supabaseFunction";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 
@@ -97,6 +98,7 @@ const useAssignStorage = (
           const prev = await getStorageByMasterStorageId(task.storage_id);
           if (prev.car || prev.client || prev.state) {
             await clearStorageData(task.storage_id);
+            await clearStorageIdFromTask(task.storage_id);
           }
         }
 

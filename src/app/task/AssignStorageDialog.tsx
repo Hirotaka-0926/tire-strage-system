@@ -67,7 +67,7 @@ const AssignStorageDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} modal>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -94,6 +94,7 @@ const AssignStorageDialog = ({
             embeddedOptions={embeddedOptions}
             customerHistory={customerHistory ? customerHistory : null}
             onSelect={handleSelectStorage}
+            dialogOpen={open}
           />
 
           <div className="flex justify-end gap-3 pt-4 border-t">
