@@ -1,42 +1,53 @@
+"use client";
+
 import {
   getStorageByMasterStorageId,
   clearStorageData,
   upsertStorage,
   pushNewStorageLog,
 } from "@/utils/supabaseFunction";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { TaskInput, StorageInput, StorageData } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 
 interface UseSaveTaskReturn {
-  fetchOverWriteStorage: () => Promise<StorageInput | null>;
-  saveTaskData: (
-    prevStorage: StorageInput
-  ) => Promise<{ type: string; message: string }>;
+  prevStorage: StorageInput | null;
+  saveTaskData: () => Promise<{
+    type: "error" | "success" | "info";
+    message: string;
+  }>;
 }
 
 const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
+  const [prevStorage, setPrevStorage] = useState<StorageInput | null>(null);
   const fetchOverWriteStorage = useCallback(async () => {
-    if (!selectedItem) return null;
+    if (!selectedItem) return;
 
     if (selectedItem.storage_id) {
       const storage = await getStorageByMasterStorageId(
         selectedItem!.storage_id!
       );
       if (storage && (storage.car || storage.client || storage.state)) {
-        return storage;
+        setPrevStorage(storage);
       }
     }
-    return null;
-  }, []);
+    return;
+  }, [selectedItem]);
 
-  const saveTaskData = useCallback(async (prevStorage: StorageInput) => {
+  useEffect(() => {
+    fetchOverWriteStorage();
+  });
+
+  const saveTaskData = useCallback(async () => {
     try {
-      if (prevStorage.car || prevStorage.client || prevStorage.state) {
+      if (
+        prevStorage &&
+        (prevStorage.car || prevStorage.client || prevStorage.state)
+      ) {
         await clearStorageData(prevStorage.id!);
       }
       if (!selectedItem) {
-        return { type: "error", message: "選択されたタスクがありません" };
+        return { type: "info", message: "選択されたタスクがありません" };
       }
       const storageData: StorageData = {
         id: selectedItem.storage_id!,
@@ -54,9 +65,9 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
       console.error("Error saving task data:", error);
       return { type: "error", message: "タスクデータの保存に失敗しました" };
     }
-  }, []);
+  }, [selectedItem]);
 
-  return { fetchOverWriteStorage, saveTaskData };
+  return { prevStorage, saveTaskData };
 };
 
 export default useSaveTask;

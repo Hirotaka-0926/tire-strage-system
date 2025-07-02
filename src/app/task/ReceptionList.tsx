@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -27,6 +27,7 @@ import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
 import SaveTaskDialog from "./SaveTaskDialog";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/utils/hooks/useNotification";
 
 interface Props {
   tasks: TaskInput[];
@@ -38,7 +39,18 @@ const ReceptionList = ({ tasks }: Props) => {
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [taskList, setTaskList] = useState<TaskInput[]>(tasks);
+  const [notification, setNotification] = useState<{
+    type: "error" | "success" | "info";
+    message: string;
+  } | null>(null);
   const router = useRouter();
+  const { showNotification, NotificationComponent } = useNotification();
+
+  useEffect(() => {
+    if (notification) {
+      showNotification(notification.type, notification.message);
+    }
+  }, [notification]);
 
   const handleMaintenanceEdit = (item: TaskInput) => {
     setSelectedItem(item);
@@ -146,6 +158,7 @@ const ReceptionList = ({ tasks }: Props) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        <NotificationComponent />
         <EditForm
           isMaintenanceDialogOpen={isMaintenanceDialogOpen}
           setIsMaintenanceDialogOpen={setIsMaintenanceDialogOpen}
@@ -167,6 +180,9 @@ const ReceptionList = ({ tasks }: Props) => {
             setSelectedItem(null);
             router.refresh(); // Refresh the page to reflect changes
           }}
+          setNotification={(type, message) =>
+            setNotification({ type, message })
+          }
         />
         <div className="overflow-x-auto">
           <Table>

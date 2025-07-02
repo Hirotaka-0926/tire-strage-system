@@ -17,21 +17,41 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import useSaveTask from "@/utils/hooks/useSaveTask";
+import { OverwriteWarning } from "./OverWriteWarning";
 
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   selectedData: TaskInput | null;
   onSave: () => void;
+  setNotification?: (
+    type: "error" | "success" | "info",
+    message: string
+  ) => void;
 }
 
-const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
+const SaveTaskDialog = ({
+  open,
+  setOpen,
+  selectedData,
+  onSave,
+  setNotification,
+}: Props) => {
+  const { saveTaskData, prevStorage } = useSaveTask(selectedData);
   if (!selectedData) return null;
 
   const formatDate = (date?: Date | string) => {
     if (!date) return "-";
     const d = typeof date === "string" ? new Date(date) : date;
     return d.toLocaleDateString();
+  };
+
+  const handleOnSave = () => {
+    if (!selectedData) return;
+    const message = saveTaskData();
+    setNotification?.("success", message);
+    onSave();
   };
 
   const close = () => setOpen(false);
@@ -51,23 +71,15 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
                 保管庫情報
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+            <CardContent>
+              <div className="mt-4">
                 <p className="text-sm text-gray-600">保管庫ID</p>
-                <p className="font-medium">{selectedData.storage_id ?? "-"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">車検日</p>
-                <p className="font-medium">
-                  {formatDate(selectedData.tire_state?.inspection_date)}
+                <p className="font-bold text-xl">
+                  {selectedData.storage_id ?? "-"}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">次回のテーマ</p>
-                <p className="font-medium">
-                  {selectedData.tire_state?.next_theme || "-"}
-                </p>
-              </div>
+
+              <OverwriteWarning selectedStorage={prevStorage} show={open} />
             </CardContent>
           </Card>
           {/* 顧客情報 */}
@@ -236,7 +248,7 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
           <Button variant="outline" onClick={close}>
             キャンセル
           </Button>
-          <Button onClick={onSave}>保存</Button>
+          <Button onClick={handleOnSave}>保存</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
