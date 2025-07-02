@@ -151,6 +151,7 @@ const ReceptionList = ({ tasks }: Props) => {
   };
   return (
     <Card>
+      <NotificationComponent />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
@@ -158,7 +159,6 @@ const ReceptionList = ({ tasks }: Props) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <NotificationComponent />
         <EditForm
           isMaintenanceDialogOpen={isMaintenanceDialogOpen}
           setIsMaintenanceDialogOpen={setIsMaintenanceDialogOpen}
@@ -180,9 +180,7 @@ const ReceptionList = ({ tasks }: Props) => {
             setSelectedItem(null);
             router.refresh(); // Refresh the page to reflect changes
           }}
-          setNotification={(type, message) =>
-            setNotification({ type, message })
-          }
+          setNotification={setNotification}
         />
         <div className="overflow-x-auto">
           <Table>

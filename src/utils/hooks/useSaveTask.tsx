@@ -47,7 +47,10 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
         await clearStorageData(prevStorage.id!);
       }
       if (!selectedItem) {
-        return { type: "info", message: "選択されたタスクがありません" };
+        return {
+          type: "info" as const,
+          message: "選択されたタスクがありません",
+        };
       }
       const storageData: StorageData = {
         id: selectedItem.storage_id!,
@@ -60,10 +63,16 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
       const { year, season } = getYearAndSeason();
       await pushNewStorageLog({ year, season, storage: storageData });
 
-      return { type: "success", message: "タスクデータが保存されました" };
+      return {
+        type: "success" as const,
+        message: "タスクデータが保存されました",
+      };
     } catch (error) {
       console.error("Error saving task data:", error);
-      return { type: "error", message: "タスクデータの保存に失敗しました" };
+      return {
+        type: "error" as const,
+        message: "タスクデータの保存に失敗しました",
+      };
     }
   }, [selectedItem]);
 

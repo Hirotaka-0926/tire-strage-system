@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -25,10 +26,12 @@ interface Props {
   setOpen: (open: boolean) => void;
   selectedData: TaskInput | null;
   onSave: () => void;
-  setNotification?: (
-    type: "error" | "success" | "info",
-    message: string
-  ) => void;
+  setNotification: React.Dispatch<
+    React.SetStateAction<{
+      type: "error" | "success" | "info";
+      message: string;
+    } | null>
+  >;
 }
 
 const SaveTaskDialog = ({
@@ -47,10 +50,10 @@ const SaveTaskDialog = ({
     return d.toLocaleDateString();
   };
 
-  const handleOnSave = () => {
+  const handleOnSave = async () => {
     if (!selectedData) return;
-    const message = saveTaskData();
-    setNotification?.("success", message);
+    const message = await saveTaskData();
+    setNotification(message);
     onSave();
   };
 
