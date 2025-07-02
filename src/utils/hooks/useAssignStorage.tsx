@@ -1,24 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  TaskInput,
-  StorageLogInput,
-  StorageData,
-  StorageInput,
-} from "@/utils/interface";
+import { TaskInput, StorageLogInput, StorageInput } from "@/utils/interface";
 import {
   getAllMasterStorages,
-  pushNewStorageLog,
-  upsertStorage,
   updateTaskStatus,
   getLogsByClientId,
   getStorageByMasterStorageId,
-  clearStorageData,
-  updateTaskStorageId,
   clearStorageIdFromTask,
 } from "@/utils/supabaseFunction";
-import { getYearAndSeason } from "@/utils/globalFunctions";
 
 interface UseAssignStorageReturn {
   emptyOptions: StorageInput[];
@@ -97,23 +87,11 @@ const useAssignStorage = (
         ) {
           const prev = await getStorageByMasterStorageId(task.storage_id);
           if (prev.car || prev.client || prev.state) {
-            await clearStorageData(task.storage_id);
             await clearStorageIdFromTask(task.storage_id);
           }
         }
 
-        const storageData: StorageData = {
-          id: storageId,
-          car_id: task.car?.id ?? null,
-          client_id: task.client?.id ?? null,
-          tire_state_id: task.tire_state?.id ?? null,
-        };
-        await upsertStorage(storageData);
-
-        const { year, season } = getYearAndSeason();
-        await pushNewStorageLog({ year, season, storage: storageData });
         if (task.id) {
-          await updateTaskStorageId(task.id, storageId);
           await updateTaskStatus(task.id, "complete");
         }
       } catch (err) {
