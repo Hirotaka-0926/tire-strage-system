@@ -8,12 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -49,6 +44,32 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/*保管庫情報 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                保管庫情報
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">保管庫ID</p>
+                <p className="font-medium">{selectedData.storage_id ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">車検日</p>
+                <p className="font-medium">
+                  {formatDate(selectedData.tire_state?.inspection_date)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">次回のテーマ</p>
+                <p className="font-medium">
+                  {selectedData.tire_state?.next_theme || "-"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
           {/* 顧客情報 */}
           <Card>
             <CardHeader>
@@ -85,7 +106,9 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
           {/* タイヤ基礎情報 */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">タイヤ基礎情報</CardTitle>
+              <CardTitle className="text-lg font-semibold">
+                タイヤ基礎情報
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -126,7 +149,7 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
             <CardHeader>
               <CardTitle className="text-lg font-semibold">整備項目</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -138,10 +161,22 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
                 </TableHeader>
                 <TableBody>
                   {[
-                    { label: "タイヤ", data: selectedData.tire_state?.tire_inspection },
-                    { label: "ワイパーゴム", data: selectedData.tire_state?.wiper_inspection },
-                    { label: "エンジンオイル", data: selectedData.tire_state?.oil_inspection },
-                    { label: "バッテリー", data: selectedData.tire_state?.battery_inspection },
+                    {
+                      label: "タイヤ",
+                      data: selectedData.tire_state?.tire_inspection,
+                    },
+                    {
+                      label: "ワイパーゴム",
+                      data: selectedData.tire_state?.wiper_inspection,
+                    },
+                    {
+                      label: "エンジンオイル",
+                      data: selectedData.tire_state?.oil_inspection,
+                    },
+                    {
+                      label: "バッテリー",
+                      data: selectedData.tire_state?.battery_inspection,
+                    },
                   ].map((row) => (
                     <TableRow key={row.label}>
                       <TableCell className="font-medium">{row.label}</TableCell>
