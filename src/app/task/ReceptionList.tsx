@@ -161,7 +161,7 @@ const ReceptionList = ({ tasks }: Props) => {
         <SaveTaskDialog
           open={isSaveDialogOpen}
           setOpen={setIsSaveDialogOpen}
-          selectedItem={selectedItem}
+          selectedData={selectedItem}
           onSave={() => {
             setIsSaveDialogOpen(false);
             setSelectedItem(null);
