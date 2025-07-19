@@ -1,5 +1,10 @@
 import { createClient } from "@/utils/server";
-import { StorageLogInput, TaskInput, StorageInput } from "@/utils/interface";
+import {
+  StorageLogInput,
+  TaskInput,
+  StorageInput,
+  Client,
+} from "@/utils/interface";
 
 export const getStorageByMasterStorageId = async (
   id: string
@@ -110,6 +115,27 @@ export const getAllTasks = async (): Promise<TaskInput[]> => {
     }
 
     return data;
+  } catch (e) {
+    console.error("Unexpected error:", e);
+    return [];
+  }
+};
+
+export const getAllClients = async (): Promise<Client[]> => {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("client_data")
+      .select("*")
+      .order("id", { ascending: true });
+    if (error) {
+      throw error;
+    }
+    const clients = data.map((client) => ({
+      ...client,
+      created_at: new Date(client.created_at),
+    }));
+    return clients;
   } catch (e) {
     console.error("Unexpected error:", e);
     return [];

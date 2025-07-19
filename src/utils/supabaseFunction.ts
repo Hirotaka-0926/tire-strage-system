@@ -447,20 +447,6 @@ export const deleteStorages = async (deleteStorages: deleteStorageSchema[]) => {
   }
 };
 
-export const getPendingTasks = async (): Promise<TaskInput[]> => {
-  const { data, error } = await supabase
-    .from("task_list")
-    .select(
-      "*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)"
-    )
-    .eq("status", "pending");
-
-  if (error) {
-    throw error;
-  }
-  return data;
-};
-
 export const getLogsByStorageId = async (
   storage_id: string
 ): Promise<StorageLogInput[]> => {

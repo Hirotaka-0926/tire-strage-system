@@ -1,5 +1,5 @@
 import React from "react";
-import { getAllClients, getAllStorages } from "@/utils/supabaseFunction";
+import { getAllClients, getAllStorages } from "@/utils/supabaseServerFunction";
 import CustomerManage from "./CustomerManage";
 
 const Customer = async () => {
