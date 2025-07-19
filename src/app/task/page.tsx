@@ -1,6 +1,7 @@
 import NumberOfStatus from "./NumberOfStatus";
 import ReceptionList from "./ReceptionList";
-import { getAllTasks } from "@/utils/supabaseFunction";
+
+import { getAllTasks } from "@/utils/supabaseServerFunction";
 
 const TaskPage = async () => {
   const tasks = await getAllTasks();

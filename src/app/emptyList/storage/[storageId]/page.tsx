@@ -4,7 +4,7 @@ import {
   getStorageByMasterStorageId,
   getPendingTasks,
   getLogsByStorageId,
-} from "@/utils/supabaseFunction";
+} from "@/utils/supabaseServerFunction";
 
 interface StorageParams {
   params: Promise<{
@@ -26,7 +26,6 @@ const StorageDetail = async ({ params }: StorageParams) => {
     (storageDetail.car === null && storageDetail.client === null) ||
     storageDetail.state === null
   ) {
-    console.log("storageDetail", storageDetail);
     return (
       <Detail
         initialStorageDetail={null}

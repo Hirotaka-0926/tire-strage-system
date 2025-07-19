@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import StoragePage from "./ClientPage";
-import { getAllStorages } from "@/utils/supabaseFunction";
+
+import { getAllStorages } from "@/utils/supabaseServerFunction";
 
 import { StorageLogInput } from "@/utils/interface";
 import SpinLoading from "@/components/base/Loading/SpinLoading";
