@@ -63,7 +63,11 @@ const pdfStyles = StyleSheet.create({
 });
 
 // PDF文書コンポーネント - 単一のストレージページを生成
-const StoragePage: React.FC<{ storage: StorageLogInput }> = ({ storage }) => (
+const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
+  storage,
+}: {
+  storage: StorageLogInput;
+}) => (
   <Page size="A4" style={pdfStyles.page}>
     <View style={pdfStyles.section}>
       <Text style={pdfStyles.title}>保管庫詳細</Text>
@@ -148,7 +152,7 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({ storage }) => (
 // 複数のストレージに対応するPDF文書コンポーネント
 const StoragePDFDocument: React.FC<{
   storages: StorageLogInput | StorageLogInput[];
-}> = ({ storages }) => {
+}> = ({ storages }: { storages: StorageLogInput | StorageLogInput[] }) => {
   const storageArray = Array.isArray(storages) ? storages : [storages];
 
   return (
