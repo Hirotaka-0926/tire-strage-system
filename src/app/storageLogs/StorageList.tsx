@@ -31,6 +31,9 @@ const TABLE_COLUMNS = [
   {key: "client_name", label: "顧客名", visible: true},
   {key: "car_model", label: "車種", visible: true},
   {key: "car_number", label: "ナンバー", visible: true},
+  {key: "tire_maker", label: "タイヤメーカー", visible: true},
+  {key: "tire_size", label: "タイヤサイズ", visible: true},
+  {key: "tire_pattern", label: "タイヤパターン", visible: true}
 ]
 
 const LogTable:React.FC<Props> = ({
@@ -56,7 +59,14 @@ const LogTable:React.FC<Props> = ({
   const [logDatas, setLogDatas] = useState<StorageLogInput[]>(storageList);
 
   useEffect(()=>{
+    setLogDatas(storageList);
+  }, [storageList])
 
+  useEffect(() => {
+    if(searchValue){
+      const filteredData = storageList.filter((log)=>{})
+    }
+    
   })
 
 

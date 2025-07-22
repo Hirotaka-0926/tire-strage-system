@@ -32,14 +32,26 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
   const [tabText, setTabText] = useState<string>("checkbox");
 
+  const getNestedValue = (key: string, value: any) => {
+    const splitKeys = key.split(".");
+    const nestedValue = splitKeys.reduce((obj, c) => {
+      if (typeof obj !== "string") {
+        return obj[c];
+      }
+      return obj;
+    }, value);
+    return nestedValue;
+  };
+
   const filteredList = storageList.filter((list: StorageLogInput) => {
-    const matchesSearch =
-      list.client.client_name
-        .toLowerCase()
-        .includes(searchValue.toLowerCase()) ||
-      list.car.car_model.toLowerCase().includes(searchValue.toLowerCase()) ||
-      list.car.car_number.toLowerCase().includes(searchValue.toLowerCase()) ||
-      list.storage.id.toLowerCase().includes(searchValue.toLowerCase());
+    const matchesSearch = getNestedValue(searchKey, list)
+      .toLowerCase()
+      .includes(searchValue.toLowerCase());
+
+    if (isSearchBySeason) {
+      const seasonMatches = list.season === season && list.year === year;
+      return matchesSearch && seasonMatches;
+    }
 
     return matchesSearch;
   });
@@ -103,14 +115,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
       <Card>
         <CardContent className="p-0 sm:p-2">
           <LogTable
-            searchKey={searchKey}
-            searchValue={searchValue}
-            year={year}
-            season={season}
-            isSearchBySeason={isSearchBySeason}
-            storageList={storageList}
-            setStorageList={setStorageList}
-            setSelectedStorages={setSelectedStorages}
+            storageList={filteredList}
             selectedStorages={selectedStorages}
             isConvertPDF={isConvertPDF}
             tabText={tabText}
