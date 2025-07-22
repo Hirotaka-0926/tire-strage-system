@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import StoragePage from "./ClientPage";
+import StoragePage from "./StoragePage";
 
 import { getAllStorages } from "@/utils/supabaseServerFunction";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LogTable } from "./StorageList";
+import LogTable from "./StorageList";
 import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,28 +22,43 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   const [year, setYear] = useState<number>(2024);
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
-  const [storageList, setStorageList] = useState<StorageLogInput[]>(
-    initialStorages || []
-  );
+  const storageList = initialStorages || [];
 
-  const [selectedStorages, setSelectedStorages] = useState<StorageLogInput[]>(
-    []
-  );
+  const [selectedStorages, setSelectedStorages] = useState<
+    Set<StorageLogInput>
+  >(new Set());
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
   const [tabText, setTabText] = useState<string>("checkbox");
 
   const getNestedValue = (key: string, value: any) => {
+    if (!key || !value) {
+      return "/";
+    }
+
     const splitKeys = key.split(".");
     const nestedValue = splitKeys.reduce((obj, c) => {
-      if (typeof obj !== "string") {
-        return obj[c];
+      // nullやundefinedの場合は空文字を返す
+      if (obj == null) {
+        return "/";
       }
-      return obj;
+
+      // オブジェクトでない場合（プリミティブ値）は空文字を返す
+      if (typeof obj !== "object") {
+        return "/";
+      }
+
+      return obj[c];
     }, value);
-    return nestedValue;
+
+    // 最終的にnullやundefinedの場合は空文字を返す
+    return nestedValue ?? "/";
   };
 
-  const filteredList = storageList.filter((list: StorageLogInput) => {
+  const filteredList = (storageList || []).filter((list: StorageLogInput) => {
+    // listがnullやundefinedの場合はフィルタリング対象外
+    if (!list) return false;
+    if (!searchValue) return true;
+
     const matchesSearch = getNestedValue(searchKey, list)
       .toLowerCase()
       .includes(searchValue.toLowerCase());
@@ -101,12 +116,12 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
             <div className="md:col-span-1 flex justify-end items-center">
               <StorageToCSV storages={storageList} />
               <StoragesToPDF
-                selectedStorages={selectedStorages}
+                selectedStorages={Array.from(selectedStorages)}
                 setIsConvertPDF={setIsConvertPDF}
                 isConvertPDF={isConvertPDF}
                 tabText={tabText}
               />
-              <DeleteStorages selectedStorages={selectedStorages} />
+              <DeleteStorages selectedStorages={Array.from(selectedStorages)} />
             </div>
           </div>
         </CardContent>
@@ -117,6 +132,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
           <LogTable
             storageList={filteredList}
             selectedStorages={selectedStorages}
+            setSelectedStorages={setSelectedStorages}
             isConvertPDF={isConvertPDF}
             tabText={tabText}
             setTabText={setTabText}
