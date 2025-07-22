@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { DataTableDemo } from "./StorageList";
+import { LogTable } from "./StorageList";
 import SearchStorage from "./SearchStorage";
 import StoragedSeason from "./StoragedSeason";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +31,18 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   );
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
   const [tabText, setTabText] = useState<string>("checkbox");
+
+  const filteredList = storageList.filter((list: StorageLogInput) => {
+    const matchesSearch =
+      list.client.client_name
+        .toLowerCase()
+        .includes(searchValue.toLowerCase()) ||
+      list.car.car_model.toLowerCase().includes(searchValue.toLowerCase()) ||
+      list.car.car_number.toLowerCase().includes(searchValue.toLowerCase()) ||
+      list.storage.id.toLowerCase().includes(searchValue.toLowerCase());
+
+    return matchesSearch;
+  });
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -90,7 +102,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
 
       <Card>
         <CardContent className="p-0 sm:p-2">
-          <DataTableDemo
+          <LogTable
             searchKey={searchKey}
             searchValue={searchValue}
             year={year}
