@@ -21,6 +21,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import { ChevronDown, Info, Trash2, Eye } from "lucide-react";
 import {
@@ -39,6 +50,7 @@ interface Props {
     React.SetStateAction<Set<StorageLogInput>>
   >;
   selectedStorages: Set<StorageLogInput>;
+  onDeleteStorage?: (storageId: number) => void;
 }
 
 const TABLE_COLUMNS = [
@@ -61,6 +73,7 @@ const LogTable: React.FC<Props> = ({
   storageList,
   setSelectedStorages,
   selectedStorages,
+  onDeleteStorage,
   // Not directly used in table display, st orageList is source
 }) => {
   const [visibleColumns, setVisibleColumns] = useState(
@@ -144,6 +157,23 @@ const LogTable: React.FC<Props> = ({
   const canSelectAll =
     currentTableData.length > 0 &&
     currentTableData.every((row) => selectedStorages.has(row));
+
+  // 削除ハンドラー
+  const handleDeleteStorage = (storageId: number) => {
+    if (onDeleteStorage) {
+      onDeleteStorage(storageId);
+      // 削除後、選択状態をクリア
+      setSelectedStorages((prev) => {
+        const newSelection = new Set(prev);
+        // 削除されたアイテムを選択から除外
+        const deletedItem = Array.from(prev).find(item => item.id === storageId);
+        if (deletedItem) {
+          newSelection.delete(deletedItem);
+        }
+        return newSelection;
+      });
+    }
+  };
 
   return (
     <Card className="shadow-lg">
@@ -284,14 +314,42 @@ const LogTable: React.FC<Props> = ({
                       >
                         <Eye className="w-3 h-3" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onDeleteCustomer(customer.id!)}
-                        title="削除"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            title="削除"
+                            disabled={!onDeleteStorage}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>保管データを削除</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              この保管データを削除してもよろしいですか？
+                              <br />
+                              保管庫ID: {row.storage.id}
+                              <br />
+                              顧客名: {row.client.client_name}
+                              <br />
+                              この操作は取り消すことができません。
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteStorage(row.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              削除
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))

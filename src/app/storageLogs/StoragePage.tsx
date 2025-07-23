@@ -11,6 +11,9 @@ import { StorageLogInput } from "@/utils/interface";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StoragesToPDF from "./StoragesToPDF";
 import DeleteStorages from "./DeleteStorages";
+import { deleteStorages } from "@/utils/supabaseFunction";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface StoragePageProps {
   initialStorages?: StorageLogInput[];
@@ -23,11 +26,43 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   const [season, setSeason] = useState<"summer" | "winter">("summer");
   const [isSearchBySeason, setIsSearchBySeason] = useState<boolean>(false);
   const storageList = initialStorages || [];
+  const router = useRouter();
 
   const [selectedStorages, setSelectedStorages] = useState<
     Set<StorageLogInput>
   >(new Set());
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
+
+  // 個別削除ハンドラー
+  const handleDeleteStorage = async (storageId: number) => {
+    try {
+      const storageToDelete = storageList.find(
+        (storage) => storage.id === storageId
+      );
+      if (!storageToDelete) {
+        toast.error("削除対象の保管データが見つかりません");
+        return;
+      }
+
+      // deleteStoragesは配列を受け取るので、単一アイテムを配列に包む
+      const deleteData = [
+        {
+          id: storageToDelete.id,
+          storage_id: storageToDelete.storage.id,
+          client_id: storageToDelete.client?.id,
+          car_id: storageToDelete.car?.id,
+          tire_state_id: storageToDelete.state?.id,
+        },
+      ];
+
+      await deleteStorages(deleteData);
+      toast.success("保管データを削除しました");
+      router.refresh(); // ページをリフレッシュしてデータを更新
+    } catch (error) {
+      console.error("Error deleting storage:", error);
+      toast.error("削除に失敗しました");
+    }
+  };
 
   const getNestedValue = (key: string, value: any) => {
     if (!key || !value) {
@@ -128,6 +163,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
         storageList={filteredList}
         selectedStorages={selectedStorages}
         setSelectedStorages={setSelectedStorages}
+        onDeleteStorage={handleDeleteStorage}
       />
     </div>
   );
