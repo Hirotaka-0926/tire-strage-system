@@ -97,26 +97,26 @@ const LogTable: React.FC<Props> = ({
 
   const getNestedValue = (key: string, value: any) => {
     if (!key || !value) {
-      return "/";
+      return "-";
     }
 
     const splitKeys = key.split(".");
     const nestedValue = splitKeys.reduce((obj, c) => {
-      // nullやundefinedの場合は空文字を返す
+      // nullやundefinedの場合は早期リターン
       if (obj == null) {
-        return "/";
+        return null;
       }
 
-      // オブジェクトでない場合（プリミティブ値）は空文字を返す
+      // オブジェクトでない場合（プリミティブ値）は早期リターン
       if (typeof obj !== "object") {
-        return "/";
+        return null;
       }
 
       return obj[c];
     }, value);
 
-    // 最終的にnullやundefinedの場合は空文字を返す
-    return nestedValue ?? "/";
+    // 最終的にnullやundefinedの場合は"-"を返す
+    return nestedValue ?? "-";
   };
 
   // ページネーションロジック
@@ -166,7 +166,9 @@ const LogTable: React.FC<Props> = ({
       setSelectedStorages((prev) => {
         const newSelection = new Set(prev);
         // 削除されたアイテムを選択から除外
-        const deletedItem = Array.from(prev).find(item => item.id === storageId);
+        const deletedItem = Array.from(prev).find(
+          (item) => item.id === storageId
+        );
         if (deletedItem) {
           newSelection.delete(deletedItem);
         }
@@ -290,7 +292,7 @@ const LogTable: React.FC<Props> = ({
                         onCheckedChange={(checked) =>
                           handleRowSelect(row, !!checked)
                         }
-                        aria-label={`Select row ${row.storage.id}`}
+                        aria-label={`Select row ${row.storage?.id || row.id}`}
                       />
                     </TableCell>
                     {TABLE_COLUMNS.filter((col) => visibleColumns[col.key]).map(
@@ -314,7 +316,7 @@ const LogTable: React.FC<Props> = ({
                       >
                         <Eye className="w-3 h-3" />
                       </Button>
-                      
+
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -328,13 +330,15 @@ const LogTable: React.FC<Props> = ({
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>保管データを削除</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              保管データを削除
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
                               この保管データを削除してもよろしいですか？
                               <br />
-                              保管庫ID: {row.storage.id}
+                              保管庫ID: {row.storage?.id || "不明"}
                               <br />
-                              顧客名: {row.client.client_name}
+                              顧客名: {row.client?.client_name || "未設定"}
                               <br />
                               この操作は取り消すことができません。
                             </AlertDialogDescription>
