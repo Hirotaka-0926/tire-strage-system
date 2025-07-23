@@ -72,7 +72,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6 ">
       <h1 className="text-2xl font-bold mb-6">保管庫一覧</h1>
 
       <Card className="mb-6">
@@ -127,18 +127,14 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-0 sm:p-2">
-          <LogTable
-            storageList={filteredList}
-            selectedStorages={selectedStorages}
-            setSelectedStorages={setSelectedStorages}
-            isConvertPDF={isConvertPDF}
-            tabText={tabText}
-            setTabText={setTabText}
-          />
-        </CardContent>
-      </Card>
+      <LogTable
+        storageList={filteredList}
+        selectedStorages={selectedStorages}
+        setSelectedStorages={setSelectedStorages}
+        isConvertPDF={isConvertPDF}
+        tabText={tabText}
+        setTabText={setTabText}
+      />
     </div>
   );
 };

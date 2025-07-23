@@ -45,13 +45,13 @@ interface Props {
 const TABLE_COLUMNS = [
   { key: "year", label: "年", visible: true },
   { key: "season", label: "シーズン", visible: true },
-  { key: "storage_id", label: "保管庫ID", visible: true },
-  { key: "client_name", label: "顧客名", visible: true },
-  { key: "car_model", label: "車種", visible: true },
-  { key: "car_number", label: "ナンバー", visible: true },
-  { key: "tire_maker", label: "タイヤメーカー", visible: true },
-  { key: "tire_size", label: "タイヤサイズ", visible: true },
-  { key: "tire_pattern", label: "タイヤパターン", visible: true },
+  { key: "storage.id", label: "保管庫ID", visible: true },
+  { key: "client.client_name", label: "顧客名", visible: true },
+  { key: "car.car_model", label: "車種", visible: true },
+  { key: "car.car_number", label: "ナンバー", visible: true },
+  { key: "state.tire_maker", label: "タイヤメーカー", visible: true },
+  { key: "state.tire_size", label: "タイヤサイズ", visible: true },
+  { key: "state.tire_pattern", label: "タイヤパターン", visible: true },
 ];
 
 const ROWS_PER_PAGE = 10; // 1ページあたりの表示行数
@@ -78,10 +78,33 @@ const LogTable: React.FC<Props> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // フィルタリングロジック
   useEffect(() => {
-    setCurrentPage(1); // フィルタリング時にページをリセット
+    setCurrentPage(1); // ページをリセット
   }, [storageList, toast, setSelectedStorages]);
+
+  const getNestedValue = (key: string, value: any) => {
+    if (!key || !value) {
+      return "/";
+    }
+
+    const splitKeys = key.split(".");
+    const nestedValue = splitKeys.reduce((obj, c) => {
+      // nullやundefinedの場合は空文字を返す
+      if (obj == null) {
+        return "/";
+      }
+
+      // オブジェクトでない場合（プリミティブ値）は空文字を返す
+      if (typeof obj !== "object") {
+        return "/";
+      }
+
+      return obj[c];
+    }, value);
+
+    // 最終的にnullやundefinedの場合は空文字を返す
+    return nestedValue ?? "/";
+  };
 
   // ページネーションロジック
   const totalPages = Math.ceil(storageList.length / ROWS_PER_PAGE);
@@ -244,7 +267,7 @@ const LogTable: React.FC<Props> = ({
                             ? row[column.key] === "summer"
                               ? "夏"
                               : "冬"
-                            : row[column.key]}
+                            : getNestedValue(column.key, row)}
                         </TableCell>
                       )
                     )}
