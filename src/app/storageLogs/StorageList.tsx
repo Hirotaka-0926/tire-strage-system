@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, Info, Trash2, Eye } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -30,6 +30,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+import { useRouter } from "next/navigation";
 
 interface Props {
   storageList: StorageLogInput[];
@@ -51,13 +53,15 @@ const TABLE_COLUMNS = [
   { key: "state.tire_pattern", label: "タイヤパターン", visible: true },
 ];
 
-const ROWS_PER_PAGE = 10; // 1ページあたりの表示行数
+const ROWS_PER_PAGE_DEFAULT = 10; // 1ページあたりの表示行数
+
+const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100]; // ページあたりの行数選択肢
 
 const LogTable: React.FC<Props> = ({
   storageList,
   setSelectedStorages,
   selectedStorages,
-  // Not directly used in table display, storageList is source
+  // Not directly used in table display, st orageList is source
 }) => {
   const [visibleColumns, setVisibleColumns] = useState(
     TABLE_COLUMNS.reduce(
@@ -71,6 +75,8 @@ const LogTable: React.FC<Props> = ({
 
   const [currentPage, setCurrentPage] = useState(1);
   const [loading] = useState(false);
+  const router = useRouter();
+  const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE_DEFAULT);
 
   useEffect(() => {
     setCurrentPage(1); // ページをリセット
@@ -101,12 +107,12 @@ const LogTable: React.FC<Props> = ({
   };
 
   // ページネーションロジック
-  const totalPages = Math.ceil(storageList.length / ROWS_PER_PAGE);
+  const totalPages = Math.ceil(storageList.length / rowsPerPage);
   const currentTableData = useMemo(() => {
-    const firstPageIndex = (currentPage - 1) * ROWS_PER_PAGE;
-    const lastPageIndex = firstPageIndex + ROWS_PER_PAGE;
+    const firstPageIndex = (currentPage - 1) * rowsPerPage;
+    const lastPageIndex = firstPageIndex + rowsPerPage;
     return storageList.slice(firstPageIndex, lastPageIndex);
-  }, [currentPage, storageList]);
+  }, [currentPage, storageList, rowsPerPage]);
 
   // 全選択/全解除ハンドラ
   const handleSelectAll = (checked: boolean) => {
@@ -199,11 +205,14 @@ const LogTable: React.FC<Props> = ({
                     </TableHead>
                   )
                 )}
+                <TableHead key={"action"} className="text-base">
+                  アクション
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array.from({ length: ROWS_PER_PAGE }).map((_, i) => (
+                Array.from({ length: rowsPerPage }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell>
                       <Skeleton className="h-5 w-5 rounded-sm" />
@@ -265,6 +274,25 @@ const LogTable: React.FC<Props> = ({
                         </TableCell>
                       )
                     )}
+
+                    <TableCell className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push(`/storageLogs/${row.id}`)}
+                        title="詳細表示"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onDeleteCustomer(customer.id!)}
+                        title="削除"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -296,6 +324,25 @@ const LogTable: React.FC<Props> = ({
           >
             次へ
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                {rowsPerPage}行表示 <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {ROWS_PER_PAGE_OPTIONS.map((option) => (
+                <DropdownMenuCheckboxItem
+                  key={option}
+                  onClick={() => setRowsPerPage(option)}
+                  checked={option === rowsPerPage}
+                >
+                  {option}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardFooter>
     </Card>
