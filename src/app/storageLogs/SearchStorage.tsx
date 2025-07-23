@@ -17,6 +17,16 @@ interface Props {
   setSearchValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
+const SEARCH_OPTIONS = [
+  { value: "storage.id", label: "保管庫ID" },
+  { value: "client.client_name", label: "顧客名" },
+  { value: "car.car_model", label: "車種" },
+  { value: "car.car_number", label: "ナンバー" },
+  { value: "state.tire_maker", label: "タイヤメーカー" },
+  { value: "state.tire_size", label: "タイヤサイズ" },
+  { value: "state.tire_pattern", label: "タイヤパターン" },
+];
+
 const SearchStorage: React.FC<Props> = ({
   searchKey,
   setSearchKey,
@@ -40,13 +50,11 @@ const SearchStorage: React.FC<Props> = ({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>保管庫情報</SelectLabel>
-            <SelectItem value="storage.id">保管庫ID</SelectItem>
-            <SelectItem value="client.client_name">顧客名</SelectItem>
-            <SelectItem value="car.car_model">車種</SelectItem>
-            <SelectItem value="car.car_number">ナンバー</SelectItem>
-            <SelectItem value="state.tire_maker">タイヤメーカー</SelectItem>
-            <SelectItem value="state.tire_size">タイヤサイズ</SelectItem>
-            <SelectItem value="state.tire_pattern">タイヤパターン</SelectItem>
+            {SEARCH_OPTIONS.map((option) => (
+              <SelectItem value={option.value} key={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectGroup>
         </SelectContent>
       </Select>

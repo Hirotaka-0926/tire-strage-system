@@ -1,18 +1,8 @@
-import React, { useCallback, useEffect } from "react";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { StorageLogInput } from "@/utils/interface";
-import { Checkbox } from "@/components/ui/checkbox";
+"use client";
+
+import type { StorageLogInput } from "@/utils/interface"; // Assuming this interface matches TABLE_COLUMNS keys
+import type React from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -21,446 +11,400 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { ChevronDown, Info, Trash2, Eye } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { useRouter } from "next/navigation";
 
 interface Props {
-  searchKey: string;
-  searchValue: string;
-  year: number;
-  season: "summer" | "winter";
-  isSearchBySeason: boolean;
   storageList: StorageLogInput[];
-  setStorageList: React.Dispatch<React.SetStateAction<StorageLogInput[]>>;
-  setSelectedStorages: React.Dispatch<React.SetStateAction<StorageLogInput[]>>;
-  selectedStorages: StorageLogInput[];
-  isConvertPDF: boolean;
-  setTabText: React.Dispatch<React.SetStateAction<string>>;
-  tabText: string;
+  setSelectedStorages: React.Dispatch<
+    React.SetStateAction<Set<StorageLogInput>>
+  >;
+  selectedStorages: Set<StorageLogInput>;
+  onDeleteStorage?: (storageId: number) => void;
 }
 
-export const columns: ColumnDef<StorageLogInput>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "保管庫ID",
-    header: "保管庫ID",
-    cell: ({ row }) => {
-      const storageType = row.original.storage?.id;
-      return <div className="capitalize">{storageType || "-"}</div>;
-    },
-  },
-  {
-    accessorKey: "顧客名",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          顧客名
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.client?.client_name || "-"}</div>;
-    },
-  },
-  {
-    accessorKey: "車種",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          車種
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.car?.car_model || "-"}</div>;
-    },
-  },
-
-  {
-    accessorKey: "車ナンバー",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          車ナンバー
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.car?.car_number || "-"}</div>;
-    },
-  },
-
-  {
-    accessorKey: "タイヤメーカー",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          タイヤメーカー
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.state?.tire_maker || "-"}</div>;
-    },
-  },
-
-  {
-    accessorKey: "タイヤパターン",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          タイヤパターン
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.state?.tire_pattern || "-"}</div>;
-    },
-  },
-
-  {
-    accessorKey: "タイヤサイズ",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          タイヤサイズ
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{row.original.state?.tire_size || "-"}</div>;
-    },
-  },
+const TABLE_COLUMNS = [
+  { key: "year", label: "年", visible: true },
+  { key: "season", label: "シーズン", visible: true },
+  { key: "storage.id", label: "保管庫ID", visible: true },
+  { key: "client.client_name", label: "顧客名", visible: true },
+  { key: "car.car_model", label: "車種", visible: true },
+  { key: "car.car_number", label: "ナンバー", visible: true },
+  { key: "state.tire_maker", label: "タイヤメーカー", visible: true },
+  { key: "state.tire_size", label: "タイヤサイズ", visible: true },
+  { key: "state.tire_pattern", label: "タイヤパターン", visible: true },
 ];
 
-export const DataTableDemo: React.FC<Props> = ({
-  searchKey,
-  searchValue,
-  year,
-  season,
-  isSearchBySeason,
+const ROWS_PER_PAGE_DEFAULT = 10; // 1ページあたりの表示行数
+
+const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100]; // ページあたりの行数選択肢
+
+const LogTable: React.FC<Props> = ({
   storageList,
-  setStorageList,
   setSelectedStorages,
-  setTabText,
-  tabText,
+  selectedStorages,
+  onDeleteStorage,
+  // Not directly used in table display, st orageList is source
 }) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const [visibleColumns, setVisibleColumns] = useState(
+    TABLE_COLUMNS.reduce(
+      (acc, col) => ({
+        ...acc,
+        [col.key]: col.visible,
+      }),
+      {} as Record<string, boolean>
+    )
   );
-  const [allStorages, setAllStorages] = React.useState<StorageLogInput[]>([]);
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading] = useState(false);
   const router = useRouter();
+  const [rowsPerPage, setRowsPerPage] = useState(ROWS_PER_PAGE_DEFAULT);
 
-  const table = useReactTable({
-    data: storageList,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
-  const selectedRows = table
-    .getSelectedRowModel()
-    .rows.map((row) => row.original);
-  console.log(selectedRows);
+  useEffect(() => {
+    setCurrentPage(1); // ページをリセット
+  }, [storageList, toast, setSelectedStorages]);
 
-  const filterStorageList = useCallback(() => {
-    if (!allStorages.length) return;
-
-    if (!searchValue) {
-      if (isSearchBySeason) {
-        const filteredBySeason = allStorages.filter(
-          (storage: StorageLogInput) =>
-            storage.season === season && storage.year === year
-        );
-        setStorageList(
-          filteredBySeason.length ? filteredBySeason : allStorages
-        );
-      } else {
-        setStorageList(allStorages);
-      }
-      return;
+  const getNestedValue = (key: string, value: any) => {
+    if (!key || !value) {
+      return "/";
     }
 
-    const filteredByKey = allStorages.filter((storage: StorageLogInput) => {
-      try {
-        const fieldValue = getNestedProperty(storage, searchKey);
-
-        if (fieldValue === undefined || fieldValue === null) return false;
-
-        if (typeof fieldValue === "string") {
-          return fieldValue.toLowerCase().includes(searchValue.toLowerCase());
-        } else if (typeof fieldValue === "number") {
-          return fieldValue.toString().includes(searchValue);
-        } else if (fieldValue instanceof Date) {
-          return fieldValue.toISOString().includes(searchValue);
-        }
-      } catch (err) {
-        console.error("フィルタリングエラー:", err);
+    const splitKeys = key.split(".");
+    const nestedValue = splitKeys.reduce((obj, c) => {
+      // nullやundefinedの場合は空文字を返す
+      if (obj == null) {
+        return "/";
       }
-      return false;
-    });
 
-    if (isSearchBySeason) {
-      const filteredBySeason = filteredByKey.filter(
-        (storage: StorageLogInput) =>
-          storage.season === season && storage.year === year
-      );
-      setStorageList(
-        filteredBySeason.length ? filteredBySeason : filteredByKey
-      );
+      // オブジェクトでない場合（プリミティブ値）は空文字を返す
+      if (typeof obj !== "object") {
+        return "/";
+      }
+
+      return obj[c];
+    }, value);
+
+    // 最終的にnullやundefinedの場合は空文字を返す
+    return nestedValue ?? "/";
+  };
+
+  // ページネーションロジック
+  const totalPages = Math.ceil(storageList.length / rowsPerPage);
+  const currentTableData = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * rowsPerPage;
+    const lastPageIndex = firstPageIndex + rowsPerPage;
+    return storageList.slice(firstPageIndex, lastPageIndex);
+  }, [currentPage, storageList, rowsPerPage]);
+
+  // 全選択/全解除ハンドラ
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const newSelected = new Set(selectedStorages);
+      currentTableData.forEach((row) => newSelected.add(row));
+      setSelectedStorages(newSelected);
     } else {
-      setStorageList(filteredByKey);
+      const newSelected = new Set(selectedStorages);
+      currentTableData.forEach((row) => newSelected.delete(row));
+      setSelectedStorages(newSelected);
     }
-  }, [
-    allStorages,
-    searchKey,
-    searchValue,
-    isSearchBySeason,
-    season,
-    year,
-    setStorageList,
-  ]);
+  };
 
-  const getNestedProperty = useCallback(
-    (obj: StorageLogInput, path: string): unknown => {
-      try {
-        return path.split(".").reduce((prev: unknown, curr: string) => {
-          if (prev && typeof prev === "object") {
-            return (prev as Record<string, unknown>)[curr];
-          }
-          return undefined;
-        }, obj);
-      } catch (error) {
-        console.error("プロパティアクセスエラー:", error);
-        return undefined;
+  // 個別行選択ハンドラ
+  const handleRowSelect = (row: StorageLogInput, checked: boolean) => {
+    setSelectedStorages((prev) => {
+      const newSelection = new Set(prev);
+      if (checked) {
+        newSelection.add(row);
+      } else {
+        newSelection.delete(row);
       }
-    },
-    []
-  );
+      return newSelection;
+    });
+  };
 
-  useEffect(() => {
-    filterStorageList();
-  }, [filterStorageList]);
+  // 現在のページで全ての行が選択されているか
+  const canSelectAll =
+    currentTableData.length > 0 &&
+    currentTableData.every((row) => selectedStorages.has(row));
 
-  useEffect(() => {
-    setAllStorages(storageList);
-  }, []);
-
-  React.useEffect(() => {
-    const selectColumn = table.getColumn("select");
-
-    if (selectColumn) {
-      // When in detail view, hide the select column and manage column visibility
-      setColumnVisibility((prev) => ({
-        ...prev,
-        select: tabText !== "detail",
-      }));
+  // 削除ハンドラー
+  const handleDeleteStorage = (storageId: number) => {
+    if (onDeleteStorage) {
+      onDeleteStorage(storageId);
+      // 削除後、選択状態をクリア
+      setSelectedStorages((prev) => {
+        const newSelection = new Set(prev);
+        // 削除されたアイテムを選択から除外
+        const deletedItem = Array.from(prev).find(item => item.id === storageId);
+        if (deletedItem) {
+          newSelection.delete(deletedItem);
+        }
+        return newSelection;
+      });
     }
-  }, [tabText]);
+  };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
-        <Tabs className="w-[400px]" value={tabText} onValueChange={setTabText}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="detail">詳細表示</TabsTrigger>
-            <TabsTrigger value="checkbox">選択</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              表示項目 <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value: boolean) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => {
-                    if (tabText == "checkbox") {
-                      row.toggleSelected(!row.getIsSelected());
-                      console.log(row.getIsSelected());
-                      console.log(row.original);
-                      // Update the selected storages state
-                      const selectedRowData = row.original;
-                      if (!row.getIsSelected()) {
-                        // The current state is not selected, so we're selecting it now
-                        setSelectedStorages((prev) => [
-                          ...prev,
-                          selectedRowData,
-                        ]);
-                      } else {
-                        // The current state is selected, so we're deselecting it now
-                        setSelectedStorages((prev) =>
-                          prev.filter(
-                            (storage) => storage.id !== selectedRowData.id
-                          )
-                        );
-                      }
-                    } else if (tabText == "detail") {
-                      router.push(`/storageLogs/${row.original.id}`);
-                    }
-                  }}
+    <Card className="shadow-lg">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <CardTitle className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
+          保管タイヤ一覧
+        </CardTitle>
+        <div className="flex flex-wrap gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-10 text-base bg-transparent"
+              >
+                表示項目 <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {TABLE_COLUMNS.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.key}
+                  className="capitalize"
+                  checked={visibleColumns[column.key]}
+                  onCheckedChange={(value) =>
+                    setVisibleColumns((prev) => ({
+                      ...prev,
+                      [column.key]: value,
+                    }))
+                  }
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {/* 削除、PDF出力、CSVダウンロードボタンは親コンポーネントで実装されていると仮定 */}
+          {/* <Button variant="outline" className="h-10 text-base bg-transparent">CSVダウンロード</Button> */}
+          {/* <Button variant="outline" className="h-10 text-base bg-transparent">PDF出力</Button> */}
+          {/* <Button variant="destructive" disabled={selectedStorages.size === 0} className="h-10 text-base">削除 ({selectedStorages.size})</Button> */}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table className="min-w-[800px]">
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={canSelectAll}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    disabled={loading || currentTableData.length === 0}
+                  />
+                </TableHead>
+                {TABLE_COLUMNS.filter((col) => visibleColumns[col.key]).map(
+                  (column) => (
+                    <TableHead key={column.key} className="text-base">
+                      {column.label}
+                    </TableHead>
+                  )
+                )}
+                <TableHead key={"action"} className="text-base">
+                  アクション
+                </TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: rowsPerPage }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-5 rounded-sm" />
+                    </TableCell>
+                    {TABLE_COLUMNS.filter((col) => visibleColumns[col.key]).map(
+                      (column) => (
+                        <TableCell key={column.key}>
+                          <Skeleton className="h-5 w-[100px]" />
+                        </TableCell>
+                      )
+                    )}
+                  </TableRow>
+                ))
+              ) : storageList.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={
+                      TABLE_COLUMNS.filter((col) => visibleColumns[col.key])
+                        .length + 1
+                    }
+                    className="h-24 text-center text-gray-500 dark:text-gray-400"
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <Info className="h-10 w-10 mb-2 text-gray-400" />
+                      <p className="text-lg">
+                        検索条件に一致するタイヤデータはありません。
+                      </p>
+                      {/* 親コンポーネントでフィルタークリアボタンを実装することを推奨 */}
+                      {/* <Button variant="link" onClick={clearFilters} className="mt-2 text-primary">
+                        フィルターをクリアして全件表示
+                      </Button> */}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                currentTableData.map((row, index) => (
+                  <TableRow
+                    key={index} // Unique key for each row, assuming row data might not have a unique ID
+                    data-state={selectedStorages.has(row) && "selected"}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedStorages.has(row)}
+                        onCheckedChange={(checked) =>
+                          handleRowSelect(row, !!checked)
+                        }
+                        aria-label={`Select row ${row.storage.id}`}
+                      />
+                    </TableCell>
+                    {TABLE_COLUMNS.filter((col) => visibleColumns[col.key]).map(
+                      (column) => (
+                        <TableCell key={column.key} className="text-base">
+                          {column.key === "season"
+                            ? row[column.key] === "summer"
+                              ? "夏"
+                              : "冬"
+                            : getNestedValue(column.key, row)}
+                        </TableCell>
+                      )
+                    )}
+
+                    <TableCell className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push(`/storageLogs/${row.id}`)}
+                        title="詳細表示"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            title="削除"
+                            disabled={!onDeleteStorage}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>保管データを削除</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              この保管データを削除してもよろしいですか？
+                              <br />
+                              保管庫ID: {row.storage.id}
+                              <br />
+                              顧客名: {row.client.client_name}
+                              <br />
+                              この操作は取り消すことができません。
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteStorage(row.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              削除
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="space-x-2">
+      </CardContent>
+      <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t mt-6">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {selectedStorages.size} 件の行が選択されています ({storageList.length}{" "}
+          件中)
+        </div>
+        <div className="flex gap-2">
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1 || loading}
+            className="h-10 text-base"
           >
-            Previous
+            前へ
           </Button>
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages || loading}
+            className="h-10 text-base"
           >
-            Next
+            次へ
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                {rowsPerPage}行表示 <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {ROWS_PER_PAGE_OPTIONS.map((option) => (
+                <DropdownMenuCheckboxItem
+                  key={option}
+                  onClick={() => setRowsPerPage(option)}
+                  checked={option === rowsPerPage}
+                >
+                  {option}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 };
+
+export default LogTable;
