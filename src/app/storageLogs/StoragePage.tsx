@@ -28,7 +28,6 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
     Set<StorageLogInput>
   >(new Set());
   const [isConvertPDF, setIsConvertPDF] = useState<boolean>(false);
-  const [tabText, setTabText] = useState<string>("checkbox");
 
   const getNestedValue = (key: string, value: any) => {
     if (!key || !value) {
@@ -57,7 +56,6 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
   const filteredList = (storageList || []).filter((list: StorageLogInput) => {
     // listがnullやundefinedの場合はフィルタリング対象外
     if (!list) return false;
-    if (!searchValue) return true;
 
     const matchesSearch = getNestedValue(searchKey, list)
       .toLowerCase()
@@ -67,7 +65,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
       const seasonMatches = list.season === season && list.year === year;
       return matchesSearch && seasonMatches;
     }
-
+    if (!searchValue) return true;
     return matchesSearch;
   });
 
@@ -119,7 +117,6 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
                 selectedStorages={Array.from(selectedStorages)}
                 setIsConvertPDF={setIsConvertPDF}
                 isConvertPDF={isConvertPDF}
-                tabText={tabText}
               />
               <DeleteStorages selectedStorages={Array.from(selectedStorages)} />
             </div>
@@ -131,9 +128,6 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
         storageList={filteredList}
         selectedStorages={selectedStorages}
         setSelectedStorages={setSelectedStorages}
-        isConvertPDF={isConvertPDF}
-        tabText={tabText}
-        setTabText={setTabText}
       />
     </div>
   );

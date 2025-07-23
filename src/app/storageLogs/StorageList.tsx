@@ -37,9 +37,6 @@ interface Props {
     React.SetStateAction<Set<StorageLogInput>>
   >;
   selectedStorages: Set<StorageLogInput>;
-  isConvertPDF: boolean;
-  tabText: string;
-  setTabText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const TABLE_COLUMNS = [
@@ -60,9 +57,6 @@ const LogTable: React.FC<Props> = ({
   storageList,
   setSelectedStorages,
   selectedStorages,
-  isConvertPDF, // Not directly used in table display
-  tabText, // Not directly used in table display
-  setTabText, // Not directly used in table display
   // Not directly used in table display, storageList is source
 }) => {
   const [visibleColumns, setVisibleColumns] = useState(
@@ -76,7 +70,7 @@ const LogTable: React.FC<Props> = ({
   );
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1); // ページをリセット
