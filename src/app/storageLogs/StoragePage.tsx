@@ -147,7 +147,7 @@ const StoragePage: React.FC<StoragePageProps> = ({ initialStorages }) => {
             </div>
 
             <div className="md:col-span-1 flex justify-end items-center">
-              <StorageToCSV storages={storageList} />
+              <StorageToCSV storages={filteredList} />
               <StoragesToPDF
                 selectedStorages={Array.from(selectedStorages)}
                 setIsConvertPDF={setIsConvertPDF}

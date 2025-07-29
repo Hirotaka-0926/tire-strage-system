@@ -60,9 +60,9 @@ const TABLE_COLUMNS = [
   { key: "client.client_name", label: "顧客名", visible: true },
   { key: "car.car_model", label: "車種", visible: true },
   { key: "car.car_number", label: "ナンバー", visible: true },
-  { key: "state.tire_maker", label: "タイヤメーカー", visible: true },
-  { key: "state.tire_size", label: "タイヤサイズ", visible: true },
-  { key: "state.tire_pattern", label: "タイヤパターン", visible: true },
+  { key: "state.tire_maker", label: "タイヤメーカー", visible: false },
+  { key: "state.tire_size", label: "タイヤサイズ", visible: false },
+  { key: "state.tire_pattern", label: "タイヤパターン", visible: false },
 ];
 
 const ROWS_PER_PAGE_DEFAULT = 10; // 1ページあたりの表示行数
@@ -232,12 +232,12 @@ const LogTable: React.FC<Props> = ({
                 </TableHead>
                 {TABLE_COLUMNS.filter((col) => visibleColumns[col.key]).map(
                   (column) => (
-                    <TableHead key={column.key} className="text-base">
+                    <TableHead key={column.key} className="text-sm">
                       {column.label}
                     </TableHead>
                   )
                 )}
-                <TableHead key={"action"} className="text-base">
+                <TableHead key={"action"} className="text-sm">
                   アクション
                 </TableHead>
               </TableRow>
