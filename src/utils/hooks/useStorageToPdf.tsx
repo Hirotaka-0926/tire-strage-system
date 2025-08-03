@@ -31,6 +31,9 @@ const pdfStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
+  clientInfo: {
+    fontSize: 10,
+  },
   companyInfo: {
     fontSize: 10,
     textAlign: "right",
@@ -140,8 +143,13 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
   <Page size="A4" style={pdfStyles.page}>
     {/* ヘッダー */}
     <View style={pdfStyles.header}>
-      <Text style={pdfStyles.logo}>TAKEUCHI PARTS</Text>
+      <View style={pdfStyles.clientInfo}>
+        <Text>{storage.client.address}</Text>
+        <Text>{storage.client.client_name}様</Text>
+      </View>
+
       <View style={pdfStyles.companyInfo}>
+        <Text style={pdfStyles.logo}>TAKEUCHI PARTS</Text>
         <Text>〒321-4521 栃木県真岡市久下田1234-5</Text>
         <Text>TEL: 0285-74-0011 FAX: 0285-74-0012</Text>
         <Text>営業時間: 9:00～18:00</Text>
