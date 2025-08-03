@@ -1,26 +1,41 @@
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { StorageSlot, AreaConfig, StorageStats } from "@/utils/storage";
+import type { AreaConfig, StorageStats } from "@/utils/storage";
+import type { StorageData } from "@/utils/interface";
 
 interface StatsCardsProps {
   areas: AreaConfig[];
-  slots: StorageSlot[];
+  slots: StorageData[];
 }
 
 export const StatsCards = ({ areas, slots }: StatsCardsProps) => {
   const getAreaStats = (areaName: string): StorageStats => {
-    const areaSlots = slots.filter((slot) => slot.area === areaName);
+    const areaSlots = slots.filter((slot) =>
+      slot.id.startsWith(areaName + "_")
+    );
     return {
       total: areaSlots.length,
-      available: areaSlots.filter((s) => s.status === "available").length,
-      occupied: areaSlots.filter((s) => s.status === "occupied").length,
+      available: areaSlots.filter(
+        (s) =>
+          s.car_id === null && s.client_id === null && s.tire_state_id === null
+      ).length,
+      occupied: areaSlots.filter(
+        (s) =>
+          s.car_id !== null || s.client_id !== null || s.tire_state_id !== null
+      ).length,
     };
   };
 
   const totalStats: StorageStats = {
     total: slots.length,
-    available: slots.filter((s) => s.status === "available").length,
-    occupied: slots.filter((s) => s.status === "occupied").length,
+    available: slots.filter(
+      (s) =>
+        s.car_id === null && s.client_id === null && s.tire_state_id === null
+    ).length,
+    occupied: slots.filter(
+      (s) =>
+        s.car_id !== null || s.client_id !== null || s.tire_state_id !== null
+    ).length,
   };
 
   return (

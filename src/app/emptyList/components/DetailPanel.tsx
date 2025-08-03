@@ -4,26 +4,47 @@ import { Info, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { StorageSlot } from "@/utils/storage";
+import type { StorageData } from "@/utils/interface";
 
 interface DetailPanelProps {
-  selectedSlot: StorageSlot | null;
-  onUpdateSlot: (slotId: string, updates: Partial<StorageSlot>) => void;
+  selectedSlot: StorageData | null;
+  onUpdateSlot: (slotId: string, updates: Partial<StorageData>) => void;
 }
 
 export const DetailPanel = ({
   selectedSlot,
   onUpdateSlot,
 }: DetailPanelProps) => {
-  const getStatusText = (status: string) => {
-    return status === "available" ? "空き" : "使用中";
+  const getStatusText = (storage: StorageData) => {
+    const isOccupied =
+      storage.car_id !== null ||
+      storage.client_id !== null ||
+      storage.tire_state_id !== null;
+    return isOccupied ? "使用中" : "空き";
+  };
+
+  const getStatusColor = (storage: StorageData) => {
+    const isOccupied =
+      storage.car_id !== null ||
+      storage.client_id !== null ||
+      storage.tire_state_id !== null;
+    return isOccupied ? "bg-red-500" : "bg-green-500";
   };
 
   const handleStatusToggle = () => {
     if (!selectedSlot) return;
-    const newStatus =
-      selectedSlot.status === "available" ? "occupied" : "available";
-    onUpdateSlot(selectedSlot.id, { status: newStatus });
+    const isCurrentlyOccupied =
+      selectedSlot.car_id !== null ||
+      selectedSlot.client_id !== null ||
+      selectedSlot.tire_state_id !== null;
+    if (isCurrentlyOccupied) {
+      // 空きにする
+      onUpdateSlot(selectedSlot.id, {
+        car_id: null,
+        client_id: null,
+        tire_state_id: null,
+      });
+    }
   };
 
   return (
@@ -39,76 +60,56 @@ export const DetailPanel = ({
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold text-lg">{selectedSlot.id}</h3>
-              <Badge
-                className={`mt-1 ${
-                  selectedSlot.status === "available"
-                    ? "bg-green-500"
-                    : "bg-red-500"
-                }`}
-              >
-                {getStatusText(selectedSlot.status)}
+              <Badge className={`mt-1 ${getStatusColor(selectedSlot)}`}>
+                {getStatusText(selectedSlot)}
               </Badge>
             </div>
 
-            {selectedSlot.customerInfo && (
+            {(selectedSlot.car_id !== null ||
+              selectedSlot.client_id !== null ||
+              selectedSlot.tire_state_id !== null) && (
               <div className="space-y-3 border-t pt-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">
-                    顧客名
+                    保管庫ID
                   </label>
-                  <p className="text-sm">
-                    {selectedSlot.customerInfo.customerName}
-                  </p>
+                  <p className="text-sm">{selectedSlot.id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">
-                    電話番号
+                    車両ID
                   </label>
-                  <p className="text-sm">
-                    {selectedSlot.customerInfo.phoneNumber}
-                  </p>
+                  <p className="text-sm">{selectedSlot.car_id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">
-                    タイヤ種類
+                    顧客ID
                   </label>
-                  <p className="text-sm">
-                    {selectedSlot.customerInfo.tireType}
-                  </p>
+                  <p className="text-sm">{selectedSlot.client_id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">
-                    保管開始日
+                    タイヤ状態ID
                   </label>
-                  <p className="text-sm">
-                    {selectedSlot.customerInfo.storageDate}
-                  </p>
+                  <p className="text-sm">{selectedSlot.tire_state_id}</p>
                 </div>
-                {selectedSlot.customerInfo.notes && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      備考
-                    </label>
-                    <p className="text-sm text-red-600">
-                      {selectedSlot.customerInfo.notes}
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
             <div className="border-t pt-4">
               <label className="text-sm font-medium text-gray-600">
-                最終更新
+                保管庫の状態
               </label>
-              <p className="text-sm">{selectedSlot.lastUpdated}</p>
+              <p className="text-sm">{getStatusText(selectedSlot)}</p>
             </div>
 
             <div className="flex space-x-2 pt-4">
               <Button size="sm" className="flex-1" onClick={handleStatusToggle}>
-                {selectedSlot.status === "available"
-                  ? "使用中にする"
-                  : "空きにする"}
+                {selectedSlot.car_id !== null ||
+                selectedSlot.client_id !== null ||
+                selectedSlot.tire_state_id !== null
+                  ? "空きにする"
+                  : "使用中"}
               </Button>
               <Button
                 size="sm"
