@@ -59,7 +59,7 @@ const StorageDetail: React.FC = () => {
   };
 
   const handleReturn = () => {
-    router.push("/storage");
+    router.push("/storageLogs");
   };
 
   if (loading) {

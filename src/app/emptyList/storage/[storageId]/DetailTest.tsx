@@ -1,14 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
 
-import {
-  StorageInput,
-  TaskInput,
-  StorageLogInput,
-  StorageData,
-  StorageLogOutput,
-} from "@/utils/interface";
-import { getYearAndSeason } from "@/utils/globalFunctions";
+import { StorageInput, TaskInput, StorageLogInput } from "@/utils/interface";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +22,6 @@ import {
   Clock,
   Plus,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import {
   Dialog,
@@ -42,12 +33,20 @@ import {
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
 import { useNotification } from "@/utils/hooks/useNotification";
-import {
-  pushNewStorageLog,
-  upsertStorage,
-  deletePendingTasks,
-} from "@/utils/supabaseFunction";
+
 import { useParams } from "next/navigation";
+import { useStorageManagement } from "@/utils/hooks/useStorageManagement";
+
+const PLACEHOLDER_VALUES = {
+  UNKNOWN: "不明",
+  EMPTY_STORAGE_MESSAGE: "右側のデータから挿入してください",
+  INCOMPLETE_DATA:
+    "データが不完全な保管庫ログがあります。詳細を確認してください。",
+  NO_PAST_DATA: "過去の保管庫データはありません",
+  NO_PENDING_TASKS: "過去の保管庫データはありません",
+} as const;
+
+// カスタムフック: ストレージ管理ロジック
 
 // サンプルデータ - 保管庫
 interface DetailProps {
@@ -61,124 +60,22 @@ export const Detail = ({
   initialPendingTasks,
   initialLogs,
 }: DetailProps) => {
-  const [currentStorage, setCurrentStorage] = useState<StorageInput | null>(
-    initialStorageDetail
-  );
-  const { year, season } = getYearAndSeason();
-  const [savedStorage, setSavedStorage] = useState<StorageInput | null>(
-    currentStorage
-  );
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [pendingTaskId, setPendingTaskId] = useState<number>(0);
-  const { showNotification, NotificationComponent } = useNotification();
+  const { NotificationComponent } = useNotification();
   const params = useParams();
   const storageId = params.storageId as string;
-  const router = useRouter();
 
-  useEffect(() => {
-    const hasChanges =
-      JSON.stringify(currentStorage) !== JSON.stringify(savedStorage);
-    setHasUnsavedChanges(hasChanges);
-  }, [currentStorage, savedStorage]);
-
-  const hasInsertData = (data: StorageInput) => {
-    if (currentStorage != null) {
-      showNotification(
-        "error",
-        "既に保管庫にはデータが格納されています。先に取り出してください"
-      );
-      return;
-    }
-
-    setCurrentStorage(data);
-    showNotification(
-      "success",
-      `${data.client!.client_name}のデータを保管庫A1に挿入しました。`
-    );
-  };
-
-  const handleRemoveData = () => {
-    setCurrentStorage(null);
-    setPendingTaskId(0);
-    showNotification("info", "保管庫のデータを取り出しました。");
-  };
-
-  const handleSaveToServer = async () => {
-    const newStorage: StorageData = {
-      id: storageId,
-      car_id: currentStorage?.car?.id || null,
-      client_id: currentStorage?.client?.id || null,
-      tire_state_id: currentStorage?.state?.id || null,
-    };
-    console.log("storageId", storageId);
-    const newLog: StorageLogOutput = {
-      storage: {
-        id: storageId,
-        car_id: currentStorage?.car?.id || null,
-        client_id: currentStorage?.client?.id || null,
-        tire_state_id: currentStorage?.state?.id || null,
-      },
-      year: year,
-      season: season,
-    };
-
-    setIsSaving(true);
-
-    await upsertStorage(newStorage); // awaitを追加
-    showNotification("success", "保管庫データをサーバーに保存しました。");
-
-    if (
-      currentStorage &&
-      (!savedStorage ||
-        JSON.stringify(currentStorage) == JSON.stringify(savedStorage))
-    ) {
-      await pushNewStorageLog(newLog); // awaitを追加
-      showNotification("info", "保管庫ログも作成されました");
-    }
-    setSavedStorage(currentStorage);
-
-    if (pendingTaskId > 0) {
-      await deletePendingTasks(pendingTaskId);
-      showNotification("info", "未割り当て整備データを削除しました。");
-      setPendingTaskId(0);
-    }
-
-    setIsSaving(false);
-    router.refresh();
-  };
-
-  const handleEditData = (data: StorageInput) => {
-    setCurrentStorage(data);
-    showNotification("info", "保管庫データを更新しました。");
-
-    setIsEditDialogOpen(false);
-  };
-
-  const hasInsertLog = (log: StorageLogInput) => {
-    const newStorage: StorageInput = {
-      id: storageId,
-      client: log.client,
-      car: log.car,
-      state: log.state,
-    };
-
-    hasInsertData(newStorage);
-  };
-
-  const hasInsertTask = (data: TaskInput) => {
-    const newStorage: StorageInput = {
-      id: storageId,
-      client: data.client,
-      car: data.car,
-      state: data.tire_state,
-    };
-    setPendingTaskId(data.id!);
-    hasInsertData(newStorage);
-  };
-
-  // const storedTire = null;
+  const {
+    currentStorage,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isSaving,
+    hasUnsavedChanges,
+    handleRemoveData,
+    handleEditData,
+    handleSaveToServer,
+    hasInsertLog,
+    hasInsertTask,
+  } = useStorageManagement(initialStorageDetail, storageId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -192,7 +89,7 @@ export const Detail = ({
                 <MapPin className="w-5 h-5 mr-2 text-blue-600" />
                 保管庫内データ
                 <Badge variant="outline" className="ml-auto rounded-full">
-                  位置: A1
+                  位置: {storageId}
                 </Badge>
                 {hasUnsavedChanges && (
                   <Badge variant={"destructive"} className="ml-2 rounded-full">
@@ -202,8 +99,8 @@ export const Detail = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              {currentStorage?.client &&
-              currentStorage?.car &&
+              {currentStorage?.client ||
+              currentStorage?.car ||
               currentStorage?.state ? (
                 <div className="space-y-6">
                   {/* Customer Information */}
@@ -214,15 +111,18 @@ export const Detail = ({
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                       <div className="text-xl font-bold text-gray-900">
-                        {currentStorage.client.client_name}
+                        {currentStorage.client?.client_name ||
+                          PLACEHOLDER_VALUES.UNKNOWN}
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Phone className="w-4 h-4 mr-2" />
-                        {currentStorage.client.address}
+                        {currentStorage.client?.address ||
+                          PLACEHOLDER_VALUES.UNKNOWN}
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Mail className="w-4 h-4 mr-2" />
-                        {currentStorage.client.post_number}
+                        {currentStorage.client?.post_number ||
+                          PLACEHOLDER_VALUES.UNKNOWN}
                       </div>
                     </div>
                   </div>
@@ -237,19 +137,22 @@ export const Detail = ({
                       <div className="flex justify-between">
                         <span className="text-gray-600">車種:</span>
                         <span className="font-semibold">
-                          {currentStorage.car.car_model}
+                          {currentStorage.car?.car_model ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">年式:</span>
                         <span className="font-semibold">
-                          {currentStorage.car.model_year || "不明"}
+                          {currentStorage.car?.model_year ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">ナンバープレート:</span>
                         <span className="font-semibold">
-                          {currentStorage.car.car_number}
+                          {currentStorage.car?.car_number ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                     </div>
@@ -265,24 +168,30 @@ export const Detail = ({
                       <div className="flex justify-between">
                         <span className="text-gray-600">ブランド:</span>
                         <span className="font-semibold">
-                          {currentStorage.state.tire_maker}
+                          {currentStorage.state?.tire_maker ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">サイズ:</span>
                         <span className="font-semibold">
-                          {currentStorage.state.tire_size}
+                          {currentStorage.state?.tire_size ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">製造年:</span>
                         <span className="font-semibold">
-                          {"とりあえず2010年"}
+                          {currentStorage.state?.manufacture_year ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">タイヤ溝:</span>
-                        <span className="font-semibold">{"とりあえず5mm"}</span>
+                        <span className="font-semibold">
+                          {currentStorage.state?.tire_inspection?.state ||
+                            PLACEHOLDER_VALUES.UNKNOWN}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -352,7 +261,7 @@ export const Detail = ({
                   <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <p className="text-gray-500 text-lg mb-2">保管庫は空です</p>
                   <p className="text-gray-400 text-sm mb-6">
-                    右側のデータから挿入してください
+                    {PLACEHOLDER_VALUES.EMPTY_STORAGE_MESSAGE}
                   </p>
                   <Button
                     onClick={handleSaveToServer}
@@ -404,7 +313,7 @@ export const Detail = ({
                             key={log.id}
                             className="text-red-500 text-sm text-center py-4"
                           >
-                            データが不完全な保管庫ログがあります。詳細を確認してください。
+                            {PLACEHOLDER_VALUES.INCOMPLETE_DATA}
                           </div>
                         );
                       }
@@ -475,7 +384,7 @@ export const Detail = ({
                               onClick={() => hasInsertLog(log)}
                             >
                               <Plus className="w-4 h-4 mr-2" />
-                              保管庫A1に挿入
+                              保管庫{storageId}に挿入
                             </Button>
                           </CardContent>
                         </Card>
@@ -483,7 +392,7 @@ export const Detail = ({
                     })
                   ) : (
                     <div className="text-center text-gray-500 py-10">
-                      過去の保管庫データはありません
+                      {PLACEHOLDER_VALUES.NO_PAST_DATA}
                     </div>
                   )}
                 </div>
@@ -570,14 +479,14 @@ export const Detail = ({
                             onClick={() => hasInsertTask(task)}
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            保管庫A1に挿入
+                            保管庫{storageId}に挿入
                           </Button>
                         </CardContent>
                       </Card>
                     ))
                   ) : (
                     <div className="text-center text-gray-500 py-10">
-                      過去の保管庫データはありません
+                      {PLACEHOLDER_VALUES.NO_PENDING_TASKS}
                     </div>
                   )}
                 </div>
