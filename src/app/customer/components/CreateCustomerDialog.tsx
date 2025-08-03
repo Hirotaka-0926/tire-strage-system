@@ -35,7 +35,7 @@ const CreateCustomerDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="bg-black hover:bg-gray-800">
+        <Button className="bg-black hover:bg-gray-800 mb-4">
           <Plus className="w-4 h-4 mr-2" />
           新しい顧客を作成
         </Button>

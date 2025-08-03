@@ -23,8 +23,9 @@ const StorageDetail = async ({ params }: StorageParams) => {
   // ストレージが空または初期状態の場合
   if (
     !storageDetail ||
-    (storageDetail.car === null && storageDetail.client === null) ||
-    storageDetail.state === null
+    (storageDetail.car === null &&
+      storageDetail.client === null &&
+      storageDetail.state === null)
   ) {
     return (
       <Detail
