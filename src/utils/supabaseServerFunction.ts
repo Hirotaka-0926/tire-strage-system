@@ -5,6 +5,7 @@ import {
   StorageInput,
   Client,
   StorageData,
+  Inspection,
 } from "@/utils/interface";
 import type { AreaConfig } from "@/utils/storage";
 
@@ -12,18 +13,14 @@ export const getStorageByMasterStorageId = async (
   id: string
 ): Promise<StorageInput> => {
   try {
-    console.log("Creating Supabase client...");
     const supabase = await createClient();
-    console.log("Supabase client created, fetching storage:", id);
 
     const { data, error } = await supabase
       .from("storage_master")
       .select("*, state:tire_state(*), car:car_table(*), client:client_data(*)")
       .eq("id", id)
       .maybeSingle();
-
-    console.log("Query result:", { data, error });
-
+    console.log("Hello storagemaser");
     if (error) {
       console.error("Supabase query error:", error);
       throw error;
@@ -31,7 +28,37 @@ export const getStorageByMasterStorageId = async (
     if (!data) {
       throw new Error("Storage not found");
     }
-    return data;
+
+    if (data.state) {
+      const storageData = data;
+      const { data: inspectionData, error: inspectionError } = await supabase
+        .from("inspection")
+        .select("*")
+        .eq("tire_state_id", data.state.id);
+
+      console.log("Inspection data:", inspectionData);
+
+      if (inspectionError) {
+        console.error("Inspection data fetch error:", inspectionError);
+        throw inspectionError;
+      }
+
+      inspectionData?.forEach((inspection: Inspection) => {
+        if (inspection.type === "tire") {
+          storageData.state.tire_inspection = inspection;
+        } else if (inspection.type === "wiper") {
+          storageData.state.wiper_inspection = inspection;
+        } else if (inspection.type === "battery") {
+          storageData.state.battery_inspection = inspection;
+        } else if (inspection.type === "oil") {
+          storageData.state.oil_inspection = inspection;
+        }
+      });
+      console.log("Storage data with inspections:", storageData);
+      return storageData;
+    } else {
+      return data;
+    }
   } catch (error) {
     console.error("Error fetching storage by master storage ID:", error);
     throw error;

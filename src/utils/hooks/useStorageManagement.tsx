@@ -109,11 +109,7 @@ export const useStorageManagement = (
       await upsertStorage(newStorage);
       showNotification("success", NOTIFICATION_MESSAGES.DATA_SAVED);
 
-      if (
-        currentStorage &&
-        (!savedStorage ||
-          JSON.stringify(currentStorage) === JSON.stringify(savedStorage))
-      ) {
+      if (currentStorage) {
         await pushNewStorageLog(newLog);
         showNotification("info", NOTIFICATION_MESSAGES.LOG_CREATED);
       }

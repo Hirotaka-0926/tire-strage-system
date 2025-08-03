@@ -307,16 +307,6 @@ export const Detail = ({
                 <div className="space-y-3">
                   {initialLogs && initialLogs.length > 0 ? (
                     initialLogs.map((log) => {
-                      if (!log.client || !log.car || !log.state) {
-                        return (
-                          <div
-                            key={log.id}
-                            className="text-red-500 text-sm text-center py-4"
-                          >
-                            {PLACEHOLDER_VALUES.INCOMPLETE_DATA}
-                          </div>
-                        );
-                      }
                       return (
                         <Card
                           key={log.id}
@@ -326,13 +316,16 @@ export const Detail = ({
                             <div className="flex justify-between items-start mb-3">
                               <div>
                                 <div className="text-lg font-semibold">
-                                  {log.client.client_name}
+                                  {log.client?.client_name ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                  {log.client.address}
+                                  {log.client.address ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                  {log.client.post_number}
+                                  {log.client?.post_number ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </div>
                               </div>
                               <Badge
@@ -349,7 +342,8 @@ export const Detail = ({
                                   タイヤメーカー
                                 </span>
                                 <span className="font-medium">
-                                  {log.state.tire_maker}
+                                  {log.state?.tire_maker ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </span>
                               </div>
                               <div>
@@ -357,7 +351,8 @@ export const Detail = ({
                                   タイヤサイズ
                                 </span>
                                 <span className="font-medium">
-                                  {log.state.tire_size}
+                                  {log.state?.tire_size ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </span>
                               </div>
                               <div>
@@ -365,7 +360,8 @@ export const Detail = ({
                                   車両モデル
                                 </span>
                                 <span className="font-medium">
-                                  {log.car.car_model}
+                                  {log.car?.car_model ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </span>
                               </div>
                               <div>
@@ -373,7 +369,8 @@ export const Detail = ({
                                   ナンバープレート
                                 </span>
                                 <span className="font-medium">
-                                  {log.car.car_number}
+                                  {log.car?.car_number ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
                                 </span>
                               </div>
                             </div>
