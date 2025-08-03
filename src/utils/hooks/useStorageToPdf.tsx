@@ -15,50 +15,122 @@ import { StorageLogInput } from "@/utils/interface";
 
 const pdfStyles = StyleSheet.create({
   page: {
-    flexDirection: "row",
-    backgroundColor: "#E4E4E4",
+    backgroundColor: "#FFFFFF",
     fontFamily: "NotoSansJP",
+    padding: 30,
   },
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1,
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    borderBottom: "2pt solid #000",
+    paddingBottom: 10,
+  },
+  logo: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  clientInfo: {
+    fontSize: 10,
+  },
+  companyInfo: {
+    fontSize: 10,
+    textAlign: "right",
   },
   title: {
-    fontSize: 24,
-    marginBottom: 10,
+    fontSize: 18,
     fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    backgroundColor: "#f0f0f0",
+    padding: 8,
+    border: "1pt solid #000",
   },
-  subtitle: {
-    fontSize: 20,
-    marginBottom: 10,
-    fontWeight: "bold",
-  },
-  text: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  textLarge: {
-    fontSize: 20,
+  customerSection: {
+    border: "1pt solid #000",
+    padding: 10,
     marginBottom: 15,
   },
-  tireContainer: {
+  customerTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
     marginBottom: 10,
+    textAlign: "center",
+    backgroundColor: "#e0e0e0",
     padding: 5,
-    borderBottom: "1pt solid #ccc",
   },
-  infoRow: {
+  infoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+  },
+  infoItem: {
+    width: "50%",
     flexDirection: "row",
     marginBottom: 5,
+    paddingHorizontal: 5,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     width: "40%",
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 12,
     width: "60%",
+    borderBottom: "0.5pt solid #ccc",
+    paddingBottom: 2,
+  },
+  tireSection: {
+    border: "1pt solid #000",
+    padding: 10,
+    marginBottom: 15,
+  },
+  tireTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    backgroundColor: "#e0e0e0",
+    padding: 5,
+  },
+  tireGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  tireItem: {
+    width: "50%",
+    flexDirection: "row",
+    marginBottom: 5,
+    paddingHorizontal: 5,
+  },
+  campaignSection: {
+    border: "1pt solid #000",
+    padding: 10,
+    marginTop: 20,
+    backgroundColor: "#f9f9f9",
+  },
+  campaignTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  campaignText: {
+    fontSize: 10,
+    marginBottom: 5,
+    textAlign: "center",
+  },
+  footer: {
+    position: "absolute",
+    bottom: 30,
+    left: 30,
+    right: 30,
+    fontSize: 8,
+    textAlign: "center",
+    borderTop: "1pt solid #ccc",
+    paddingTop: 10,
   },
 });
 
@@ -69,83 +141,126 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
   storage: StorageLogInput;
 }) => (
   <Page size="A4" style={pdfStyles.page}>
-    <View style={pdfStyles.section}>
-      <Text style={pdfStyles.title}>保管庫詳細</Text>
-
-      <View style={pdfStyles.infoRow}>
-        <Text style={pdfStyles.infoLabel}>ID:</Text>
-        <Text style={pdfStyles.infoValue}>{storage.id}</Text>
+    {/* ヘッダー */}
+    <View style={pdfStyles.header}>
+      <View style={pdfStyles.clientInfo}>
+        <Text>{storage.client.address}</Text>
+        <Text>{storage.client.client_name}様</Text>
       </View>
 
-      <View style={pdfStyles.infoRow}>
-        <Text style={pdfStyles.infoLabel}>名前:</Text>
-        <Text style={pdfStyles.infoValue}>
-          {storage.client?.client_name || "未設定"}
-        </Text>
+      <View style={pdfStyles.companyInfo}>
+        <Text style={pdfStyles.logo}>TAKEUCHI PARTS</Text>
+        <Text>〒321-4521 栃木県真岡市久下田1234-5</Text>
+        <Text>TEL: 0285-74-0011 FAX: 0285-74-0012</Text>
+        <Text>営業時間: 9:00～18:00</Text>
       </View>
+    </View>
 
-      <View style={pdfStyles.infoRow}>
-        <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
-        <Text style={pdfStyles.infoValue}>
-          {storage.storage?.id || "未設定"}
-        </Text>
+    {/* タイトル */}
+    <Text style={pdfStyles.title}>タイヤお預かりのお客様へ</Text>
+
+    {/* 顧客情報セクション */}
+    <View style={pdfStyles.customerSection}>
+      <Text style={pdfStyles.customerTitle}>お客様情報</Text>
+      <View style={pdfStyles.infoGrid}>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>お名前:</Text>
+          <Text style={pdfStyles.infoValue}>
+            {storage.client?.client_name || "未設定"}
+          </Text>
+        </View>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>保管庫ID:</Text>
+          <Text style={pdfStyles.infoValue}>
+            {storage.storage?.id || "未設定"}
+          </Text>
+        </View>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>車種:</Text>
+          <Text style={pdfStyles.infoValue}>
+            {storage.car?.car_model || "未設定"}
+          </Text>
+        </View>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>車番:</Text>
+          <Text style={pdfStyles.infoValue}>
+            {storage.car?.car_number || "未設定"}
+          </Text>
+        </View>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>年:</Text>
+          <Text style={pdfStyles.infoValue}>{storage.year}年</Text>
+        </View>
+        <View style={pdfStyles.infoItem}>
+          <Text style={pdfStyles.infoLabel}>シーズン:</Text>
+          <Text style={pdfStyles.infoValue}>
+            {storage.season === "summer" ? "夏タイヤ" : "冬タイヤ"}
+          </Text>
+        </View>
       </View>
+    </View>
 
-      <View style={pdfStyles.infoRow}>
-        <Text style={pdfStyles.infoLabel}>作成日:</Text>
-        {/* <Text style={pdfStyles.infoValue}>
-          {storage.client?.created_at
-            ? new Date(storage.client.created_at).toLocaleDateString("ja-JP")
-            : "未設定"}
-        </Text> */}
-      </View>
-
-      <Text style={pdfStyles.subtitle}>保管タイヤ情報</Text>
+    {/* タイヤ情報セクション */}
+    <View style={pdfStyles.tireSection}>
+      <Text style={pdfStyles.tireTitle}>保管タイヤ詳細</Text>
       {storage.state ? (
-        <View key={storage.state.id} style={pdfStyles.tireContainer}>
-          <View style={pdfStyles.infoRow}>
-            <Text style={pdfStyles.infoLabel}>タイヤID:</Text>
-            <Text style={pdfStyles.infoValue}>{storage.state.id}</Text>
-          </View>
-
-          <View style={pdfStyles.infoRow}>
-            <Text style={pdfStyles.infoLabel}>車種:</Text>
-            <Text style={pdfStyles.infoValue}>{storage.car?.car_model}</Text>
-          </View>
-
-          <View style={pdfStyles.infoRow}>
+        <View style={pdfStyles.tireGrid}>
+          <View style={pdfStyles.tireItem}>
             <Text style={pdfStyles.infoLabel}>メーカー:</Text>
-            <Text style={pdfStyles.infoValue}>{storage.state.tire_maker}</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.tire_maker || "未設定"}
+            </Text>
           </View>
-
-          <View style={pdfStyles.infoRow}>
+          <View style={pdfStyles.tireItem}>
             <Text style={pdfStyles.infoLabel}>パターン:</Text>
             <Text style={pdfStyles.infoValue}>
-              {storage.state.tire_pattern}
+              {storage.state.tire_pattern || "未設定"}
             </Text>
           </View>
-
-          <View style={pdfStyles.infoRow}>
+          <View style={pdfStyles.tireItem}>
             <Text style={pdfStyles.infoLabel}>サイズ:</Text>
-            <Text style={pdfStyles.infoValue}>{storage.state.tire_size}</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.tire_size || "未設定"}
+            </Text>
           </View>
-
-          <View style={pdfStyles.infoRow}>
+          <View style={pdfStyles.tireItem}>
             <Text style={pdfStyles.infoLabel}>製造年:</Text>
             <Text style={pdfStyles.infoValue}>
-              {storage.state.manufacture_year}
+              {storage.state.manufacture_year || "未設定"}
             </Text>
           </View>
-
-          <View style={pdfStyles.infoRow}>
-            <Text style={pdfStyles.infoLabel}>シーズン:</Text>
-            <Text style={pdfStyles.infoValue}>{storage.season}</Text>
+          <View style={pdfStyles.tireItem}>
+            <Text style={pdfStyles.infoLabel}>次回テーマ:</Text>
+            <Text style={pdfStyles.infoValue}>
+              {storage.state.next_theme || "未設定"}
+            </Text>
           </View>
         </View>
       ) : (
-        <Text>保管タイヤはありません</Text>
+        <Text>保管タイヤ情報がありません</Text>
       )}
     </View>
+
+    {/* キャンペーン情報 */}
+    <View style={pdfStyles.campaignSection}>
+      <Text style={pdfStyles.campaignTitle}>
+        サマータイヤ早期購入キャンペーンのご案内
+      </Text>
+      <Text style={pdfStyles.campaignText}>
+        キャンペーン期間 〜 3月24日までのご購入で
+      </Text>
+      <Text style={pdfStyles.campaignText}>
+        対象車 タイヤ4本、バランス、脱着 通常価格
+      </Text>
+      <Text style={pdfStyles.campaignText}>9,900円（税込）</Text>
+      <Text style={pdfStyles.campaignText}>※ご利用ください</Text>
+    </View>
+
+    {/* フッター */}
+    <Text style={pdfStyles.footer}>
+      タイヤの保管期間について：保管期間は原則として6ヶ月間とさせていただきます。
+      期間を過ぎた場合は処分させていただく場合がございますので、予めご了承ください。（仮）
+    </Text>
   </Page>
 );
 

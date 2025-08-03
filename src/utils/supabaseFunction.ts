@@ -12,6 +12,8 @@ import {
   StorageData,
   StorageLogOutput,
 } from "@/utils/interface";
+import type { AreaConfig } from "@/utils/storage";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -669,3 +671,63 @@ export const clearStorageIdFromTask = async (storageId: string) => {
 // export const getStorageByKeyValue = async(key:string, value : string|number) : Promise<StorageInput> => {
 
 // }
+
+export const getAreaConfig = async (): Promise<AreaConfig[]> => {
+  try {
+    const { data, error } = await supabase.from("storage_master").select("id");
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // IDからエリア名（アンダースコアより前の部分）を抽出
+    const areaMap = new Map<string, number>();
+
+    data.forEach((item) => {
+      const areaName = item.id.split("_")[0]; // "A_001" → "A"
+      areaMap.set(areaName, (areaMap.get(areaName) || 0) + 1);
+    });
+
+    // AreaConfig[]形式で返却
+    return Array.from(areaMap.entries()).map(([name, totalSlots]) => ({
+      name,
+      totalSlots,
+    }));
+  } catch (error) {
+    console.error("Error fetching area config:", error);
+    return [];
+  }
+};
+
+export const getStorages = async (): Promise<StorageData[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("storage_master")
+      .select("id, car_id, client_id, tire_state_id")
+      .order("id", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching storages:", error);
+    throw error;
+  }
+};
+
+export const addNewStorage = async (
+  storageData: StorageData[]
+): Promise<PostgrestError | null> => {
+  const { error } = await supabase
+    .from("storage_master")
+    .upsert(storageData)
+    .select();
+
+  return error;
+};

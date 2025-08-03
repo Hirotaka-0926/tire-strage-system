@@ -14,19 +14,19 @@ export const Header = () => {
     {
       href: "/task",
       icon: Calendar,
-      label: "タイヤ交換予約リスト",
+      label: "予約リスト",
       exactMatch: false,
     },
     {
       href: "/storageLogs",
       icon: Database,
-      label: "保管庫一覧",
+      label: "過去データ",
       exactMatch: false,
     },
     {
       href: "/emptyList",
       icon: Package,
-      label: "保管庫状況確認",
+      label: "保管庫",
       exactMatch: false,
     },
   ];
@@ -41,7 +41,7 @@ export const Header = () => {
   return (
     <header className="bg-zinc-700 text-white p-4 shadow-md sticky top-0 z-20 h-16">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">タイヤ保管管理システム</h1>
+        <h1 className="text-2xl font-bold">タイヤ管理</h1>
         <nav>
           <ul className="flex gap-2">
             {navigationItems.map((item) => {
@@ -72,7 +72,7 @@ export const Header = () => {
                     />
                     <span
                       className={cn(
-                        "font-medium transition-colors duration-300",
+                        "font-medium transition-colors duration-300 hidden md:block ",
                         active
                           ? "text-white"
                           : "text-gray-200 group-hover:text-blue-300"
