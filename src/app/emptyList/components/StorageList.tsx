@@ -1,12 +1,12 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import type { StorageSlot } from "@/utils/storage";
+import type { StorageData } from "@/utils/interface";
 
 interface StorageListProps {
-  slots: StorageSlot[];
-  selectedSlot: StorageSlot | null;
-  onSlotSelect: (slot: StorageSlot | null) => void;
+  slots: StorageData[];
+  selectedSlot: StorageData | null;
+  onSlotSelect: (slot: StorageData | null) => void;
 }
 
 export const StorageList = ({
@@ -14,12 +14,20 @@ export const StorageList = ({
   selectedSlot,
   onSlotSelect,
 }: StorageListProps) => {
-  const getStatusColor = (status: string) => {
-    return status === "available" ? "bg-green-500" : "bg-red-500";
+  const getStatusColor = (slot: StorageData) => {
+    const isOccupied =
+      slot.car_id !== null ||
+      slot.client_id !== null ||
+      slot.tire_state_id !== null;
+    return isOccupied ? "bg-red-500" : "bg-green-500";
   };
 
-  const getStatusText = (status: string) => {
-    return status === "available" ? "空き" : "使用中";
+  const getStatusText = (slot: StorageData) => {
+    const isOccupied =
+      slot.car_id !== null ||
+      slot.client_id !== null ||
+      slot.tire_state_id !== null;
+    return isOccupied ? "使用中" : "空き";
   };
 
   return (
@@ -40,15 +48,15 @@ export const StorageList = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div
-                  className={`w-3 h-3 rounded ${getStatusColor(slot.status)}`}
+                  className={`w-3 h-3 rounded ${getStatusColor(slot)}`}
                 ></div>
                 <span className="font-medium">{slot.id}</span>
-                <Badge variant="outline">{getStatusText(slot.status)}</Badge>
+                <Badge variant="outline">{getStatusText(slot)}</Badge>
               </div>
-              {slot.customerInfo && (
-                <div className="text-sm text-gray-600">
-                  {slot.customerInfo.customerName}
-                </div>
+              {(slot.car_id !== null ||
+                slot.client_id !== null ||
+                slot.tire_state_id !== null) && (
+                <div className="text-sm text-gray-600">使用中</div>
               )}
             </div>
           </div>

@@ -1,11 +1,11 @@
 "use client";
 
-import type { StorageSlot } from "@/utils/storage";
+import type { StorageData } from "@/utils/interface";
 
 interface StorageGridProps {
-  slots: StorageSlot[];
-  selectedSlot: StorageSlot | null;
-  onSlotSelect: (slot: StorageSlot | null) => void;
+  slots: StorageData[];
+  selectedSlot: StorageData | null;
+  onSlotSelect: (slot: StorageData | null) => void;
 }
 
 export const StorageGrid = ({
@@ -13,7 +13,7 @@ export const StorageGrid = ({
   selectedSlot,
   onSlotSelect,
 }: StorageGridProps) => {
-  const getSlotStyle = (status: string, isSelected: boolean) => {
+  const getSlotStyle = (slot: StorageData, isSelected: boolean) => {
     const baseStyle =
       "relative w-8 h-8 rounded border cursor-pointer transition-all duration-150 hover:scale-110 hover:z-10 flex items-center justify-center text-[10px] font-medium";
 
@@ -21,22 +21,28 @@ export const StorageGrid = ({
       return `${baseStyle} border-2 border-blue-500 bg-blue-100 text-blue-800 shadow-lg scale-110 z-10`;
     }
 
-    switch (status) {
-      case "available":
-        return `${baseStyle} border-green-300 bg-green-50 text-green-700 hover:bg-green-100`;
-      case "occupied":
-        return `${baseStyle} border-red-300 bg-red-100 text-red-700 hover:bg-red-200`;
-      default:
-        return `${baseStyle} border-gray-300 bg-gray-50 text-gray-600`;
+    const isOccupied =
+      slot.car_id !== null ||
+      slot.client_id !== null ||
+      slot.tire_state_id !== null;
+
+    if (isOccupied) {
+      return `${baseStyle} border-red-300 bg-red-100 text-red-700 hover:bg-red-200`;
+    } else {
+      return `${baseStyle} border-green-300 bg-green-50 text-green-700 hover:bg-green-100`;
     }
   };
 
-  const getStatusText = (status: string) => {
-    return status === "available" ? "空き" : "使用中";
+  const getStatusText = (slot: StorageData) => {
+    const isOccupied =
+      slot.car_id !== null ||
+      slot.client_id !== null ||
+      slot.tire_state_id !== null;
+    return isOccupied ? "使用中" : "空き";
   };
 
   // グリッド表示用のスロットを20列で区切る
-  const renderGridSlots = (slots: StorageSlot[]) => {
+  const renderGridSlots = (slots: StorageData[]) => {
     const rows = [];
     const slotsPerRow = 20;
 
@@ -47,18 +53,13 @@ export const StorageGrid = ({
           {rowSlots.map((slot) => (
             <div
               key={slot.id}
-              className={getSlotStyle(
-                slot.status,
-                selectedSlot?.id === slot.id
-              )}
+              className={getSlotStyle(slot, selectedSlot?.id === slot.id)}
               onClick={() =>
                 onSlotSelect(selectedSlot?.id === slot.id ? null : slot)
               }
-              title={`${slot.id} - ${getStatusText(slot.status)}${
-                slot.customerInfo ? ` - ${slot.customerInfo.customerName}` : ""
-              }`}
+              title={`${slot.id} - ${getStatusText(slot)}`}
             >
-              {slot.number}
+              {slot.id.split("_")[1]}
             </div>
           ))}
         </div>
