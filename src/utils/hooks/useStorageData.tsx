@@ -3,19 +3,17 @@
 import { useState } from "react";
 import type { AreaConfig } from "@/utils/storage";
 import type { StorageData } from "../interface";
+import { toast } from "sonner";
+import { addNewStorage } from "../supabaseFunction";
 
 export const useStorageData = (
   initialAreas: AreaConfig[],
   initialSlots: StorageData[]
 ) => {
   const [areas, setAreas] = useState<AreaConfig[]>(initialAreas);
-  const [slots, setSlots] = useState<StorageData[]>(() =>
-    initialSlots.map((slot) => ({
-      ...slot,
-    }))
-  );
+  const [slots, setSlots] = useState<StorageData[]>(initialSlots);
 
-  const addArea = (areaName: string, totalSlots: number) => {
+  const addArea = async (areaName: string, totalSlots: number) => {
     const newArea: AreaConfig = {
       name: areaName,
       totalSlots,
@@ -34,11 +32,16 @@ export const useStorageData = (
         tire_state_id: null,
       });
     }
+    const error = await addNewStorage(newSlots);
 
-    //addNewStorageArea
+    if (error) {
+      toast("エリアの追加に失敗しました", {
+        description: error.message,
+      });
+    }
   };
 
-  const addSlotsToArea = (areaName: string, additionalSlots: number) => {
+  const addSlotsToArea = async (areaName: string, additionalSlots: number) => {
     const area = areas.find((a) => a.name === areaName);
     if (!area) return;
 
@@ -52,8 +55,8 @@ export const useStorageData = (
     );
 
     // 新しいスロットを追加
-    //const existingSlots =  getExsitingSlots(areaName);
-    const nextNumber = existingSlots.length + 1;
+    const existingSlotsLength = area.totalSlots;
+    const nextNumber = existingSlotsLength + 1;
     const newSlots: StorageData[] = [];
 
     for (let i = 0; i < additionalSlots; i++) {
@@ -67,7 +70,12 @@ export const useStorageData = (
       });
     }
 
-    //addSlotsToArea
+    const error = await addNewStorage(newSlots);
+    if (error) {
+      toast("スロットの追加に失敗しました", {
+        description: error.message,
+      });
+    }
   };
 
   const updateSlot = (slotId: string, updates: Partial<StorageData>) => {

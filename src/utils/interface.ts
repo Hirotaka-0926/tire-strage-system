@@ -120,7 +120,6 @@ export type StorageData = {
   car_id: number | null;
   client_id: number | null;
   tire_state_id: number | null;
-  status?: "available" | "occupied";
 };
 export interface ValidationErrors {
   [key: string]: string;

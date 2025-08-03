@@ -13,6 +13,7 @@ import {
   StorageLogOutput,
 } from "@/utils/interface";
 import type { AreaConfig } from "@/utils/storage";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
@@ -718,4 +719,15 @@ export const getStorages = async (): Promise<StorageData[]> => {
     console.error("Error fetching storages:", error);
     throw error;
   }
+};
+
+export const addNewStorage = async (
+  storageData: StorageData[]
+): Promise<PostgrestError | null> => {
+  const { error } = await supabase
+    .from("storage_master")
+    .upsert(storageData)
+    .select();
+
+  return error;
 };

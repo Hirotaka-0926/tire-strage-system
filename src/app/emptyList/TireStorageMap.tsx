@@ -23,8 +23,10 @@ interface Props {
 }
 
 export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
-  const { areas, slots, addArea, addSlotsToArea, updateSlot, updateSlots } =
-    useStorageData(initialAreas, initialSlots);
+  const { areas, slots, addArea, addSlotsToArea, updateSlot } = useStorageData(
+    initialAreas,
+    initialSlots
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedArea, setSelectedArea] = useState("all");
