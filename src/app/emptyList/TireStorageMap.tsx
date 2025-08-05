@@ -12,6 +12,7 @@ import { StorageGrid } from "./components/StorageGrid";
 import { StorageList } from "./components/StorageList";
 import { DetailPanel } from "./components/DetailPanel";
 import { AddStorageModal } from "./components/AddStorageModal";
+import DeleteSlots from "./components/DeleteSlots";
 
 import { useStorageData } from "@/utils/hooks/useStorageData";
 import type { StorageData } from "@/utils/interface";
@@ -34,6 +35,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
   const [selectedSlot, setSelectedSlot] = useState<StorageData | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const filteredSlots = useMemo(() => {
     return slots.filter((slot) => {
@@ -94,6 +96,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
             areas={areas}
             filteredCount={filteredSlots.length}
             onAddStorage={() => setAddModalOpen(true)}
+            onDeleteSlots={() => setDeleteModalOpen(true)}
           />
         </div>
 
@@ -183,6 +186,8 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
       />
+
+      <DeleteSlots open={deleteModalOpen} onOpenChange={setDeleteModalOpen} />
     </div>
   );
 }

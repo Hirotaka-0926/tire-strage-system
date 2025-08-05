@@ -181,7 +181,6 @@ export const getAllTasks = async (): Promise<TaskInput[]> => {
 
 export const getAllClients = async (): Promise<Client[]> => {
   try {
-    console.log("Fetching all clients...");
     const supabase = await createClient();
 
     const { data, error } = await supabase
