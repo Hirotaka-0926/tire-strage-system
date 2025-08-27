@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AreaConfig } from "@/utils/storage";
 import type { StorageData } from "../interface";
 import { toast } from "sonner";
@@ -12,6 +12,11 @@ export const useStorageData = (
 ) => {
   const [areas, setAreas] = useState<AreaConfig[]>(initialAreas);
   const [slots, setSlots] = useState<StorageData[]>(initialSlots);
+
+  useEffect(() => {
+    setAreas(initialAreas);
+    setSlots(initialSlots);
+  }, [initialAreas, initialSlots]);
 
   const addArea = async (areaName: string, totalSlots: number) => {
     const newArea: AreaConfig = {

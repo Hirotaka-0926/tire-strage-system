@@ -731,3 +731,145 @@ export const addNewStorage = async (
 
   return error;
 };
+
+export const adjustStorageSlots = async (
+  areaName: string,
+  targetCount: number
+): Promise<{
+  success: boolean;
+  message: string;
+  deletedStorages?: string[];
+  error?: string;
+}> => {
+  try {
+    // 指定エリアの全保管庫を取得（番号順でソート）
+    const { data: storages, error: fetchError } = await supabase
+      .from("storage_master")
+      .select("id, car_id, client_id, tire_state_id")
+      .like("id", `${areaName}_%`)
+      .order("id", { ascending: true });
+
+    if (fetchError) {
+      return { success: false, error: fetchError.message, message: "保管庫データの取得に失敗しました" };
+    }
+
+    if (!storages) {
+      return { success: false, message: `エリア${areaName}に保管庫が見つかりません`, error: "No storages found" };
+    }
+
+    const currentCount = storages.length;
+
+    // 現在の数量が目標と同じまたは少ない場合は何もしない
+    if (currentCount <= targetCount) {
+      return { 
+        success: true, 
+        message: `エリア${areaName}の現在の保管庫数（${currentCount}個）は目標数（${targetCount}個）以下です。削除は不要です。` 
+      };
+    }
+
+    const deleteCount = currentCount - targetCount;
+
+    // 番号の大きい順（降順）で削除対象を選択
+    const storagesSortedDesc = [...storages].sort((a, b) => b.id.localeCompare(a.id));
+    const toDelete = storagesSortedDesc.slice(0, deleteCount);
+
+    // 使用中の保管庫が削除対象に含まれていないかチェック
+    const inUseStorages = toDelete.filter(
+      (storage) => storage.car_id || storage.client_id || storage.tire_state_id
+    );
+
+    if (inUseStorages.length > 0) {
+      return {
+        success: false,
+        message: `削除対象に使用中の保管庫が含まれています: ${inUseStorages.map(s => s.id).join(", ")}`,
+        error: "Cannot delete storages in use"
+      };
+    }
+
+    // 削除実行
+    const storageIdsToDelete = toDelete.map((s) => s.id);
+    const { error: deleteError } = await supabase
+      .from("storage_master")
+      .delete()
+      .in("id", storageIdsToDelete);
+
+    if (deleteError) {
+      return { 
+        success: false, 
+        error: deleteError.message, 
+        message: "保管庫の削除に失敗しました" 
+      };
+    }
+
+    return {
+      success: true,
+      message: `エリア${areaName}の保管庫を${currentCount}個から${targetCount}個に調整しました`,
+      deletedStorages: storageIdsToDelete,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "予期しないエラーが発生しました",
+    };
+  }
+};
+
+export const deleteSpecificStorage = async (
+  storageId: string
+): Promise<{
+  success: boolean;
+  message: string;
+  error?: string;
+}> => {
+  try {
+    // 保管庫の存在と使用状況を確認
+    const { data: storage, error: fetchError } = await supabase
+      .from("storage_master")
+      .select("id, car_id, client_id, tire_state_id")
+      .eq("id", storageId)
+      .single();
+
+    if (fetchError) {
+      return { 
+        success: false, 
+        error: fetchError.message, 
+        message: "保管庫が見つかりません" 
+      };
+    }
+
+    // 使用中チェック
+    if (storage.car_id || storage.client_id || storage.tire_state_id) {
+      return {
+        success: false,
+        message: `保管庫${storageId}は使用中のため削除できません`,
+        error: "Storage is in use"
+      };
+    }
+
+    // 削除実行
+    const { error: deleteError } = await supabase
+      .from("storage_master")
+      .delete()
+      .eq("id", storageId);
+
+    if (deleteError) {
+      return { 
+        success: false, 
+        error: deleteError.message, 
+        message: "保管庫の削除に失敗しました" 
+      };
+    }
+
+    return {
+      success: true,
+      message: `保管庫${storageId}を削除しました`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "予期しないエラーが発生しました",
+    };
+  }
+};
