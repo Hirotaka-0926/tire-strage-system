@@ -161,9 +161,9 @@ const Dashboard: React.FC = () => {
     }, {} as Record<string, number>);
 
     return Object.entries(customerCounts)
-      .sort(([, a], [, b]) => b - a)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
       .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
+      .map(([name, count]) => ({ name, count: count as number }));
   };
 
   const calculateSeasonalTrend = (
