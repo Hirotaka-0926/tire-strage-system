@@ -14,8 +14,8 @@ export default [
     rules: {
       "react/jsx-uses-react": "off",
       "react/react-in-jsx-scope": "off",
-
       "@typescript-eslint/no-explicit-any": "off", // anyの使用を許可
+      "@typescript-eslint/no-unused-vars": "off", // 未使用変数の警告を無効化
     },
   },
 ];
