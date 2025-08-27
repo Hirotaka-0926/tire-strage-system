@@ -214,7 +214,10 @@ export const getAllClients = async (): Promise<Client[]> => {
 
 export const getAreaConfig = async (): Promise<AreaConfig[]> => {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("storage_master").select("id");
+  const { data, error } = await supabase
+    .from("storage_master")
+    .select("id")
+    .order("id", { ascending: false });
 
   if (error) {
     throw error;

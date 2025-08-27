@@ -100,9 +100,9 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* メインマップエリア */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -170,7 +170,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
           </div>
 
           {/* 詳細パネル */}
-          <div className="lg:col-span-1">
+          <div className="md:col-span-1 lg:col-span-1">
             <DetailPanel
               selectedSlot={selectedSlot}
               onUpdateSlot={handleUpdateSlot}

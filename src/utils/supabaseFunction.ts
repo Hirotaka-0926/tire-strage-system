@@ -750,27 +750,37 @@ export const adjustStorageSlots = async (
       .order("id", { ascending: true });
 
     if (fetchError) {
-      return { success: false, error: fetchError.message, message: "保管庫データの取得に失敗しました" };
+      return {
+        success: false,
+        error: fetchError.message,
+        message: "保管庫データの取得に失敗しました",
+      };
     }
 
     if (!storages) {
-      return { success: false, message: `エリア${areaName}に保管庫が見つかりません`, error: "No storages found" };
+      return {
+        success: false,
+        message: `エリア${areaName}に保管庫が見つかりません`,
+        error: "No storages found",
+      };
     }
 
     const currentCount = storages.length;
 
     // 現在の数量が目標と同じまたは少ない場合は何もしない
     if (currentCount <= targetCount) {
-      return { 
-        success: true, 
-        message: `エリア${areaName}の現在の保管庫数（${currentCount}個）は目標数（${targetCount}個）以下です。削除は不要です。` 
+      return {
+        success: true,
+        message: `エリア${areaName}の現在の保管庫数（${currentCount}個）は目標数（${targetCount}個）以下です。削除は不要です。`,
       };
     }
 
     const deleteCount = currentCount - targetCount;
 
     // 番号の大きい順（降順）で削除対象を選択
-    const storagesSortedDesc = [...storages].sort((a, b) => b.id.localeCompare(a.id));
+    const storagesSortedDesc = [...storages].sort((a, b) =>
+      b.id.localeCompare(a.id)
+    );
     const toDelete = storagesSortedDesc.slice(0, deleteCount);
 
     // 使用中の保管庫が削除対象に含まれていないかチェック
@@ -781,8 +791,10 @@ export const adjustStorageSlots = async (
     if (inUseStorages.length > 0) {
       return {
         success: false,
-        message: `削除対象に使用中の保管庫が含まれています: ${inUseStorages.map(s => s.id).join(", ")}`,
-        error: "Cannot delete storages in use"
+        message: `削除対象に使用中の保管庫が含まれています: ${inUseStorages
+          .map((s) => s.id)
+          .join(", ")}`,
+        error: "Cannot delete storages in use",
       };
     }
 
@@ -794,10 +806,10 @@ export const adjustStorageSlots = async (
       .in("id", storageIdsToDelete);
 
     if (deleteError) {
-      return { 
-        success: false, 
-        error: deleteError.message, 
-        message: "保管庫の削除に失敗しました" 
+      return {
+        success: false,
+        error: deleteError.message,
+        message: "保管庫の削除に失敗しました",
       };
     }
 
@@ -831,10 +843,10 @@ export const deleteSpecificStorage = async (
       .single();
 
     if (fetchError) {
-      return { 
-        success: false, 
-        error: fetchError.message, 
-        message: "保管庫が見つかりません" 
+      return {
+        success: false,
+        error: fetchError.message,
+        message: "保管庫が見つかりません",
       };
     }
 
@@ -843,7 +855,7 @@ export const deleteSpecificStorage = async (
       return {
         success: false,
         message: `保管庫${storageId}は使用中のため削除できません`,
-        error: "Storage is in use"
+        error: "Storage is in use",
       };
     }
 
@@ -854,10 +866,10 @@ export const deleteSpecificStorage = async (
       .eq("id", storageId);
 
     if (deleteError) {
-      return { 
-        success: false, 
-        error: deleteError.message, 
-        message: "保管庫の削除に失敗しました" 
+      return {
+        success: false,
+        error: deleteError.message,
+        message: "保管庫の削除に失敗しました",
       };
     }
 
@@ -871,5 +883,42 @@ export const deleteSpecificStorage = async (
       error: error instanceof Error ? error.message : "Unknown error",
       message: "予期しないエラーが発生しました",
     };
+  }
+};
+
+export const getPendingTasks = async (): Promise<TaskInput[]> => {
+  try {
+    console.log("Environment check:");
+    console.log(
+      "SUPABASE_URL:",
+      process.env.NEXT_PUBLIC_SUPABASE_URL ? "✓ Set" : "✗ Missing"
+    );
+    console.log(
+      "SUPABASE_ANON_KEY:",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "✓ Set" : "✗ Missing"
+    );
+
+    console.log("Supabase client created for pending tasks");
+
+    const { data, error } = await supabase
+      .from("task_list")
+      .select(
+        "*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)"
+      )
+      .eq("status", "pending");
+
+    console.log("Pending tasks query result:", {
+      dataLength: data?.length,
+      error: error?.message,
+    });
+
+    if (error) {
+      console.error("Pending tasks error details:", error);
+      throw error;
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Error in getPendingTasks:", error);
+    throw error;
   }
 };
