@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getPendingTasks } from "@/utils/supabaseFunction";
-import type { StorageData, TaskOutput } from "@/utils/interface";
+import type { StorageData, TaskInput } from "@/utils/interface";
 
 interface StorageAssignmentModalProps {
   selectedSlot: StorageData | null;
@@ -30,7 +30,7 @@ export const StorageAssignmentModal = ({
   onOpenChange,
   onAssign,
 }: StorageAssignmentModalProps) => {
-  const [pendingTasks, setPendingTasks] = useState<TaskOutput[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
   const [manualData, setManualData] = useState({
     car_id: "",
     client_id: "",
@@ -68,13 +68,13 @@ export const StorageAssignmentModal = ({
     }
   };
 
-  const handleTaskAssign = (task: TaskOutput) => {
+  const handleTaskAssign = (task: TaskInput) => {
     if (!selectedSlot) return;
 
     const updates = {
-      car_id: task.car_id,
-      client_id: task.client_id,
-      tire_state_id: task.tire_state_id,
+      car_id: task.car?.id ?? null,
+      client_id: task.client?.id ?? null,
+      tire_state_id: task.tire_state?.id ?? null,
     };
 
     onAssign(selectedSlot.id, updates);
@@ -177,9 +177,9 @@ export const StorageAssignmentModal = ({
                         <div className="space-y-1">
                           <p className="font-medium">タスク #{task.id}</p>
                           <div className="text-sm text-gray-600 space-y-1">
-                            <p>車両ID: {task.car_id}</p>
-                            <p>顧客ID: {task.client_id}</p>
-                            <p>タイヤ状態ID: {task.tire_state_id}</p>
+                            <p>車両ID: {task.car?.id ?? "-"}</p>
+                            <p>顧客ID: {task.client?.id ?? "-"}</p>
+                            <p>タイヤ状態ID: {task.tire_state?.id ?? "-"}</p>
                           </div>
                         </div>
                         <Button

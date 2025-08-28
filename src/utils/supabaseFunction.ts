@@ -888,16 +888,6 @@ export const deleteSpecificStorage = async (
 
 export const getPendingTasks = async (): Promise<TaskInput[]> => {
   try {
-    console.log("Environment check:");
-    console.log(
-      "SUPABASE_URL:",
-      process.env.NEXT_PUBLIC_SUPABASE_URL ? "✓ Set" : "✗ Missing"
-    );
-    console.log(
-      "SUPABASE_ANON_KEY:",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "✓ Set" : "✗ Missing"
-    );
-
     console.log("Supabase client created for pending tasks");
 
     const { data, error } = await supabase
