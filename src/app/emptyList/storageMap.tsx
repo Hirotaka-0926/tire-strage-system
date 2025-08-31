@@ -114,7 +114,7 @@ export default function StorageMap() {
               <SelectValue placeholder="階層" />
             </SelectTrigger>
             <SelectContent>
-              {storagesTypes.map((type) => (
+              {storagesTypes.sort((a, b) => a.localeCompare(b)).map((type) => (
                 <SelectItem key={type} value={type}>
                   {type}
                 </SelectItem>

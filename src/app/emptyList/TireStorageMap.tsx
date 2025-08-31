@@ -137,13 +137,13 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
                     onValueChange={(value) => setSelectedArea(value)}
                   >
                     <TabsList className="mb-4">
-                      {areas.map((area) => (
+                      {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
                         <TabsTrigger key={area.name} value={area.name}>
                           エリア{area.name}
                         </TabsTrigger>
                       ))}
                     </TabsList>
-                    {areas.map((area) => (
+                    {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
                       <TabsContent key={area.name} value={area.name}>
                         <div className="text-xs text-gray-600 mb-2">
                           エリア{area.name} (1-{area.totalSlots})

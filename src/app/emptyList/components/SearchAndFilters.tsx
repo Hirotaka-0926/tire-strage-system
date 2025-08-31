@@ -54,7 +54,7 @@ export const SearchAndFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">全エリア</SelectItem>
-          {areas.map((area) => (
+          {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
             <SelectItem key={area.name} value={area.name}>
               エリア{area.name}
             </SelectItem>

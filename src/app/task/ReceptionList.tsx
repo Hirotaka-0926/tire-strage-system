@@ -149,6 +149,19 @@ const ReceptionList = ({ tasks }: Props) => {
         return "bg-blue-50 text-blue-700";
     }
   };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "incomplete":
+        return "未完了";
+      case "complete":
+        return "完了";
+      case "pending":
+        return "保留中";
+      default:
+        return status;
+    }
+  };
   return (
     <Card>
       <NotificationComponent />
@@ -254,7 +267,7 @@ const ReceptionList = ({ tasks }: Props) => {
                       variant="secondary"
                       className={getStatusColor(item.status)}
                     >
-                      {item.status}
+                      {getStatusText(item.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>{getActionButton(item)}</TableCell>
