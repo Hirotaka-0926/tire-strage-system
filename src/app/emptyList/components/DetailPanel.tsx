@@ -193,6 +193,16 @@ export const DetailPanel = ({
                         {selectedSlot.tire_state_id || "未設定"}
                       </p>
                     </div>
+                    {currentStorageData?.state?.assigner && (
+                      <div className="bg-gray-50 p-2 rounded col-span-2">
+                        <label className="text-xs font-semibold text-gray-600 block">
+                          担当者
+                        </label>
+                        <p className="text-sm font-medium">
+                          {currentStorageData.state.assigner}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

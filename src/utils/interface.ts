@@ -25,6 +25,7 @@ export interface State {
   inspection_date?: Date;
   drive_distance: number;
   next_theme?: string;
+  assigner?: string;
 }
 
 export interface Inspection {

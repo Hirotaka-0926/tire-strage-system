@@ -34,8 +34,10 @@ import {
 import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
 import SaveTaskDialog from "./SaveTaskDialog";
+import { PDFPreviewModal } from "../emptyList/components/PDFPreviewModal";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getYearAndSeason } from "@/utils/globalFunctions";
 
 interface Props {
   tasks: TaskInput[];
@@ -46,10 +48,31 @@ const ReceptionList = ({ tasks }: Props) => {
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isPDFPreviewOpen, setIsPDFPreviewOpen] = useState(false);
+  const [pdfData, setPdfData] = useState<any>(null);
   const [taskList, setTaskList] = useState<TaskInput[]>(() => tasks);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const router = useRouter();
+  const { year, season } = getYearAndSeason();
+
+  // TaskInputをPDF用データに変換
+  const convertTaskToPdfData = (task: TaskInput) => {
+    return {
+      id: task.id || 0,
+      year: year,
+      season: season,
+      car: task.car || {},
+      client: task.client || {},
+      state: task.tire_state || {},
+      storage: {
+        id: task.storage_id || "",
+        car_id: task.car?.id || null,
+        client_id: task.client?.id || null,
+        tire_state_id: task.tire_state?.id || null,
+      },
+    };
+  };
 
   // IDを安定的にフォーマットするヘルパー関数
   const formatTaskId = (id: number | undefined) => {
@@ -98,7 +121,6 @@ const ReceptionList = ({ tasks }: Props) => {
 
     setIsStorageDialogOpen(false);
     setSelectedItem(null);
-    router.refresh(); // Refresh the page to reflect changes
   };
 
   const getActionButton = (item: TaskInput) => {
@@ -207,11 +229,27 @@ const ReceptionList = ({ tasks }: Props) => {
           setOpen={setIsSaveDialogOpen}
           selectedData={selectedItem}
           onSave={() => {
+            if (selectedItem) {
+              const pdfDataForPreview = convertTaskToPdfData(selectedItem);
+              setPdfData(pdfDataForPreview);
+              setIsPDFPreviewOpen(true);
+            }
             setIsSaveDialogOpen(false);
             setSelectedItem(null);
             router.refresh(); // Refresh the page to reflect changes
           }}
         />
+        
+        {/* PDFプレビューモーダル */}
+        {pdfData && (
+          <PDFPreviewModal
+            storageData={pdfData}
+            fileName={`予約_${pdfData.id?.toString().padStart(3, "0") || "未割当"}_${pdfData.client?.client_name || "不明"}.pdf`}
+            open={isPDFPreviewOpen}
+            onOpenChange={setIsPDFPreviewOpen}
+          />
+        )}
+
         <div className="space-y-6">
           {/* 未完了のタスク */}
           {groupedTasks.incomplete.length > 0 && (

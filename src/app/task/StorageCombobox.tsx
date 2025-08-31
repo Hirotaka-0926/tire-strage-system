@@ -124,14 +124,7 @@ export const StorageCombobox = ({
 
               {/* 使用中の保管庫 */}
               <CommandGroup heading="⚠️ 使用中の保管庫">
-                {embeddedOptions
-                  .filter(
-                    (storage) =>
-                      !customerHistory
-                        ?.map((log) => log.storage.id)
-                        .includes(storage.id!)
-                  )
-                  .map((storage) => {
+                {embeddedOptions.map((storage) => {
                     if (!storage.id) return null;
                     return (
                       <CommandItem

@@ -19,7 +19,7 @@ const MemoForm = ({ formData, updateField, loading }: MemoFormProps) => {
         <CardTitle className="text-lg font-semibold">メモ</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div className="flex flex-col gap-2">
             <Label>車検期日</Label>
             <Input
@@ -45,6 +45,16 @@ const MemoForm = ({ formData, updateField, loading }: MemoFormProps) => {
               onChange={(e) =>
                 updateField("drive_distance", parseInt(e.target.value) || 0)
               }
+              disabled={loading}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label>担当者</Label>
+            <Input
+              type="text"
+              placeholder="担当者名を入力"
+              value={formData?.assigner || ""}
+              onChange={(e) => updateField("assigner", e.target.value)}
               disabled={loading}
             />
           </div>

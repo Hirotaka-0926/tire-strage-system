@@ -56,6 +56,17 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
           <DialogTitle>以下のデータを保管庫に保存しますか？</DialogTitle>
         </DialogHeader>
 
+        {/* 担当者情報を上部に表示 */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <p className="text-sm font-semibold text-blue-800">担当者</p>
+          </div>
+          <p className="text-lg font-bold text-blue-900 mt-1">
+            {selectedData.tire_state?.assigner || "担当者無し"}
+          </p>
+        </div>
+
         <div className="space-y-6 py-4">
           {/*保管庫情報 */}
           <Card>
