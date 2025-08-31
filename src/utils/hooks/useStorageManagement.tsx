@@ -9,10 +9,10 @@ import {
   StorageLogOutput,
 } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
+import { toast } from "sonner";
 
 import { useRouter } from "next/navigation";
 
-import { useNotification } from "@/utils/hooks/useNotification";
 import {
   pushNewStorageLog,
   upsertStorage,
@@ -46,7 +46,6 @@ export const useStorageManagement = (
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingTaskId, setPendingTaskId] = useState<number>(0);
-  const { showNotification } = useNotification();
   const { year, season } = getYearAndSeason();
   const router = useRouter();
 
@@ -58,12 +57,11 @@ export const useStorageManagement = (
 
   const hasInsertData = (data: StorageInput) => {
     if (currentStorage != null) {
-      showNotification("error", NOTIFICATION_MESSAGES.STORAGE_OCCUPIED);
+      toast.error(NOTIFICATION_MESSAGES.STORAGE_OCCUPIED);
       return;
     }
     setCurrentStorage(data);
-    showNotification(
-      "success",
+    toast.success(
       NOTIFICATION_MESSAGES.DATA_INSERTED(data.client!.client_name)
     );
     console.log("run hasInsertData:", data);
@@ -72,17 +70,14 @@ export const useStorageManagement = (
   const handleRemoveData = useCallback(() => {
     setCurrentStorage(null);
     setPendingTaskId(0);
-    showNotification("info", NOTIFICATION_MESSAGES.DATA_REMOVED);
-  }, [showNotification]);
+    toast.info(NOTIFICATION_MESSAGES.DATA_REMOVED);
+  }, []);
 
-  const handleEditData = useCallback(
-    (data: StorageInput) => {
-      setCurrentStorage(data);
-      showNotification("info", NOTIFICATION_MESSAGES.DATA_UPDATED);
-      setIsEditDialogOpen(false);
-    },
-    [showNotification]
-  );
+  const handleEditData = useCallback((data: StorageInput) => {
+    setCurrentStorage(data);
+    toast.info(NOTIFICATION_MESSAGES.DATA_UPDATED);
+    setIsEditDialogOpen(false);
+  }, []);
 
   const handleSaveToServer = useCallback(async () => {
     const newStorage: StorageData = {
@@ -107,17 +102,17 @@ export const useStorageManagement = (
 
     try {
       await upsertStorage(newStorage);
-      showNotification("success", NOTIFICATION_MESSAGES.DATA_SAVED);
+      toast.success(NOTIFICATION_MESSAGES.DATA_SAVED);
 
       if (currentStorage) {
         await pushNewStorageLog(newLog);
-        showNotification("info", NOTIFICATION_MESSAGES.LOG_CREATED);
+        toast.info(NOTIFICATION_MESSAGES.LOG_CREATED);
       }
       setSavedStorage(currentStorage);
 
       if (pendingTaskId > 0) {
         await deletePendingTasks(pendingTaskId);
-        showNotification("info", NOTIFICATION_MESSAGES.TASK_DELETED);
+        toast.info(NOTIFICATION_MESSAGES.TASK_DELETED);
         setPendingTaskId(0);
       }
 

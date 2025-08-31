@@ -5,17 +5,16 @@ import {
   clearStorageData,
   upsertStorage,
   pushNewStorageLog,
+  deletePendingTasks,
 } from "@/utils/supabaseFunction";
 import { useCallback, useState, useEffect } from "react";
 import { TaskInput, StorageInput, StorageData } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
+import { toast } from "sonner";
 
 interface UseSaveTaskReturn {
   prevStorage: StorageInput | null;
-  saveTaskData: () => Promise<{
-    type: "error" | "success" | "info";
-    message: string;
-  }>;
+  saveTaskData: () => Promise<void>;
 }
 
 const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
@@ -46,11 +45,11 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
       ) {
         await clearStorageData(prevStorage.id!);
       }
-      if (!selectedItem) {
-        return {
-          type: "info" as const,
-          message: "選択されたタスクがありません",
-        };
+      if (!selectedItem || !selectedItem?.id) {
+        toast("選択されたタスクがありません", {
+          description: "タスクを選択してください",
+        });
+        return;
       }
       const storageData: StorageData = {
         id: selectedItem.storage_id!,
@@ -63,16 +62,14 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
       const { year, season } = getYearAndSeason();
       await pushNewStorageLog({ year, season, storage: storageData });
 
-      return {
-        type: "success" as const,
-        message: "タスクデータが保存されました",
-      };
+      await deletePendingTasks(selectedItem.id);
+
+      toast.success("タスクデータが保存されました");
     } catch (error) {
       console.error("Error saving task data:", error);
-      return {
-        type: "error" as const,
-        message: "タスクデータの保存に失敗しました",
-      };
+      toast.error("タスクデータの保存に失敗しました", {
+        description: error instanceof Error ? error.message : String(error),
+      });
     }
   }, [selectedItem]);
 

@@ -21,26 +21,16 @@ import {
 import useSaveTask from "@/utils/hooks/useSaveTask";
 import { OverwriteWarning } from "./OverWriteWarning";
 
+import { toast } from "sonner";
+
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   selectedData: TaskInput | null;
   onSave: () => void;
-  setNotification: React.Dispatch<
-    React.SetStateAction<{
-      type: "error" | "success" | "info";
-      message: string;
-    } | null>
-  >;
 }
 
-const SaveTaskDialog = ({
-  open,
-  setOpen,
-  selectedData,
-  onSave,
-  setNotification,
-}: Props) => {
+const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
   const { saveTaskData, prevStorage } = useSaveTask(selectedData);
   if (!selectedData) return null;
 
@@ -53,7 +43,7 @@ const SaveTaskDialog = ({
   const handleOnSave = async () => {
     if (!selectedData) return;
     const message = await saveTaskData();
-    setNotification(message);
+
     onSave();
   };
 

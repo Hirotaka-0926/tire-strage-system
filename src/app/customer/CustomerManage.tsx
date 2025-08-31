@@ -12,7 +12,6 @@ import {
   upsertCar,
 } from "@/utils/supabaseFunction";
 import { useRouter } from "next/navigation";
-import { useNotification } from "@/utils/hooks/useNotification";
 
 // サブコンポーネントのインポート
 import SearchAndFilter from "./components/SearchAndFilter";
@@ -23,6 +22,7 @@ import CustomerStats from "./components/CustomerStats";
 import CustomerDetailDialog from "./components/CustomerDetailDialog";
 import EditCustomerDialog from "./components/EditCustomerDialog";
 import TireExchangeDialog from "./components/TireExchangeDialog";
+import { toast } from "sonner";
 
 interface Props {
   initialCustomers: Client[];
@@ -69,7 +69,7 @@ export default function CustomerManage({
     phone: "",
     notes: "",
   });
-  const { showNotification, NotificationComponent } = useNotification();
+
   const thisSeason = getYearAndSeason();
   const lastSeason = getYearAndSeason(
     new Date(new Date().setMonth(new Date().getMonth() - 6))
@@ -112,13 +112,13 @@ export default function CustomerManage({
         });
 
         setIsCreateDialogOpen(false);
-        showNotification("success", "顧客を正常に作成しました");
+        toast.success("顧客を正常に作成しました");
 
         router.refresh();
       }
     } catch (error) {
       console.error("Error creating customer:", error);
-      showNotification("error", "顧客の作成に失敗しました");
+      toast.error("顧客の作成に失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -259,12 +259,12 @@ export default function CustomerManage({
 
         setIsEditDialogOpen(false);
         setSelectedCustomer(null);
-        showNotification("success", "顧客情報を正常に更新しました");
+        toast.success("顧客情報を正常に更新しました");
         router.refresh();
       }
     } catch (error) {
       console.error("Error updating customer:", error);
-      showNotification("error", "顧客情報の更新に失敗しました");
+      toast.error("顧客情報の更新に失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +275,7 @@ export default function CustomerManage({
     if (isLoading) return;
     setIsLoading(true);
     await deleteClient(customerId);
-    showNotification("success", "顧客を削除しました");
+    toast.success("顧客を削除しました");
     router.refresh();
   };
 
@@ -291,7 +291,7 @@ export default function CustomerManage({
       selectedCar.model_year === 0
     ) {
       setIsExchangeDialogOpen(false);
-      showNotification("error", "車の情報を入力してください");
+      toast.error("車の情報を入力してください");
       return;
     }
 
@@ -331,11 +331,11 @@ export default function CustomerManage({
       setIsExchangeDialogOpen(false);
       setSelectedCustomer(null);
 
-      showNotification("success", "タイヤ交換を受付しました");
+      toast.success("タイヤ交換を受付しました");
       router.refresh();
     } catch (error) {
       console.error("Error creating tire exchange task:", error);
-      showNotification("error", "タイヤ交換受付に失敗しました");
+      toast.error("タイヤ交換受付に失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -343,8 +343,6 @@ export default function CustomerManage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NotificationComponent />
-
       <div className="max-w-7xl mx-auto p-6">
         <Card>
           <CardHeader>

@@ -7,7 +7,7 @@ import {
   upsertTire,
   updateTaskStatus,
 } from "@/utils/supabaseFunction";
-import { useNotification } from "./useNotification";
+import { toast } from "sonner";
 
 interface UseEditFormProps {
   selectedItem: TaskInput | null;
@@ -35,7 +35,6 @@ export const useEditForm = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showNotification } = useNotification();
   const sideEffect = selectedItem?.id || 0;
 
   // 初期データの取得とセットアップ
@@ -141,11 +140,11 @@ export const useEditForm = ({
       const errorMessage =
         err instanceof Error ? err.message : "初期データの取得に失敗しました";
       setError(errorMessage);
-      showNotification("error", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedItem, showNotification]);
+  }, [selectedItem]);
 
   // selectedItemが変更されたときに初期化
   useEffect(() => {
@@ -223,11 +222,11 @@ export const useEditForm = ({
           ? err.message + "保存に失敗しました"
           : "保存に失敗しました";
       setError(errorMessage);
-      showNotification("error", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, onSuccess, showNotification]);
+  }, [formData, onSuccess]);
 
   // フォームのリセット
   const resetForm = useCallback(() => {

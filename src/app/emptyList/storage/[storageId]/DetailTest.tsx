@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
-import { useNotification } from "@/utils/hooks/useNotification";
 
 import { useParams } from "next/navigation";
 import { useStorageManagement } from "@/utils/hooks/useStorageManagement";
@@ -60,7 +59,6 @@ export const Detail = ({
   initialPendingTasks,
   initialLogs,
 }: DetailProps) => {
-  const { NotificationComponent } = useNotification();
   const params = useParams();
   const storageId = params.storageId as string;
 
@@ -79,8 +77,6 @@ export const Detail = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NotificationComponent />
-
       <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-7xl mx-auto">
         <div className="lg:w-1/3">
           <Card className="shadow-lg">
