@@ -1,8 +1,7 @@
 import { StorageInput, ValidationErrors } from "../interface";
-import { useNotification } from "./useNotification";
+import { toast } from "sonner";
 
 const useStorageValidation = () => {
-  const { showNotification, NotificationComponent } = useNotification();
   // バリデーションルール
   const validate = (data: StorageInput) => {
     const newErrors: ValidationErrors = {};
@@ -35,7 +34,7 @@ const useStorageValidation = () => {
     if (newErrors && Object.keys(newErrors).length > 0) {
       const firstKey = Object.keys(newErrors)[0];
       if (firstKey) {
-        showNotification("error", newErrors[firstKey]);
+        toast.error(newErrors[firstKey]);
       }
     }
 
@@ -43,7 +42,7 @@ const useStorageValidation = () => {
   };
 
   const ValidateComponent = () => {
-    return <NotificationComponent />;
+    return null;
   };
 
   return {
