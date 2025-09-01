@@ -52,8 +52,8 @@ const useAssignStorage = (
     const filteredHistory = (() => {
       const seenIds = new Set<string>();
       return history.filter((log) => {
-        const id = log.storage.id;
-        if (seenIds.has(id)) {
+        const id = log.storage?.id;
+        if (!id || seenIds.has(id)) {
           return false;
         }
         seenIds.add(id);

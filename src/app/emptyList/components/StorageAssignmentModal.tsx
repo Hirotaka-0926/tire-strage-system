@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, User, Car } from "lucide-react";
+import { Package, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +21,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getPendingTasks } from "@/utils/supabaseFunction";
-import type { StorageData, TaskInput } from "@/utils/interface";
+import { getPendingTasks, getAllClients } from "@/utils/supabaseFunction";
+import type {
+  StorageData,
+  TaskInput,
+  Client,
+  Car,
+  State,
+} from "@/utils/interface";
 
 interface StorageAssignmentModalProps {
   selectedSlot: StorageData | null;
@@ -31,10 +44,35 @@ export const StorageAssignmentModal = ({
   onAssign,
 }: StorageAssignmentModalProps) => {
   const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [cars, setCars] = useState<Car[]>([]);
+  const [states, setStates] = useState<State[]>([]);
   const [manualData, setManualData] = useState({
-    car_id: "",
-    client_id: "",
-    tire_state_id: "",
+    car_id: "none",
+    client_id: "none",
+    tire_state_id: "none",
+    assigner: "",
+    tire_inspection: {
+      state: "",
+      is_exchange: false,
+      note: "",
+    },
+    oil_inspection: {
+      state: "",
+      is_exchange: false,
+      note: "",
+    },
+    battery_inspection: {
+      state: "",
+      is_exchange: false,
+      note: "",
+    },
+    wiper_inspection: {
+      state: "",
+      is_exchange: false,
+      note: "",
+    },
+    other_inspection: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
@@ -45,13 +83,15 @@ export const StorageAssignmentModal = ({
   useEffect(() => {
     if (open) {
       loadPendingTasks();
+
       // 現在の値でフォームを初期化
       if (selectedSlot) {
-        setManualData({
-          car_id: selectedSlot.car_id?.toString() || "",
-          client_id: selectedSlot.client_id?.toString() || "",
-          tire_state_id: selectedSlot.tire_state_id?.toString() || "",
-        });
+        setManualData((prev) => ({
+          ...prev,
+          car_id: selectedSlot.car_id?.toString() || "none",
+          client_id: selectedSlot.client_id?.toString() || "none",
+          tire_state_id: selectedSlot.tire_state_id?.toString() || "none",
+        }));
       }
     }
   }, [open, selectedSlot]);
@@ -65,6 +105,26 @@ export const StorageAssignmentModal = ({
       console.error("保留タスクの取得に失敗:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // フィールド更新のヘルパー関数
+  const updateManualField = (path: string, value: any) => {
+    const pathArray = path.split(".");
+
+    if (pathArray.length === 1) {
+      setManualData((prev) => ({ ...prev, [path]: value }));
+    } else if (pathArray.length === 2) {
+      const [objKey, propKey] = pathArray;
+      setManualData((prev) => {
+        // prev[objKey] may be a string or an object; cast to any for safe merge
+        const existing = (prev as any)[objKey] ?? {};
+        const merged =
+          typeof existing === "object" && existing !== null
+            ? { ...existing, [propKey]: value }
+            : { [propKey]: value };
+        return { ...prev, [objKey]: merged };
+      });
     }
   };
 
@@ -93,9 +153,9 @@ export const StorageAssignmentModal = ({
     if (!selectedSlot) return;
 
     const updates = {
-      car_id: manualData.car_id ? parseInt(manualData.car_id) : null,
-      client_id: manualData.client_id ? parseInt(manualData.client_id) : null,
-      tire_state_id: manualData.tire_state_id
+      car_id: manualData.car_id && manualData.car_id !== "none" ? parseInt(manualData.car_id) : null,
+      client_id: manualData.client_id && manualData.client_id !== "none" ? parseInt(manualData.client_id) : null,
+      tire_state_id: manualData.tire_state_id && manualData.tire_state_id !== "none"
         ? parseInt(manualData.tire_state_id)
         : null,
     };
@@ -202,48 +262,324 @@ export const StorageAssignmentModal = ({
                 <CardTitle className="text-lg">手動データ入力</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* 基本情報 */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="car-id">車両</Label>
+                    <Select
+                      value={manualData.car_id}
+                      onValueChange={(value) =>
+                        setManualData({ ...manualData, car_id: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="車両を選択" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">未選択</SelectItem>
+                        {cars.map((car) => (
+                          <SelectItem
+                            key={car.id}
+                            value={car.id?.toString() || "none"}
+                          >
+                            ID:{car.id} - {car.car_model} ({car.car_number})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client-id">顧客</Label>
+                    <Select
+                      value={manualData.client_id}
+                      onValueChange={(value) =>
+                        setManualData({
+                          ...manualData,
+                          client_id: value,
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="顧客を選択" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">未選択</SelectItem>
+                        {clients.map((client) => (
+                          <SelectItem
+                            key={client.id}
+                            value={client.id?.toString() || "none"}
+                          >
+                            ID:{client.id} - {client.client_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tire-state-id">タイヤ状態</Label>
+                    <Select
+                      value={manualData.tire_state_id}
+                      onValueChange={(value) =>
+                        setManualData({
+                          ...manualData,
+                          tire_state_id: value,
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="タイヤ状態を選択" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">未選択</SelectItem>
+                        {states.map((state) => (
+                          <SelectItem
+                            key={state.id}
+                            value={state.id?.toString() || "none"}
+                          >
+                            ID:{state.id} - {state.tire_maker} {state.tire_size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* 担当者 */}
                 <div className="space-y-2">
-                  <Label htmlFor="car-id">車両ID</Label>
+                  <Label htmlFor="assigner">担当者</Label>
                   <Input
-                    id="car-id"
-                    type="number"
-                    placeholder="車両IDを入力"
-                    value={manualData.car_id}
+                    id="assigner"
+                    type="text"
+                    placeholder="担当者名を入力"
+                    value={manualData.assigner}
                     onChange={(e) =>
-                      setManualData({ ...manualData, car_id: e.target.value })
+                      updateManualField("assigner", e.target.value)
                     }
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="client-id">顧客ID</Label>
-                  <Input
-                    id="client-id"
-                    type="number"
-                    placeholder="顧客IDを入力"
-                    value={manualData.client_id}
-                    onChange={(e) =>
-                      setManualData({
-                        ...manualData,
-                        client_id: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tire-state-id">タイヤ状態ID</Label>
-                  <Input
-                    id="tire-state-id"
-                    type="number"
-                    placeholder="タイヤ状態IDを入力"
-                    value={manualData.tire_state_id}
-                    onChange={(e) =>
-                      setManualData({
-                        ...manualData,
-                        tire_state_id: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+
+                {/* 点検項目 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold">
+                      点検・整備項目
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="border border-gray-500 rounded-md">
+                      {/* ヘッダー */}
+                      <div className="grid grid-cols-10 gap-2 border-b border-gray-500 p-2 bg-gray-200 text-sm">
+                        <div className="col-span-2">点検項目</div>
+                        <div className="col-span-2">状態</div>
+                        <div className="col-span-1">交換</div>
+                        <div className="col-span-5">備考</div>
+                      </div>
+
+                      {/* タイヤ */}
+                      <div className="grid grid-cols-10 gap-2 p-2 border-b border-gray-500">
+                        <div className="col-span-2">タイヤ</div>
+                        <div className="col-span-2">
+                          <Select
+                            value={manualData.tire_inspection.state || ""}
+                            onValueChange={(value) =>
+                              updateManualField("tire_inspection.state", value)
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="状態選択" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="5mm">5mm(良好)</SelectItem>
+                              <SelectItem value="4mm">4mm</SelectItem>
+                              <SelectItem value="3mm">
+                                3mm(交換おすすめ)
+                              </SelectItem>
+                              <SelectItem value="2mm">2mm(交換時期)</SelectItem>
+                              <SelectItem value="1mm">1mm(要交換)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-1">
+                          <input
+                            type="checkbox"
+                            checked={
+                              manualData.tire_inspection.is_exchange || false
+                            }
+                            onChange={(e) =>
+                              updateManualField(
+                                "tire_inspection.is_exchange",
+                                e.target.checked
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                        </div>
+                        <div className="col-span-5">
+                          <Input
+                            type="text"
+                            value={manualData.tire_inspection.note || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "tire_inspection.note",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* エンジンオイル */}
+                      <div className="grid grid-cols-10 gap-2 p-2 border-b border-gray-500">
+                        <div className="col-span-2">エンジンオイル</div>
+                        <div className="col-span-2">
+                          <Input
+                            type="text"
+                            value={manualData.oil_inspection.state || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "oil_inspection.state",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="col-span-1">
+                          <input
+                            type="checkbox"
+                            checked={
+                              manualData.oil_inspection.is_exchange || false
+                            }
+                            onChange={(e) =>
+                              updateManualField(
+                                "oil_inspection.is_exchange",
+                                e.target.checked
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                        </div>
+                        <div className="col-span-5">
+                          <Input
+                            type="text"
+                            value={manualData.oil_inspection.note || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "oil_inspection.note",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* バッテリー */}
+                      <div className="grid grid-cols-10 gap-2 p-2 border-b border-gray-500">
+                        <div className="col-span-2">バッテリー</div>
+                        <div className="col-span-2">
+                          <Input
+                            type="text"
+                            value={manualData.battery_inspection.state || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "battery_inspection.state",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="col-span-1">
+                          <input
+                            type="checkbox"
+                            checked={
+                              manualData.battery_inspection.is_exchange || false
+                            }
+                            onChange={(e) =>
+                              updateManualField(
+                                "battery_inspection.is_exchange",
+                                e.target.checked
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                        </div>
+                        <div className="col-span-5">
+                          <Input
+                            type="text"
+                            value={manualData.battery_inspection.note || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "battery_inspection.note",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* ワイパーゴム */}
+                      <div className="grid grid-cols-10 gap-2 p-2 border-b border-gray-500">
+                        <div className="col-span-2">ワイパーゴム</div>
+                        <div className="col-span-2">
+                          <Input
+                            type="text"
+                            value={manualData.wiper_inspection.state || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "wiper_inspection.state",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="col-span-1">
+                          <input
+                            type="checkbox"
+                            checked={
+                              manualData.wiper_inspection.is_exchange || false
+                            }
+                            onChange={(e) =>
+                              updateManualField(
+                                "wiper_inspection.is_exchange",
+                                e.target.checked
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                        </div>
+                        <div className="col-span-5">
+                          <Input
+                            type="text"
+                            value={manualData.wiper_inspection.note || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "wiper_inspection.note",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* その他 */}
+                      <div className="grid grid-cols-10 gap-2 p-2">
+                        <div className="col-span-2">その他</div>
+                        <div className="col-span-8">
+                          <Input
+                            type="text"
+                            value={manualData.other_inspection || ""}
+                            onChange={(e) =>
+                              updateManualField(
+                                "other_inspection",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Button onClick={handleManualAssign} className="w-full">
                   データを設定
                 </Button>

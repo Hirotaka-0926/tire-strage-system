@@ -144,6 +144,21 @@ export const DetailPanel = ({
         <CardContent>
           {selectedSlot ? (
             <div className="space-y-4">
+              {/* 担当者名を大きく上部に表示 */}
+              {(selectedSlot.car_id !== null ||
+                selectedSlot.client_id !== null ||
+                selectedSlot.tire_state_id !== null) && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                    <p className="text-sm font-semibold text-blue-800">担当者</p>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {currentStorageData?.state?.assigner || "担当者無し"}
+                  </p>
+                </div>
+              )}
+
               {/* iPad Mini最適化: ヘッダー情報を縮小 */}
               <div className="pb-1">
                 <h3 className="font-bold text-xl sm:text-2xl mb-1">
@@ -158,54 +173,48 @@ export const DetailPanel = ({
                 </Badge>
               </div>
 
-              {(selectedSlot.car_id !== null ||
-                selectedSlot.client_id !== null ||
-                selectedSlot.tire_state_id !== null) && (
-                <div className="border-t pt-3">
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    <div className="bg-gray-50 p-2 rounded">
-                      <label className="text-xs font-semibold text-gray-600 block">
-                        保管庫ID
-                      </label>
-                      <p className="text-sm font-medium">{selectedSlot.id}</p>
+              {/* 格納されている大まかな情報を表示 */}
+              {currentStorageData && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-800">格納情報</h4>
+                  <div className="space-y-3">
+                    {/* 顧客情報 */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">顧客名</span>
+                      <span className="font-medium text-gray-900">
+                        {currentStorageData.client?.client_name || "未設定"}
+                      </span>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded">
-                      <label className="text-xs font-semibold text-gray-600 block">
-                        車両ID
-                      </label>
-                      <p className="text-sm font-medium">
-                        {selectedSlot.car_id || "未設定"}
-                      </p>
+                    {/* 車両情報 */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">車種</span>
+                      <span className="font-medium text-gray-900">
+                        {currentStorageData.car?.car_model || "未設定"}
+                      </span>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded">
-                      <label className="text-xs font-semibold text-gray-600 block">
-                        顧客ID
-                      </label>
-                      <p className="text-sm font-medium">
-                        {selectedSlot.client_id || "未設定"}
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">車番</span>
+                      <span className="font-medium text-gray-900">
+                        {currentStorageData.car?.car_number || "未設定"}
+                      </span>
                     </div>
-                    <div className="bg-gray-50 p-2 rounded">
-                      <label className="text-xs font-semibold text-gray-600 block">
-                        タイヤ状態ID
-                      </label>
-                      <p className="text-sm font-medium">
-                        {selectedSlot.tire_state_id || "未設定"}
-                      </p>
+                    {/* タイヤ情報 */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">タイヤメーカー</span>
+                      <span className="font-medium text-gray-900">
+                        {currentStorageData.state?.tire_maker || "未設定"}
+                      </span>
                     </div>
-                    {currentStorageData?.state?.assigner && (
-                      <div className="bg-gray-50 p-2 rounded col-span-2">
-                        <label className="text-xs font-semibold text-gray-600 block">
-                          担当者
-                        </label>
-                        <p className="text-sm font-medium">
-                          {currentStorageData.state.assigner}
-                        </p>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">タイヤサイズ</span>
+                      <span className="font-medium text-gray-900">
+                        {currentStorageData.state?.tire_size || "未設定"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
+
 
               {/* iPad Mini最適化: ステータス表示をコンパクトに */}
               <div className="border-t pt-3">
