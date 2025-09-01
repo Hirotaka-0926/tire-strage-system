@@ -21,7 +21,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getPendingTasks, getAllClients } from "@/utils/supabaseFunction";
+import {
+  getPendingTasks,
+  getAllClients,
+  getInspectionData,
+  getCarByID,
+  getClientByID,
+  getStateByID,
+} from "@/utils/supabaseFunction";
 import type {
   StorageData,
   TaskInput,
@@ -44,30 +51,42 @@ export const StorageAssignmentModal = ({
   onAssign,
 }: StorageAssignmentModalProps) => {
   const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [cars, setCars] = useState<Car[]>([]);
-  const [states, setStates] = useState<State[]>([]);
+
   const [manualData, setManualData] = useState({
-    car_id: "none",
-    client_id: "none",
-    tire_state_id: "none",
+    car_id: "",
+    client_id: "",
+    tire_state_id: "",
+
+    // State interface fields
+    tire_maker: "",
+    tire_pattern: "",
+    tire_size: "",
+    manufacture_year: "",
+    air_pressure: "",
+    inspection_date: "",
+    drive_distance: "",
+    next_theme: "",
     assigner: "",
     tire_inspection: {
+      type: "tire",
       state: "",
       is_exchange: false,
       note: "",
     },
     oil_inspection: {
+      type: "oil",
       state: "",
       is_exchange: false,
       note: "",
     },
     battery_inspection: {
+      type: "battery",
       state: "",
       is_exchange: false,
       note: "",
     },
     wiper_inspection: {
+      type: "wiper",
       state: "",
       is_exchange: false,
       note: "",
@@ -152,12 +171,48 @@ export const StorageAssignmentModal = ({
   const handleManualAssign = () => {
     if (!selectedSlot) return;
 
+    // Create State object with all the manual form data
+    const stateData: Partial<State> = {
+      tire_maker: manualData.tire_maker || "",
+      tire_pattern: manualData.tire_pattern || "",
+      tire_size: manualData.tire_size || "",
+      manufacture_year: manualData.manufacture_year
+        ? parseInt(manualData.manufacture_year)
+        : 0,
+      air_pressure: manualData.air_pressure
+        ? parseFloat(manualData.air_pressure)
+        : 0,
+      inspection_date: manualData.inspection_date
+        ? new Date(manualData.inspection_date)
+        : undefined,
+      drive_distance: manualData.drive_distance
+        ? parseInt(manualData.drive_distance)
+        : 0,
+      next_theme: manualData.next_theme || "",
+      assigner: manualData.assigner || "",
+      tire_inspection: manualData.tire_inspection,
+      oil_inspection: manualData.oil_inspection,
+      battery_inspection: manualData.battery_inspection,
+      wiper_inspection: manualData.wiper_inspection,
+      other_inspection: manualData.other_inspection || "",
+    };
+
     const updates = {
-      car_id: manualData.car_id && manualData.car_id !== "none" ? parseInt(manualData.car_id) : null,
-      client_id: manualData.client_id && manualData.client_id !== "none" ? parseInt(manualData.client_id) : null,
-      tire_state_id: manualData.tire_state_id && manualData.tire_state_id !== "none"
-        ? parseInt(manualData.tire_state_id)
-        : null,
+      car_id:
+        manualData.car_id && manualData.car_id !== "none"
+          ? parseInt(manualData.car_id)
+          : null,
+      client_id:
+        manualData.client_id && manualData.client_id !== "none"
+          ? parseInt(manualData.client_id)
+          : null,
+      tire_state_id:
+        manualData.tire_state_id && manualData.tire_state_id !== "none"
+          ? parseInt(manualData.tire_state_id)
+          : null,
+      // Note: The State data would need to be saved to the database separately
+      // as it's not part of the StorageData interface
+      stateData,
     };
 
     onAssign(selectedSlot.id, updates);
@@ -266,83 +321,126 @@ export const StorageAssignmentModal = ({
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="car-id">車両</Label>
-                    <Select
-                      value={manualData.car_id}
-                      onValueChange={(value) =>
-                        setManualData({ ...manualData, car_id: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="車両を選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">未選択</SelectItem>
-                        {cars.map((car) => (
-                          <SelectItem
-                            key={car.id}
-                            value={car.id?.toString() || "none"}
-                          >
-                            ID:{car.id} - {car.car_model} ({car.car_number})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="client-id">顧客</Label>
-                    <Select
-                      value={manualData.client_id}
-                      onValueChange={(value) =>
-                        setManualData({
-                          ...manualData,
-                          client_id: value,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="顧客を選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">未選択</SelectItem>
-                        {clients.map((client) => (
-                          <SelectItem
-                            key={client.id}
-                            value={client.id?.toString() || "none"}
-                          >
-                            ID:{client.id} - {client.client_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="tire-state-id">タイヤ状態</Label>
-                    <Select
-                      value={manualData.tire_state_id}
-                      onValueChange={(value) =>
-                        setManualData({
-                          ...manualData,
-                          tire_state_id: value,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="タイヤ状態を選択" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">未選択</SelectItem>
-                        {states.map((state) => (
-                          <SelectItem
-                            key={state.id}
-                            value={state.id?.toString() || "none"}
-                          >
-                            ID:{state.id} - {state.tire_maker} {state.tire_size}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
+
+                {/* タイヤ基本情報 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold">
+                      タイヤ基本情報
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="tire_maker">タイヤメーカー</Label>
+                        <Input
+                          id="tire_maker"
+                          type="text"
+                          placeholder="メーカー名を入力"
+                          value={manualData.tire_maker}
+                          onChange={(e) =>
+                            updateManualField("tire_maker", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tire_pattern">タイヤパターン</Label>
+                        <Input
+                          id="tire_pattern"
+                          type="text"
+                          placeholder="パターン名を入力"
+                          value={manualData.tire_pattern}
+                          onChange={(e) =>
+                            updateManualField("tire_pattern", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tire_size">タイヤサイズ</Label>
+                        <Input
+                          id="tire_size"
+                          type="text"
+                          placeholder="サイズを入力"
+                          value={manualData.tire_size}
+                          onChange={(e) =>
+                            updateManualField("tire_size", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="manufacture_year">製造年</Label>
+                        <Input
+                          id="manufacture_year"
+                          type="number"
+                          placeholder="製造年を入力"
+                          value={manualData.manufacture_year}
+                          onChange={(e) =>
+                            updateManualField(
+                              "manufacture_year",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="air_pressure">空気圧</Label>
+                        <Input
+                          id="air_pressure"
+                          type="number"
+                          step="0.1"
+                          placeholder="空気圧を入力"
+                          value={manualData.air_pressure}
+                          onChange={(e) =>
+                            updateManualField("air_pressure", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="drive_distance">走行距離</Label>
+                        <Input
+                          id="drive_distance"
+                          type="number"
+                          placeholder="走行距離(km)を入力"
+                          value={manualData.drive_distance}
+                          onChange={(e) =>
+                            updateManualField("drive_distance", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="inspection_date">点検日</Label>
+                        <Input
+                          id="inspection_date"
+                          type="date"
+                          value={manualData.inspection_date}
+                          onChange={(e) =>
+                            updateManualField("inspection_date", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="next_theme">次回テーマ</Label>
+                        <Input
+                          id="next_theme"
+                          type="text"
+                          placeholder="次回テーマを入力"
+                          value={manualData.next_theme}
+                          onChange={(e) =>
+                            updateManualField("next_theme", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* 担当者 */}
                 <div className="space-y-2">

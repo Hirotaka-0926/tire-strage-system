@@ -194,7 +194,7 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
         <View style={pdfStyles.infoItem}>
           <Text style={pdfStyles.infoLabel}>シーズン:</Text>
           <Text style={pdfStyles.infoValue}>
-            {storage.season === "summer" ? "夏タイヤ" : "冬タイヤ"}
+            {storage.season === "summer" ? "夏" : "冬"}
           </Text>
         </View>
       </View>

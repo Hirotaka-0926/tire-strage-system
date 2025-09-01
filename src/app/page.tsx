@@ -86,7 +86,11 @@ const Dashboard: React.FC = () => {
 
     const fetchInspectionProgress = async () => {
       const progressRate = await calInspectionProgress();
-      setInspectionProgress(progressRate);
+      if (progressRate && progressRate > 100) {
+        setInspectionProgress(100);
+      } else {
+        setInspectionProgress(progressRate);
+      }
     };
 
     fetchInspectionProgress();
@@ -191,11 +195,11 @@ const Dashboard: React.FC = () => {
 
     return {
       currentSeason: {
-        season: currentSeason === "summer" ? "夏タイヤ" : "冬タイヤ",
+        season: currentSeason === "summer" ? "夏" : "冬",
         count: currentSeasonData.length,
       },
       previousSeason: {
-        season: previousSeason === "summer" ? "夏タイヤ" : "冬タイヤ",
+        season: previousSeason === "summer" ? "夏" : "冬",
         count: previousSeasonData.length,
       },
       growth: Math.round(growth),

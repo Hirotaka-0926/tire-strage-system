@@ -64,9 +64,9 @@ export const HistoryModal = ({
 
   const getSeasonBadge = (season: string) => {
     if (season === "summer") {
-      return <Badge className="bg-orange-500">夏タイヤ</Badge>;
+      return <Badge className="bg-orange-500">夏</Badge>;
     } else if (season === "winter") {
-      return <Badge className="bg-blue-500">冬タイヤ</Badge>;
+      return <Badge className="bg-blue-500">冬</Badge>;
     }
     return <Badge variant="outline">不明</Badge>;
   };

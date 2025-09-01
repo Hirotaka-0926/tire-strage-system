@@ -912,3 +912,15 @@ export const getPendingTasks = async (): Promise<TaskInput[]> => {
     throw error;
   }
 };
+
+export const getCarByID = (car_id: string) => {
+  return supabase.from("car_table").select("*").eq("id", car_id).single();
+};
+
+export const getClientByID = (client_id: string) => {
+  return supabase.from("client_data").select("*").eq("id", client_id).single();
+};
+
+export const getStateByID = (state_id: string) => {
+  return supabase.from("tire_state").select("*").eq("id", state_id).single();
+};

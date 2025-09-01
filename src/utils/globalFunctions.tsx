@@ -27,7 +27,7 @@ export const getYearAndSeason = (
  * @returns 日本語のシーズン名
  */
 export const getSeasonInJapanese = (season: "summer" | "winter"): string => {
-  return season === "summer" ? "夏タイヤ" : "冬タイヤ";
+  return season === "summer" ? "夏" : "冬";
 };
 
 export const calInspectionProgress = async () => {
