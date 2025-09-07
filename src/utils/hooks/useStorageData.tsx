@@ -85,10 +85,15 @@ export const useStorageData = (
     }
   };
 
-  const updateSlot = (slotId: string, updates: Partial<StorageData>) => {
-    const newSlot = updates;
+  const updateSlot = async (slotId: string, updates: Partial<StorageData>) => {
+    const newSlot = { ...updates };
     newSlot.id = slotId;
-    upsertStorage(newSlot);
+
+    // StorageData を保存
+    await upsertStorage(newSlot);
+
+    // stateData があれば、State を保存
+
     router.refresh();
   };
 

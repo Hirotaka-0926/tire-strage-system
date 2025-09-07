@@ -134,6 +134,14 @@ export const StorageAssignmentModal = ({
       tire_state_id: task.tire_state?.id ?? null,
     };
 
+    if (!updates.car_id || !updates.client_id || !updates.tire_state_id) {
+      setAlertMessage({
+        type: "error",
+        message: "この整備データは不完全です。データをご確認ください",
+      });
+      return;
+    }
+
     onAssign(selectedSlot.id, updates);
     setAlertMessage({
       type: "success",
@@ -169,18 +177,6 @@ export const StorageAssignmentModal = ({
       other_inspection: manualData?.other_inspection || "",
     };
 
-    const updates = {
-      car_id: selectedSlot.car_id ? selectedSlot.car_id : null,
-      client_id: selectedSlot.client_id ? selectedSlot.client_id : null,
-      tire_state_id: selectedSlot.tire_state_id
-        ? selectedSlot.tire_state_id
-        : null,
-      // Note: The State data would need to be saved to the database separately
-      // as it's not part of the StorageData interface
-      stateData,
-    };
-
-    onAssign(selectedSlot.id, updates);
     setAlertMessage({
       type: "success",
       message: "データが正常に設定されました",

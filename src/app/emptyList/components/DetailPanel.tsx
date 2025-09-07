@@ -26,6 +26,7 @@ import type {
   State,
 } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
+import { set } from "react-hook-form";
 
 const PLACEHOLDER_VALUES = {
   UNKNOWN: "不明",
@@ -34,11 +35,13 @@ const PLACEHOLDER_VALUES = {
 interface DetailPanelProps {
   selectedSlot: StorageData | null;
   onUpdateSlot: (slotId: string, updates: Partial<StorageData>) => void;
+  setSelectedSlot: (slot: StorageData | null) => void;
 }
 
 export const DetailPanel = ({
   selectedSlot,
   onUpdateSlot,
+  setSelectedSlot,
 }: DetailPanelProps) => {
   const router = useRouter();
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -72,6 +75,7 @@ export const DetailPanel = ({
     updates: Partial<StorageData>
   ) => {
     onUpdateSlot(slotId, updates);
+    setSelectedSlot({ ...selectedSlot, ...updates } as StorageData);
   };
 
   const handleDetailNavigation = () => {

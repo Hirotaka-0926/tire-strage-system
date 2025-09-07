@@ -175,6 +175,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
             <DetailPanel
               selectedSlot={selectedSlot}
               onUpdateSlot={handleUpdateSlot}
+              setSelectedSlot={setSelectedSlot}
             />
           </div>
         </div>
