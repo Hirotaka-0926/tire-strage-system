@@ -27,6 +27,10 @@ import type {
 } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 
+const PLACEHOLDER_VALUES = {
+  UNKNOWN: "不明",
+} as const;
+
 interface DetailPanelProps {
   selectedSlot: StorageData | null;
   onUpdateSlot: (slotId: string, updates: Partial<StorageData>) => void;
@@ -145,19 +149,16 @@ export const DetailPanel = ({
           {selectedSlot ? (
             <div className="space-y-4">
               {/* 担当者名を大きく上部に表示 */}
-              {(selectedSlot.car_id !== null ||
-                selectedSlot.client_id !== null ||
-                selectedSlot.tire_state_id !== null) && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                    <p className="text-sm font-semibold text-blue-800">担当者</p>
-                  </div>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {currentStorageData?.state?.assigner || "担当者無し"}
-                  </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <p className="text-sm font-semibold text-blue-800">担当者</p>
                 </div>
-              )}
+                <p className="text-2xl font-bold text-blue-900">
+                  {currentStorageData?.state?.assigner ||
+                    PLACEHOLDER_VALUES.UNKNOWN}
+                </p>
+              </div>
 
               {/* iPad Mini最適化: ヘッダー情報を縮小 */}
               <div className="pb-1">
@@ -174,47 +175,53 @@ export const DetailPanel = ({
               </div>
 
               {/* 格納されている大まかな情報を表示 */}
-              {currentStorageData && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-lg mb-3 text-gray-800">格納情報</h4>
-                  <div className="space-y-3">
-                    {/* 顧客情報 */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">顧客名</span>
-                      <span className="font-medium text-gray-900">
-                        {currentStorageData.client?.client_name || "未設定"}
-                      </span>
-                    </div>
-                    {/* 車両情報 */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">車種</span>
-                      <span className="font-medium text-gray-900">
-                        {currentStorageData.car?.car_model || "未設定"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">車番</span>
-                      <span className="font-medium text-gray-900">
-                        {currentStorageData.car?.car_number || "未設定"}
-                      </span>
-                    </div>
-                    {/* タイヤ情報 */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">タイヤメーカー</span>
-                      <span className="font-medium text-gray-900">
-                        {currentStorageData.state?.tire_maker || "未設定"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">タイヤサイズ</span>
-                      <span className="font-medium text-gray-900">
-                        {currentStorageData.state?.tire_size || "未設定"}
-                      </span>
-                    </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-semibold text-lg mb-3 text-gray-800">
+                  格納情報
+                </h4>
+                <div className="space-y-3">
+                  {/* 顧客情報 */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">顧客名</span>
+                    <span className="font-medium text-gray-900">
+                      {currentStorageData?.client?.client_name ||
+                        PLACEHOLDER_VALUES.UNKNOWN}
+                    </span>
+                  </div>
+                  {/* 車両情報 */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">車種</span>
+                    <span className="font-medium text-gray-900">
+                      {currentStorageData?.car?.car_model ||
+                        PLACEHOLDER_VALUES.UNKNOWN}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">車番</span>
+                    <span className="font-medium text-gray-900">
+                      {currentStorageData?.car?.car_number ||
+                        PLACEHOLDER_VALUES.UNKNOWN}
+                    </span>
+                  </div>
+                  {/* タイヤ情報 */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      タイヤメーカー
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {currentStorageData?.state?.tire_maker ||
+                        PLACEHOLDER_VALUES.UNKNOWN}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">タイヤサイズ</span>
+                    <span className="font-medium text-gray-900">
+                      {currentStorageData?.state?.tire_size ||
+                        PLACEHOLDER_VALUES.UNKNOWN}
+                    </span>
                   </div>
                 </div>
-              )}
-
+              </div>
 
               {/* iPad Mini最適化: ステータス表示をコンパクトに */}
               <div className="border-t pt-3">

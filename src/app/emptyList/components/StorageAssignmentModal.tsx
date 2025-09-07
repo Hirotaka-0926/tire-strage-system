@@ -25,9 +25,8 @@ import {
   getPendingTasks,
   getAllClients,
   getInspectionData,
-  getCarByID,
-  getClientByID,
   getStateByID,
+  clearStorage,
 } from "@/utils/supabaseFunction";
 import type {
   StorageData,
@@ -52,47 +51,7 @@ export const StorageAssignmentModal = ({
 }: StorageAssignmentModalProps) => {
   const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
 
-  const [manualData, setManualData] = useState({
-    car_id: "",
-    client_id: "",
-    tire_state_id: "",
-
-    // State interface fields
-    tire_maker: "",
-    tire_pattern: "",
-    tire_size: "",
-    manufacture_year: "",
-    air_pressure: "",
-    inspection_date: "",
-    drive_distance: "",
-    next_theme: "",
-    assigner: "",
-    tire_inspection: {
-      type: "tire",
-      state: "",
-      is_exchange: false,
-      note: "",
-    },
-    oil_inspection: {
-      type: "oil",
-      state: "",
-      is_exchange: false,
-      note: "",
-    },
-    battery_inspection: {
-      type: "battery",
-      state: "",
-      is_exchange: false,
-      note: "",
-    },
-    wiper_inspection: {
-      type: "wiper",
-      state: "",
-      is_exchange: false,
-      note: "",
-    },
-    other_inspection: "",
-  });
+  const [manualData, setManualData] = useState<State | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
     type: "success" | "error";
@@ -100,19 +59,34 @@ export const StorageAssignmentModal = ({
   } | null>(null);
 
   useEffect(() => {
-    if (open) {
-      loadPendingTasks();
+    const fetchFormData = async () => {
+      if (selectedSlot?.tire_state_id) {
+        const stateData = await getStateByID(
+          selectedSlot.tire_state_id.toString()
+        );
+        const formIniData = await getInspectionData(stateData);
 
-      // 現在の値でフォームを初期化
-      if (selectedSlot) {
-        setManualData((prev) => ({
-          ...prev,
-          car_id: selectedSlot.car_id?.toString() || "none",
-          client_id: selectedSlot.client_id?.toString() || "none",
-          tire_state_id: selectedSlot.tire_state_id?.toString() || "none",
-        }));
+        return formIniData;
       }
-    }
+    };
+
+    const loadInitialData = async () => {
+      if (open) {
+        loadPendingTasks();
+
+        // 現在の値でフォームを初期化
+        if (selectedSlot) {
+          const formData = await fetchFormData();
+          console.log("fetchFormData", formData);
+          setManualData((prev) => ({
+            ...prev,
+            ...formData!,
+          }));
+        }
+      }
+    };
+
+    loadInitialData();
   }, [open, selectedSlot]);
 
   const loadPendingTasks = async () => {
@@ -132,10 +106,14 @@ export const StorageAssignmentModal = ({
     const pathArray = path.split(".");
 
     if (pathArray.length === 1) {
-      setManualData((prev) => ({ ...prev, [path]: value }));
+      setManualData((prev) => {
+        if (!prev) return prev;
+        return { ...prev, [path]: value };
+      });
     } else if (pathArray.length === 2) {
       const [objKey, propKey] = pathArray;
       setManualData((prev) => {
+        if (!prev) return prev;
         // prev[objKey] may be a string or an object; cast to any for safe merge
         const existing = (prev as any)[objKey] ?? {};
         const merged =
@@ -173,43 +151,30 @@ export const StorageAssignmentModal = ({
 
     // Create State object with all the manual form data
     const stateData: Partial<State> = {
-      tire_maker: manualData.tire_maker || "",
-      tire_pattern: manualData.tire_pattern || "",
-      tire_size: manualData.tire_size || "",
-      manufacture_year: manualData.manufacture_year
-        ? parseInt(manualData.manufacture_year)
-        : 0,
-      air_pressure: manualData.air_pressure
-        ? parseFloat(manualData.air_pressure)
-        : 0,
-      inspection_date: manualData.inspection_date
+      tire_maker: manualData?.tire_maker || "",
+      tire_pattern: manualData?.tire_pattern || "",
+      tire_size: manualData?.tire_size || "",
+      manufacture_year: manualData?.manufacture_year || 0,
+      air_pressure: manualData?.air_pressure || 0,
+      inspection_date: manualData?.inspection_date
         ? new Date(manualData.inspection_date)
         : undefined,
-      drive_distance: manualData.drive_distance
-        ? parseInt(manualData.drive_distance)
-        : 0,
-      next_theme: manualData.next_theme || "",
-      assigner: manualData.assigner || "",
-      tire_inspection: manualData.tire_inspection,
-      oil_inspection: manualData.oil_inspection,
-      battery_inspection: manualData.battery_inspection,
-      wiper_inspection: manualData.wiper_inspection,
-      other_inspection: manualData.other_inspection || "",
+      drive_distance: manualData?.drive_distance || 0,
+      next_theme: manualData?.next_theme || "",
+      assigner: manualData?.assigner || "",
+      tire_inspection: manualData?.tire_inspection,
+      oil_inspection: manualData?.oil_inspection,
+      battery_inspection: manualData?.battery_inspection,
+      wiper_inspection: manualData?.wiper_inspection,
+      other_inspection: manualData?.other_inspection || "",
     };
 
     const updates = {
-      car_id:
-        manualData.car_id && manualData.car_id !== "none"
-          ? parseInt(manualData.car_id)
-          : null,
-      client_id:
-        manualData.client_id && manualData.client_id !== "none"
-          ? parseInt(manualData.client_id)
-          : null,
-      tire_state_id:
-        manualData.tire_state_id && manualData.tire_state_id !== "none"
-          ? parseInt(manualData.tire_state_id)
-          : null,
+      car_id: selectedSlot.car_id ? selectedSlot.car_id : null,
+      client_id: selectedSlot.client_id ? selectedSlot.client_id : null,
+      tire_state_id: selectedSlot.tire_state_id
+        ? selectedSlot.tire_state_id
+        : null,
       // Note: The State data would need to be saved to the database separately
       // as it's not part of the StorageData interface
       stateData,
@@ -227,7 +192,7 @@ export const StorageAssignmentModal = ({
     }, 1500);
   };
 
-  const handleClearSlot = () => {
+  const handleClearSlot = async () => {
     if (!selectedSlot) return;
 
     const updates = {
@@ -235,6 +200,16 @@ export const StorageAssignmentModal = ({
       client_id: null,
       tire_state_id: null,
     };
+
+    const error = await clearStorage(selectedSlot.id);
+
+    if (error) {
+      setAlertMessage({
+        type: "error",
+        message: "保管庫のクリアに失敗しました",
+      });
+      return;
+    }
 
     onAssign(selectedSlot.id, updates);
     setAlertMessage({ type: "success", message: "保管庫が空に設定されました" });
@@ -317,19 +292,6 @@ export const StorageAssignmentModal = ({
                 <CardTitle className="text-lg">手動データ入力</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* 基本情報 */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="car-id">車両</Label>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client-id">顧客</Label>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tire-state-id">タイヤ状態</Label>
-                  </div>
-                </div>
-
                 {/* タイヤ基本情報 */}
                 <Card>
                   <CardHeader>
@@ -345,7 +307,7 @@ export const StorageAssignmentModal = ({
                           id="tire_maker"
                           type="text"
                           placeholder="メーカー名を入力"
-                          value={manualData.tire_maker}
+                          value={manualData?.tire_maker}
                           onChange={(e) =>
                             updateManualField("tire_maker", e.target.value)
                           }
@@ -357,7 +319,7 @@ export const StorageAssignmentModal = ({
                           id="tire_pattern"
                           type="text"
                           placeholder="パターン名を入力"
-                          value={manualData.tire_pattern}
+                          value={manualData?.tire_pattern}
                           onChange={(e) =>
                             updateManualField("tire_pattern", e.target.value)
                           }
@@ -369,7 +331,7 @@ export const StorageAssignmentModal = ({
                           id="tire_size"
                           type="text"
                           placeholder="サイズを入力"
-                          value={manualData.tire_size}
+                          value={manualData?.tire_size}
                           onChange={(e) =>
                             updateManualField("tire_size", e.target.value)
                           }
@@ -381,7 +343,7 @@ export const StorageAssignmentModal = ({
                           id="manufacture_year"
                           type="number"
                           placeholder="製造年を入力"
-                          value={manualData.manufacture_year}
+                          value={manualData?.manufacture_year}
                           onChange={(e) =>
                             updateManualField(
                               "manufacture_year",
@@ -397,7 +359,7 @@ export const StorageAssignmentModal = ({
                           type="number"
                           step="0.1"
                           placeholder="空気圧を入力"
-                          value={manualData.air_pressure}
+                          value={manualData?.air_pressure}
                           onChange={(e) =>
                             updateManualField("air_pressure", e.target.value)
                           }
@@ -409,7 +371,7 @@ export const StorageAssignmentModal = ({
                           id="drive_distance"
                           type="number"
                           placeholder="走行距離(km)を入力"
-                          value={manualData.drive_distance}
+                          value={manualData?.drive_distance}
                           onChange={(e) =>
                             updateManualField("drive_distance", e.target.value)
                           }
@@ -420,7 +382,15 @@ export const StorageAssignmentModal = ({
                         <Input
                           id="inspection_date"
                           type="date"
-                          value={manualData.inspection_date}
+                          value={
+                            manualData?.inspection_date
+                              ? manualData.inspection_date instanceof Date
+                                ? manualData.inspection_date
+                                    .toISOString()
+                                    .slice(0, 10)
+                                : manualData.inspection_date
+                              : ""
+                          }
                           onChange={(e) =>
                             updateManualField("inspection_date", e.target.value)
                           }
@@ -432,7 +402,7 @@ export const StorageAssignmentModal = ({
                           id="next_theme"
                           type="text"
                           placeholder="次回テーマを入力"
-                          value={manualData.next_theme}
+                          value={manualData?.next_theme}
                           onChange={(e) =>
                             updateManualField("next_theme", e.target.value)
                           }
@@ -449,7 +419,7 @@ export const StorageAssignmentModal = ({
                     id="assigner"
                     type="text"
                     placeholder="担当者名を入力"
-                    value={manualData.assigner}
+                    value={manualData?.assigner}
                     onChange={(e) =>
                       updateManualField("assigner", e.target.value)
                     }
@@ -478,7 +448,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-2">タイヤ</div>
                         <div className="col-span-2">
                           <Select
-                            value={manualData.tire_inspection.state || ""}
+                            value={manualData?.tire_inspection?.state || ""}
                             onValueChange={(value) =>
                               updateManualField("tire_inspection.state", value)
                             }
@@ -501,7 +471,7 @@ export const StorageAssignmentModal = ({
                           <input
                             type="checkbox"
                             checked={
-                              manualData.tire_inspection.is_exchange || false
+                              manualData?.tire_inspection?.is_exchange || false
                             }
                             onChange={(e) =>
                               updateManualField(
@@ -515,7 +485,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-5">
                           <Input
                             type="text"
-                            value={manualData.tire_inspection.note || ""}
+                            value={manualData?.tire_inspection?.note || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "tire_inspection.note",
@@ -532,7 +502,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-2">
                           <Input
                             type="text"
-                            value={manualData.oil_inspection.state || ""}
+                            value={manualData?.oil_inspection?.state || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "oil_inspection.state",
@@ -545,7 +515,7 @@ export const StorageAssignmentModal = ({
                           <input
                             type="checkbox"
                             checked={
-                              manualData.oil_inspection.is_exchange || false
+                              manualData?.oil_inspection?.is_exchange || false
                             }
                             onChange={(e) =>
                               updateManualField(
@@ -559,7 +529,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-5">
                           <Input
                             type="text"
-                            value={manualData.oil_inspection.note || ""}
+                            value={manualData?.oil_inspection?.note || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "oil_inspection.note",
@@ -576,7 +546,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-2">
                           <Input
                             type="text"
-                            value={manualData.battery_inspection.state || ""}
+                            value={manualData?.battery_inspection?.state || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "battery_inspection.state",
@@ -589,7 +559,8 @@ export const StorageAssignmentModal = ({
                           <input
                             type="checkbox"
                             checked={
-                              manualData.battery_inspection.is_exchange || false
+                              manualData?.battery_inspection?.is_exchange ||
+                              false
                             }
                             onChange={(e) =>
                               updateManualField(
@@ -603,7 +574,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-5">
                           <Input
                             type="text"
-                            value={manualData.battery_inspection.note || ""}
+                            value={manualData?.battery_inspection?.note || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "battery_inspection.note",
@@ -620,7 +591,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-2">
                           <Input
                             type="text"
-                            value={manualData.wiper_inspection.state || ""}
+                            value={manualData?.wiper_inspection?.state || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "wiper_inspection.state",
@@ -633,7 +604,7 @@ export const StorageAssignmentModal = ({
                           <input
                             type="checkbox"
                             checked={
-                              manualData.wiper_inspection.is_exchange || false
+                              manualData?.wiper_inspection?.is_exchange || false
                             }
                             onChange={(e) =>
                               updateManualField(
@@ -647,7 +618,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-5">
                           <Input
                             type="text"
-                            value={manualData.wiper_inspection.note || ""}
+                            value={manualData?.wiper_inspection?.note || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "wiper_inspection.note",
@@ -664,7 +635,7 @@ export const StorageAssignmentModal = ({
                         <div className="col-span-8">
                           <Input
                             type="text"
-                            value={manualData.other_inspection || ""}
+                            value={manualData?.other_inspection || ""}
                             onChange={(e) =>
                               updateManualField(
                                 "other_inspection",

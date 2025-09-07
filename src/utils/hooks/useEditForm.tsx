@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { TaskInput, State } from "@/utils/interface";
 import {
   getInspectionData,
-  upsertTire,
   updateTaskStatus,
+  upsertTireWithTask,
 } from "@/utils/supabaseFunction";
 import { toast } from "sonner";
 
@@ -197,7 +197,7 @@ export const useEditForm = ({
       // タイヤデータを更新
       console.log("Submitting form data:", formData);
       if (formData) {
-        await upsertTire(formData);
+        await upsertTireWithTask(formData);
       }
 
       if (

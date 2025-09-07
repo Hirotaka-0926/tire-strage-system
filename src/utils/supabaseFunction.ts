@@ -135,6 +135,22 @@ export const getSpecificClient = async (
   return data;
 };
 
+export const upsertTireWithTask = async (data: State) => {
+  const tireData = await upsertTire(data);
+  const tireStateId = tireData[0].id;
+
+  if (tireData && tireData.length > 0) {
+    const tireId = tireData[0].id;
+    const { error: taskError } = await supabase
+      .from("task_list")
+      .update({ tire_state_id: tireId })
+      .eq("id", tireStateId);
+    if (taskError) {
+      throw taskError;
+    }
+  }
+};
+
 export const upsertTire = async (data: State) => {
   const {
     tire_inspection,
@@ -174,17 +190,7 @@ export const upsertTire = async (data: State) => {
   if (inspectionError) {
     throw inspectionError;
   }
-
-  if (tireData && tireData.length > 0) {
-    const tireId = tireData[0].id;
-    const { error: taskError } = await supabase
-      .from("task_list")
-      .update({ tire_state_id: tireId })
-      .eq("id", tireStateId);
-    if (taskError) {
-      throw taskError;
-    }
-  }
+  return tireData;
 };
 
 export const pushNewState = async (car_id: number) => {
@@ -485,7 +491,7 @@ export const pushNewStorageLog = async (newLog: StorageLogOutput) => {
   return data;
 };
 
-export const upsertStorage = async (upsertData: StorageData) => {
+export const upsertStorage = async (upsertData: Partial<StorageData>) => {
   const { data, error } = await supabase
     .from("storage_master")
     .update(upsertData)
@@ -913,14 +919,28 @@ export const getPendingTasks = async (): Promise<TaskInput[]> => {
   }
 };
 
-export const getCarByID = (car_id: string) => {
-  return supabase.from("car_table").select("*").eq("id", car_id).single();
+export const getStateByID = async (state_id: string): Promise<State> => {
+  const { data, error } = await supabase
+    .from("tire_state")
+    .select("*")
+    .eq("id", state_id)
+    .single();
+  if (error) {
+    throw error;
+  }
+  return data;
 };
 
-export const getClientByID = (client_id: string) => {
-  return supabase.from("client_data").select("*").eq("id", client_id).single();
-};
+export const clearStorage = async (storage_id: string) => {
+  const { error } = await supabase
+    .from("storage_master")
+    .update({ car_id: null, client_id: null, tire_state_id: null })
+    .eq("id", storage_id);
 
-export const getStateByID = (state_id: string) => {
-  return supabase.from("tire_state").select("*").eq("id", state_id).single();
+  if (error) {
+    console.error("Error clearing storage:", error);
+    throw error;
+  }
+
+  return error;
 };

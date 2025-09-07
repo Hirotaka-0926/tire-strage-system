@@ -70,9 +70,6 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
   const handleUpdateSlot = (slotId: string, updates: Partial<StorageData>) => {
     updateSlot(slotId, updates);
     // 選択中のスロットも更新
-    if (selectedSlot?.id === slotId) {
-      setSelectedSlot({ ...selectedSlot, ...updates });
-    }
   };
 
   return (
@@ -137,26 +134,30 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
                     onValueChange={(value) => setSelectedArea(value)}
                   >
                     <TabsList className="mb-4">
-                      {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
-                        <TabsTrigger key={area.name} value={area.name}>
-                          エリア{area.name}
-                        </TabsTrigger>
-                      ))}
+                      {areas
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((area) => (
+                          <TabsTrigger key={area.name} value={area.name}>
+                            エリア{area.name}
+                          </TabsTrigger>
+                        ))}
                     </TabsList>
-                    {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
-                      <TabsContent key={area.name} value={area.name}>
-                        <div className="text-xs text-gray-600 mb-2">
-                          エリア{area.name} (1-{area.totalSlots})
-                        </div>
-                        <StorageGrid
-                          slots={filteredSlots.filter((slot) =>
-                            slot.id.startsWith(area.name + "_")
-                          )}
-                          selectedSlot={selectedSlot}
-                          onSlotSelect={handleSlotSelect}
-                        />
-                      </TabsContent>
-                    ))}
+                    {areas
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((area) => (
+                        <TabsContent key={area.name} value={area.name}>
+                          <div className="text-xs text-gray-600 mb-2">
+                            エリア{area.name} (1-{area.totalSlots})
+                          </div>
+                          <StorageGrid
+                            slots={filteredSlots.filter((slot) =>
+                              slot.id.startsWith(area.name + "_")
+                            )}
+                            selectedSlot={selectedSlot}
+                            onSlotSelect={handleSlotSelect}
+                          />
+                        </TabsContent>
+                      ))}
                   </Tabs>
                 ) : (
                   <StorageList

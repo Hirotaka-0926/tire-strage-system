@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import type { AreaConfig } from "@/utils/storage";
 import type { StorageData } from "../interface";
 import { toast } from "sonner";
-import { addNewStorage } from "../supabaseFunction";
+import { addNewStorage, upsertStorage } from "../supabaseFunction";
+import { useRouter } from "next/navigation";
 
 export const useStorageData = (
   initialAreas: AreaConfig[],
@@ -12,6 +13,7 @@ export const useStorageData = (
 ) => {
   const [areas, setAreas] = useState<AreaConfig[]>(initialAreas);
   const [slots, setSlots] = useState<StorageData[]>(initialSlots);
+  const router = useRouter();
 
   useEffect(() => {
     setAreas(initialAreas);
@@ -84,16 +86,10 @@ export const useStorageData = (
   };
 
   const updateSlot = (slotId: string, updates: Partial<StorageData>) => {
-    setSlots((prev) =>
-      prev.map((slot) =>
-        slot.id === slotId
-          ? {
-              ...slot,
-              ...updates,
-            }
-          : slot
-      )
-    );
+    const newSlot = updates;
+    newSlot.id = slotId;
+    upsertStorage(newSlot);
+    router.refresh();
   };
 
   const updateSlots = (newSlots: StorageData[]) => {
