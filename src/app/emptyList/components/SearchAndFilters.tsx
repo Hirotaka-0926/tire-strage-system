@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AreaConfig } from "@/utils/storage";
+import StorageToCSVButton from "./StorageToCSVButton";
 
 interface SearchAndFiltersProps {
   searchTerm: string;
@@ -54,11 +55,13 @@ export const SearchAndFilters = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">全エリア</SelectItem>
-          {areas.sort((a, b) => a.name.localeCompare(b.name)).map((area) => (
-            <SelectItem key={area.name} value={area.name}>
-              エリア{area.name}
-            </SelectItem>
-          ))}
+          {areas
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((area) => (
+              <SelectItem key={area.name} value={area.name}>
+                エリア{area.name}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -71,6 +74,9 @@ export const SearchAndFilters = ({
           <SelectItem value="occupied">使用中</SelectItem>
         </SelectContent>
       </Select>
+
+      <StorageToCSVButton />
+
       <Button onClick={onAddStorage} className="bg-blue-600 hover:bg-blue-700">
         <Plus className="w-4 h-4 mr-2" />
         保管庫追加

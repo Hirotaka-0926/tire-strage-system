@@ -341,7 +341,7 @@ export const StorageAssignmentModal = ({
                           id="tire_maker"
                           type="text"
                           placeholder="メーカー名を入力"
-                          value={manualData?.tire_maker}
+                          value={manualData?.tire_maker || ""}
                           onChange={(e) =>
                             updateManualField("tire_maker", e.target.value)
                           }
@@ -353,7 +353,7 @@ export const StorageAssignmentModal = ({
                           id="tire_pattern"
                           type="text"
                           placeholder="パターン名を入力"
-                          value={manualData?.tire_pattern}
+                          value={manualData?.tire_pattern || ""}
                           onChange={(e) =>
                             updateManualField("tire_pattern", e.target.value)
                           }
@@ -365,7 +365,7 @@ export const StorageAssignmentModal = ({
                           id="tire_size"
                           type="text"
                           placeholder="サイズを入力"
-                          value={manualData?.tire_size}
+                          value={manualData?.tire_size || ""}
                           onChange={(e) =>
                             updateManualField("tire_size", e.target.value)
                           }
@@ -377,7 +377,7 @@ export const StorageAssignmentModal = ({
                           id="manufacture_year"
                           type="number"
                           placeholder="製造年を入力"
-                          value={manualData?.manufacture_year}
+                          value={manualData?.manufacture_year ?? 0}
                           onChange={(e) =>
                             updateManualField(
                               "manufacture_year",
@@ -393,7 +393,7 @@ export const StorageAssignmentModal = ({
                           type="number"
                           step="0.1"
                           placeholder="空気圧を入力"
-                          value={manualData?.air_pressure}
+                          value={manualData?.air_pressure ?? 0}
                           onChange={(e) =>
                             updateManualField("air_pressure", e.target.value)
                           }
@@ -405,7 +405,7 @@ export const StorageAssignmentModal = ({
                           id="drive_distance"
                           type="number"
                           placeholder="走行距離(km)を入力"
-                          value={manualData?.drive_distance}
+                          value={manualData?.drive_distance ?? 0}
                           onChange={(e) =>
                             updateManualField("drive_distance", e.target.value)
                           }
@@ -436,7 +436,7 @@ export const StorageAssignmentModal = ({
                           id="next_theme"
                           type="text"
                           placeholder="次回テーマを入力"
-                          value={manualData?.next_theme}
+                          value={manualData?.next_theme || ""}
                           onChange={(e) =>
                             updateManualField("next_theme", e.target.value)
                           }
@@ -453,7 +453,7 @@ export const StorageAssignmentModal = ({
                     id="assigner"
                     type="text"
                     placeholder="担当者名を入力"
-                    value={manualData?.assigner}
+                    value={manualData?.assigner || ""}
                     onChange={(e) =>
                       updateManualField("assigner", e.target.value)
                     }
