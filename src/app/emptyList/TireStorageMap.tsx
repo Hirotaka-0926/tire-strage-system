@@ -34,7 +34,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
   } = useStorageData(initialAreas, initialSlots);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedArea, setSelectedArea] = useState("all");
+  const [selectedArea, setSelectedArea] = useState("A");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSlot, setSelectedSlot] = useState<StorageData | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
