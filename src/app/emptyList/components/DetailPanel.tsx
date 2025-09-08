@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { getStorageByMasterStorageId } from "@/utils/supabaseFunction";
-import { HistoryModal } from "./HistoryModal";
 import { PDFPreviewModal } from "./PDFPreviewModal";
 import { StorageAssignmentModal } from "./StorageAssignmentModal";
 import type { StorageData } from "@/utils/interface";
@@ -36,12 +35,14 @@ interface DetailPanelProps {
   selectedSlot: StorageData | null;
   onUpdateSlot: (slotId: string, updates: Partial<StorageData>) => void;
   setSelectedSlot: (slot: StorageData | null) => void;
+  onUpdateFromHistory: (slotId: string, updates: Partial<StorageData>) => void;
 }
 
 export const DetailPanel = ({
   selectedSlot,
   onUpdateSlot,
   setSelectedSlot,
+  onUpdateFromHistory,
 }: DetailPanelProps) => {
   const router = useRouter();
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -82,10 +83,6 @@ export const DetailPanel = ({
     if (selectedSlot) {
       router.push(`/emptyList/storage/${selectedSlot.id}`);
     }
-  };
-
-  const handleHistoryClick = () => {
-    setShowHistoryModal(true);
   };
 
   const handlePDFPreview = () => {
@@ -265,15 +262,6 @@ export const DetailPanel = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-10 text-sm font-medium touch-manipulation"
-                    onClick={handleHistoryClick}
-                  >
-                    <History className="w-4 h-4 mr-1" />
-                    履歴
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
                     className="h-10 text-sm font-medium touch-manipulation disabled:opacity-50"
                     onClick={handlePDFPreview}
                     disabled={!currentStorageData}
@@ -295,17 +283,13 @@ export const DetailPanel = ({
           )}
         </CardContent>
 
-        <HistoryModal
-          selectedSlot={selectedSlot}
-          open={showHistoryModal}
-          onOpenChange={setShowHistoryModal}
-        />
-
         <StorageAssignmentModal
           selectedSlot={selectedSlot}
           open={showAssignmentModal}
           onOpenChange={setShowAssignmentModal}
           onAssign={handleStorageAssignment}
+          setSelectedSlot={setSelectedSlot}
+          onUpdateFromHistory={onUpdateFromHistory}
         />
 
         {currentStorageData && (

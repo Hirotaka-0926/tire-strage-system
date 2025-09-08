@@ -10,6 +10,7 @@ import {
   BlobProvider,
 } from "@react-pdf/renderer";
 import { StorageLogInput } from "@/utils/interface";
+import { Button } from "@/components/ui/button";
 
 // PDFのスタイル定義
 
@@ -319,18 +320,27 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
     if (isLoading || error) return null;
 
     return (
-      <PDFDownloadLink
-        document={<StoragePDFDocument storages={storages} />}
-        fileName={fileName}
-      >
-        {({ loading, error }) =>
-          loading
-            ? "PDF生成中..."
-            : error
-            ? `エラーが発生しました: ${error.message}`
-            : linkText
-        }
-      </PDFDownloadLink>
+      <BlobProvider document={<StoragePDFDocument storages={storages} />}>
+        {({ blob, url, loading, error }) => (
+          <Button
+            onClick={() => {
+              if (url) {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                link.click();
+              }
+            }}
+            disabled={loading || !!error}
+          >
+            {loading
+              ? "PDF生成中..."
+              : error
+              ? `エラーが発生しました: ${error.message}`
+              : linkText}
+          </Button>
+        )}
+      </BlobProvider>
     );
   };
 

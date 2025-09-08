@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, User } from "lucide-react";
+import { Package, User, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,12 +35,16 @@ import type {
   Car,
   State,
 } from "@/utils/interface";
+import { HistoryModal } from "./HistoryModal";
+import { useStorageData } from "@/utils/hooks/useStorageData";
 
 interface StorageAssignmentModalProps {
   selectedSlot: StorageData | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAssign: (slotId: string, updates: Partial<StorageData>) => void;
+  setSelectedSlot: (slot: StorageData | null) => void;
+  onUpdateFromHistory: (slotId: string, historyData: StorageData) => void;
 }
 
 export const StorageAssignmentModal = ({
@@ -48,9 +52,10 @@ export const StorageAssignmentModal = ({
   open,
   onOpenChange,
   onAssign,
+  setSelectedSlot,
+  onUpdateFromHistory,
 }: StorageAssignmentModalProps) => {
   const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
-
   const [manualData, setManualData] = useState<State | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
@@ -139,6 +144,7 @@ export const StorageAssignmentModal = ({
         type: "error",
         message: "この整備データは不完全です。データをご確認ください",
       });
+      setTimeout(() => setAlertMessage(null), 3000);
       return;
     }
 
@@ -204,6 +210,7 @@ export const StorageAssignmentModal = ({
         type: "error",
         message: "保管庫のクリアに失敗しました",
       });
+      setTimeout(() => setAlertMessage(null), 3000);
       return;
     }
 
@@ -216,9 +223,37 @@ export const StorageAssignmentModal = ({
     }, 1500);
   };
 
+  const handleHistoryAssign = async (
+    slotId: string,
+    historyData: StorageData
+  ) => {
+    if (!selectedSlot) return;
+
+    try {
+      // await assignFromHistory(slotId, historyData);
+      await onUpdateFromHistory(slotId, historyData);
+      setSelectedSlot({ ...selectedSlot, ...historyData } as StorageData);
+      setAlertMessage({
+        type: "success",
+        message: "履歴からの割り当てが完了しました",
+      });
+
+      setTimeout(() => {
+        onOpenChange(false);
+        setAlertMessage(null);
+      }, 1500);
+    } catch (error) {
+      setAlertMessage({
+        type: "error",
+        message: "履歴からの割り当てに失敗しました",
+      });
+      setTimeout(() => setAlertMessage(null), 3000);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto w-[95vw] sm:w-[90vw]">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Package className="w-5 h-5 mr-2" />
@@ -227,12 +262,15 @@ export const StorageAssignmentModal = ({
         </DialogHeader>
 
         <Tabs defaultValue="tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
+          <TabsList className="grid w-full grid-cols-4 text-xs sm:text-sm">
             <TabsTrigger value="tasks" className="px-2 py-2">
               タスク
             </TabsTrigger>
             <TabsTrigger value="manual" className="px-2 py-2">
               手動
+            </TabsTrigger>
+            <TabsTrigger value="history" className="px-2 py-2">
+              履歴
             </TabsTrigger>
             <TabsTrigger value="clear" className="px-2 py-2">
               空にする
@@ -648,6 +686,26 @@ export const StorageAssignmentModal = ({
                 <Button onClick={handleManualAssign} className="w-full">
                   データを設定
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-lg">
+                  <History className="w-5 h-5 mr-2" />
+                  保管履歴
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-[50vh] overflow-y-auto">
+                <HistoryModal
+                  selectedSlot={selectedSlot}
+                  onAssign={handleHistoryAssign}
+                  open={open}
+                  onOpenChange={onOpenChange}
+                  setAlertMessage={setAlertMessage}
+                />
               </CardContent>
             </Card>
           </TabsContent>

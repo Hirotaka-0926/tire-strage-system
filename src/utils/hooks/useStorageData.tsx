@@ -101,6 +101,32 @@ export const useStorageData = (
     setSlots(newSlots);
   };
 
+  const assignFromHistory = async (
+    slotId: string,
+    historyData: Partial<StorageData>
+  ) => {
+    try {
+      const updates: Partial<StorageData> = {
+        id: slotId,
+        client_id: historyData.client_id,
+        car_id: historyData.car_id,
+        tire_state_id: historyData.tire_state_id,
+      };
+
+      await upsertStorage(updates);
+
+      toast("履歴からの割り当てが完了しました");
+    } catch (error) {
+      toast("履歴からの割り当てに失敗しました", {
+        description: error instanceof Error ? error.message : "不明なエラー",
+      });
+    } finally {
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    }
+  };
+
   return {
     areas,
     slots,
@@ -108,5 +134,6 @@ export const useStorageData = (
     addSlotsToArea,
     updateSlot,
     updateSlots,
+    assignFromHistory,
   };
 };
