@@ -267,7 +267,7 @@ const Dashboard: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{clientCount}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              リテンション率: {analytics.customerRetention}%
+              リピート率: {analytics.customerRetention}%
             </div>
             <Progress value={analytics.customerRetention} className="mt-2" />
           </CardContent>

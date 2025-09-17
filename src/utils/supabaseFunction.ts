@@ -662,11 +662,15 @@ export const getLogsByClientId = async (
   return data || [];
 };
 
-export const clearStorageIdFromTask = async (storageId: string) => {
+export const clearStorageIdFromTask = async (
+  storageId: string,
+  taskId: string
+) => {
   const { data, error } = await supabase
     .from("task_list")
     .update({ storage_id: null })
     .eq("storage_id", storageId)
+    .eq("id", taskId)
     .select();
 
   if (error) {

@@ -6,8 +6,7 @@ import {
   getAllMasterStorages,
   updateTaskStatus,
   getLogsByClientId,
-  getStorageByMasterStorageId,
-  clearStorageIdFromTask,
+  updateTaskStorageId,
 } from "@/utils/supabaseFunction";
 
 interface UseAssignStorageReturn {
@@ -80,15 +79,8 @@ const useAssignStorage = (
       try {
         setLoading(true);
         // if task already has storage and it contains data, clear it
-        if (
-          task.storage_id &&
-          task.storage_id !== "" &&
-          task.storage_id !== storageId
-        ) {
-          const prev = await getStorageByMasterStorageId(task.storage_id);
-          if (prev.car || prev.client || prev.state) {
-            await clearStorageIdFromTask(task.storage_id);
-          }
+        if (task.storage_id !== storageId && task.id) {
+          await updateTaskStorageId(task.id!, storageId);
         }
 
         if (task.id) {
