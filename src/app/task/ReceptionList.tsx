@@ -96,6 +96,7 @@ const ReceptionList = ({ tasks }: Props) => {
 
   const handleMaintenanceEdit = (item: TaskInput) => {
     setSelectedItem(item);
+    console.log("Selected Item for Edit:", item);
     setIsMaintenanceDialogOpen(true);
   };
 
@@ -239,12 +240,14 @@ const ReceptionList = ({ tasks }: Props) => {
             router.refresh(); // Refresh the page to reflect changes
           }}
         />
-        
+
         {/* PDFプレビューモーダル */}
         {pdfData && (
           <PDFPreviewModal
             storageData={pdfData}
-            fileName={`予約_${pdfData.id?.toString().padStart(3, "0") || "未割当"}_${pdfData.client?.client_name || "不明"}.pdf`}
+            fileName={`予約_${
+              pdfData.id?.toString().padStart(3, "0") || "未割当"
+            }_${pdfData.client?.client_name || "不明"}.pdf`}
             open={isPDFPreviewOpen}
             onOpenChange={setIsPDFPreviewOpen}
           />
@@ -293,7 +296,10 @@ const ReceptionList = ({ tasks }: Props) => {
                   </TableHeader>
                   <TableBody>
                     {groupedTasks.incomplete.map((item) => (
-                      <TableRow key={`incomplete-${item.id || 'unknown'}`} className="hover:bg-gray-50">
+                      <TableRow
+                        key={`incomplete-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
+                      >
                         <TableCell className="font-medium">
                           {formatTaskId(item.id)}
                         </TableCell>
@@ -367,7 +373,10 @@ const ReceptionList = ({ tasks }: Props) => {
                   </TableHeader>
                   <TableBody>
                     {groupedTasks.complete.map((item) => (
-                      <TableRow key={`complete-${item.id || 'unknown'}`} className="hover:bg-gray-50">
+                      <TableRow
+                        key={`complete-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
+                      >
                         <TableCell className="font-medium">
                           {formatTaskId(item.id)}
                         </TableCell>
@@ -441,7 +450,10 @@ const ReceptionList = ({ tasks }: Props) => {
                   </TableHeader>
                   <TableBody>
                     {groupedTasks.pending.map((item) => (
-                      <TableRow key={`pending-${item.id || 'unknown'}`} className="hover:bg-gray-50">
+                      <TableRow
+                        key={`pending-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
+                      >
                         <TableCell className="font-medium">
                           {formatTaskId(item.id)}
                         </TableCell>

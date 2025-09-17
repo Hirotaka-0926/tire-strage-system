@@ -186,8 +186,24 @@ export const useEditForm = ({
   };
   // フォーム送信処理
   const handleSubmit = useCallback(async () => {
+    if (!selectedItem) return;
+
+    if (!selectedItem.id) {
+      setError("IDが不明です");
+      return;
+    }
     if (!formData) {
       setError("未入力の項目があります");
+      return;
+    }
+
+    if (formData.assigner?.trim() === "") {
+      setError("担当者名は必須です");
+      return;
+    }
+
+    if (formData.next_theme?.trim() === "") {
+      setError("次回のテーマは必須です");
       return;
     }
 
@@ -197,7 +213,11 @@ export const useEditForm = ({
       // タイヤデータを更新
       console.log("Submitting form data:", formData);
       if (formData) {
-        await upsertTireWithTask(formData);
+        await upsertTireWithTask(formData, selectedItem.id);
+      }
+
+      if (selectedItem?.tire_state == null && selectedItem?.id) {
+        await updateTaskStatus(selectedItem.id, "incomplete");
       }
 
       if (

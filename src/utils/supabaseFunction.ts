@@ -135,8 +135,9 @@ export const getSpecificClient = async (
   return data;
 };
 
-export const upsertTireWithTask = async (data: State) => {
+export const upsertTireWithTask = async (data: State, taskId: number) => {
   const tireData = await upsertTire(data);
+  console.log(tireData);
   const tireStateId = tireData[0].id;
 
   if (tireData && tireData.length > 0) {
@@ -144,7 +145,7 @@ export const upsertTireWithTask = async (data: State) => {
     const { error: taskError } = await supabase
       .from("task_list")
       .update({ tire_state_id: tireId })
-      .eq("id", tireStateId);
+      .eq("id", taskId);
     if (taskError) {
       throw taskError;
     }

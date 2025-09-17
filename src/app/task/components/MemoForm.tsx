@@ -56,6 +56,7 @@ const MemoForm = ({ formData, updateField, loading }: MemoFormProps) => {
               value={formData?.assigner || ""}
               onChange={(e) => updateField("assigner", e.target.value)}
               disabled={loading}
+              required={true}
             />
           </div>
         </div>
@@ -67,6 +68,7 @@ const MemoForm = ({ formData, updateField, loading }: MemoFormProps) => {
           value={formData?.next_theme || ""}
           onChange={(e) => updateField("next_theme", e.target.value)}
           disabled={loading}
+          required={true}
         />
       </CardContent>
     </Card>

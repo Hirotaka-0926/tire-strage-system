@@ -179,12 +179,17 @@ export default function CustomerManage({
     })
     .filter((customer: ClientWithExchangeHistory) => {
       const matchesSearch =
-        customer.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.client_name_kana
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        customer.post_number.includes(searchTerm) ||
-        customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+        (customer.client_name &&
+          customer.client_name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (customer.client_name_kana &&
+          customer.client_name_kana
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (customer.post_number && customer.post_number.includes(searchTerm)) ||
+        (customer.address &&
+          customer.address.toLowerCase().includes(searchTerm.toLowerCase()));
 
       if (filterStatus === "this-season") {
         return matchesSearch && customer.thisSeasonExchange;
