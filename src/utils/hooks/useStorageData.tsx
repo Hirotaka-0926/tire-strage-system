@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { addNewStorage, upsertStorage, upsertTire } from "../supabaseFunction";
 import { useRouter } from "next/navigation";
 import { StorageInput, State } from "../interface";
+import { pushNewStorageLog } from "../supabaseFunction";
+import { getYearAndSeason } from "../globalFunctions";
 
 export const useStorageData = (
   initialAreas: AreaConfig[],
