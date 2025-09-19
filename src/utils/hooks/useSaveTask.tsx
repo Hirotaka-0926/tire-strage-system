@@ -39,18 +39,19 @@ const useSaveTask = (selectedItem: TaskInput | null): UseSaveTaskReturn => {
 
   const saveTaskData = useCallback(async () => {
     try {
-      if (
-        prevStorage &&
-        (prevStorage.car || prevStorage.client || prevStorage.state)
-      ) {
-        await clearStorageData(prevStorage.id!);
-      }
       if (!selectedItem || !selectedItem?.id) {
         toast("選択されたタスクがありません", {
           description: "タスクを選択してください",
         });
         return;
       }
+      if (
+        prevStorage &&
+        (prevStorage.car || prevStorage.client || prevStorage.state)
+      ) {
+        await clearStorageData(prevStorage.id!);
+      }
+
       const storageData: StorageData = {
         id: selectedItem.storage_id!,
         car_id: selectedItem.car?.id ?? null,

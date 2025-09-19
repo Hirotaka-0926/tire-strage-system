@@ -146,9 +146,6 @@ const DeleteSlots = ({ open, onOpenChange, onStorageUpdated }: Props) => {
   };
   return (
     <Dialog open={open} onOpenChange={() => handleChangeDialogStatus()}>
-      <DialogHeader>
-        <DialogTitle>保管庫削除</DialogTitle>
-      </DialogHeader>
       <DialogContent>
         <Tabs defaultValue="delete-slots" className="w-full">
           <TabsList className="w-full">

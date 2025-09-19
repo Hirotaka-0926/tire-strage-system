@@ -185,12 +185,16 @@ export const upsertTire = async (data: State) => {
   if (battery_inspection) battery_inspection.tire_state_id = tireStateId;
   if (wiper_inspection) wiper_inspection.tire_state_id = tireStateId;
 
-  const { error: inspectionError } = await supabase
-    .from("inspection")
-    .upsert(inspectionArray);
-  if (inspectionError) {
-    throw inspectionError;
+  console.log(inspectionArray);
+  for (const inspection of inspectionArray) {
+    const { error: inspectionError } = await supabase
+      .from("inspection")
+      .upsert(inspection);
+    if (inspectionError) {
+      throw inspectionError;
+    }
   }
+
   return tireData;
 };
 
@@ -741,6 +745,132 @@ export const addNewStorage = async (
     .select();
 
   return error;
+};
+
+/**
+ * 安全なupsert関数 - idの有無で分けて処理
+ */
+export const safeUpsertStorages = async (
+  storageData: StorageData[]
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  inserted?: number;
+  updated?: number;
+}> => {
+  try {
+    // idがあるもの（更新）とないもの（挿入）に分ける
+    const toUpdate = storageData.filter((item) => item.id);
+    const toInsert = storageData.filter((item) => !item.id);
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+
+    // 更新処理
+    if (toUpdate.length > 0) {
+      const { data: updateData, error: updateError } = await supabase
+        .from("storage_master")
+        .upsert(toUpdate)
+        .select();
+
+      if (updateError) {
+        return {
+          success: false,
+          error: `更新エラー: ${updateError.message}`,
+        };
+      }
+      updatedCount = toUpdate.length;
+    }
+
+    // 挿入処理
+    if (toInsert.length > 0) {
+      const { data: insertData, error: insertError } = await supabase
+        .from("storage_master")
+        .insert(toInsert)
+        .select();
+
+      if (insertError) {
+        return {
+          success: false,
+          error: `挿入エラー: ${insertError.message}`,
+        };
+      }
+      insertedCount = toInsert.length;
+    }
+
+    return {
+      success: true,
+      data: { inserted: insertedCount, updated: updatedCount },
+      inserted: insertedCount,
+      updated: updatedCount,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+};
+
+/**
+ * より安全なupsert関数 - 個別に処理
+ */
+export const safeUpsertStoragesIndividual = async (
+  storageData: StorageData[]
+): Promise<{
+  success: boolean;
+  results: Array<{ id: string; success: boolean; error?: string }>;
+}> => {
+  const results = [];
+
+  for (const storage of storageData) {
+    try {
+      if (storage.id) {
+        // 更新
+        const { error } = await supabase
+          .from("storage_master")
+          .update({
+            car_id: storage.car_id,
+            client_id: storage.client_id,
+            tire_state_id: storage.tire_state_id,
+          })
+          .eq("id", storage.id);
+
+        results.push({
+          id: storage.id,
+          success: !error,
+          error: error?.message,
+        });
+      } else {
+        // 挿入
+        const { error } = await supabase.from("storage_master").insert({
+          car_id: storage.car_id,
+          client_id: storage.client_id,
+          tire_state_id: storage.tire_state_id,
+        });
+
+        results.push({
+          id: "new",
+          success: !error,
+          error: error?.message,
+        });
+      }
+    } catch (error) {
+      results.push({
+        id: storage.id || "new",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  const success = results.every((result) => result.success);
+
+  return {
+    success,
+    results,
+  };
 };
 
 export const adjustStorageSlots = async (

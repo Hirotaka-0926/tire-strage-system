@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import type { AreaConfig } from "@/utils/storage";
 import type { StorageData } from "../interface";
 import { toast } from "sonner";
-import { addNewStorage, upsertStorage } from "../supabaseFunction";
+import { addNewStorage, upsertStorage, upsertTire } from "../supabaseFunction";
 import { useRouter } from "next/navigation";
+import { StorageInput, State } from "../interface";
 
 export const useStorageData = (
   initialAreas: AreaConfig[],
@@ -55,24 +56,28 @@ export const useStorageData = (
   };
 
   const findMissingSlotNumbers = (areaName: string): number[] => {
-    const existingSlots = slots.filter(slot => slot.id.startsWith(`${areaName}_`));
-    const existingNumbers = existingSlots.map(slot => {
-      const match = slot.id.match(/_(\d+)$/);
-      return match ? parseInt(match[1]) : 0;
-    }).filter(num => num > 0);
+    const existingSlots = slots.filter((slot) =>
+      slot.id.startsWith(`${areaName}_`)
+    );
+    const existingNumbers = existingSlots
+      .map((slot) => {
+        const match = slot.id.match(/_(\d+)$/);
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter((num) => num > 0);
 
     if (existingNumbers.length === 0) return [];
-    
+
     // 実際の最大スロット番号を取得
     const maxExistingNumber = Math.max(...existingNumbers);
-    
+
     const missingNumbers: number[] = [];
     for (let i = 1; i <= maxExistingNumber; i++) {
       if (!existingNumbers.includes(i)) {
         missingNumbers.push(i);
       }
     }
-    
+
     return missingNumbers.sort((a, b) => a - b);
   };
 
@@ -82,10 +87,10 @@ export const useStorageData = (
 
     // 既存のエリア内で穴（欠番）を検出
     const missingNumbers = findMissingSlotNumbers(areaName);
-    
+
     const newSlots: StorageData[] = [];
     let slotsToAdd = additionalSlots;
-    
+
     // 1. 穴があれば優先的に埋める
     const holesCanFill = Math.min(missingNumbers.length, slotsToAdd);
     for (let i = 0; i < holesCanFill; i++) {
@@ -104,16 +109,20 @@ export const useStorageData = (
     let nextNumber = area.totalSlots + 1;
     if (slotsToAdd > 0) {
       // 既存スロットの実際の最大番号を確認
-      const existingSlots = slots.filter(slot => slot.id.startsWith(`${areaName}_`));
+      const existingSlots = slots.filter((slot) =>
+        slot.id.startsWith(`${areaName}_`)
+      );
       if (existingSlots.length > 0) {
-        const existingNumbers = existingSlots.map(slot => {
-          const match = slot.id.match(/_(\d+)$/);
-          return match ? parseInt(match[1]) : 0;
-        }).filter(num => num > 0);
+        const existingNumbers = existingSlots
+          .map((slot) => {
+            const match = slot.id.match(/_(\d+)$/);
+            return match ? parseInt(match[1]) : 0;
+          })
+          .filter((num) => num > 0);
         const maxExistingNumber = Math.max(...existingNumbers);
         nextNumber = Math.max(nextNumber, maxExistingNumber + 1);
       }
-      
+
       for (let i = 0; i < slotsToAdd; i++) {
         const number = nextNumber + i;
         const id = `${areaName}_${number.toString().padStart(3, "0")}`;
@@ -124,7 +133,7 @@ export const useStorageData = (
           tire_state_id: null,
         });
       }
-      
+
       // エリア設定を更新（連続追加分のみ増加）
       setAreas((prev) =>
         prev.map((a) =>
@@ -143,10 +152,15 @@ export const useStorageData = (
     } else {
       // UIにスロットを即座に反映
       setSlots((prev) => [...prev, ...newSlots]);
-      
-      const filledHoles = holesCanFill > 0 ? `${holesCanFill}個の穴を埋め、` : '';
-      const addedNew = slotsToAdd > 0 ? `${slotsToAdd}個の新規スロットを追加` : '';
-      const message = filledHoles || addedNew ? `${filledHoles}${addedNew}しました` : 'スロットを追加しました';
+
+      const filledHoles =
+        holesCanFill > 0 ? `${holesCanFill}個の穴を埋め、` : "";
+      const addedNew =
+        slotsToAdd > 0 ? `${slotsToAdd}個の新規スロットを追加` : "";
+      const message =
+        filledHoles || addedNew
+          ? `${filledHoles}${addedNew}しました`
+          : "スロットを追加しました";
       toast(`スロットの追加が完了しました`, {
         description: `エリア${areaName}: ${message}`,
       });
@@ -195,6 +209,39 @@ export const useStorageData = (
     }
   };
 
+  const assignFromManual = async (slotId: string, manualData: State) => {
+    try {
+      if (!manualData.id) {
+        toast.error("整備データがありません");
+        return;
+      }
+
+      if (!manualData.assigner || manualData.assigner.trim() === "") {
+        toast.error("整備士が指定されていません");
+        return;
+      }
+
+      if (!manualData.next_theme || manualData.next_theme.trim() === "") {
+        toast.error("次のテーマが指定されていません");
+        return;
+      }
+
+      const updates: State = manualData;
+
+      await upsertTire(updates);
+
+      toast("手動割り当てが完了しました");
+    } catch (error) {
+      toast("手動割り当てに失敗しました", {
+        description: error instanceof Error ? error.message : "不明なエラー",
+      });
+    } finally {
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    }
+  };
+
   return {
     areas,
     slots,
@@ -203,5 +250,6 @@ export const useStorageData = (
     updateSlot,
     updateSlots,
     assignFromHistory,
+    assignFromManual,
   };
 };

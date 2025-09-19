@@ -25,7 +25,6 @@ import type {
   State,
 } from "@/utils/interface";
 import { getYearAndSeason } from "@/utils/globalFunctions";
-import { set } from "react-hook-form";
 
 const PLACEHOLDER_VALUES = {
   UNKNOWN: "不明",
@@ -36,6 +35,7 @@ interface DetailPanelProps {
   onUpdateSlot: (slotId: string, updates: Partial<StorageData>) => void;
   setSelectedSlot: (slot: StorageData | null) => void;
   onUpdateFromHistory: (slotId: string, updates: Partial<StorageData>) => void;
+  assignFromManual: (slotId: string, manualData: State) => void;
 }
 
 export const DetailPanel = ({
@@ -43,6 +43,7 @@ export const DetailPanel = ({
   onUpdateSlot,
   setSelectedSlot,
   onUpdateFromHistory,
+  assignFromManual,
 }: DetailPanelProps) => {
   const router = useRouter();
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -224,18 +225,6 @@ export const DetailPanel = ({
                 </div>
               </div>
 
-              {/* iPad Mini最適化: ステータス表示をコンパクトに */}
-              <div className="border-t pt-3">
-                <div className="bg-blue-50 p-2 rounded">
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">
-                    保管庫の状態
-                  </label>
-                  <p className="text-lg font-bold text-blue-800">
-                    {getStatusText(selectedSlot)}
-                  </p>
-                </div>
-              </div>
-
               {/* iPad Mini最適化: コンパクトなボタンレイアウト */}
               <div className="space-y-2 pt-3">
                 <div className="grid grid-cols-2 gap-2">
@@ -290,6 +279,7 @@ export const DetailPanel = ({
           onAssign={handleStorageAssignment}
           setSelectedSlot={setSelectedSlot}
           onUpdateFromHistory={onUpdateFromHistory}
+          assignFromManual={assignFromManual}
         />
 
         {currentStorageData && (

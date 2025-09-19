@@ -31,6 +31,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
     addSlotsToArea,
     updateSlot,
     assignFromHistory,
+    assignFromManual,
   } = useStorageData(initialAreas, initialSlots);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -181,6 +182,7 @@ export default function TireStorageMap({ initialAreas, initialSlots }: Props) {
               onUpdateSlot={handleUpdateSlot}
               setSelectedSlot={setSelectedSlot}
               onUpdateFromHistory={assignFromHistory}
+              assignFromManual={assignFromManual}
             />
           </div>
         </div>

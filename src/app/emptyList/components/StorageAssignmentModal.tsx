@@ -34,9 +34,11 @@ import type {
   Client,
   Car,
   State,
+  StorageInput,
 } from "@/utils/interface";
 import { HistoryModal } from "./HistoryModal";
 import { useStorageData } from "@/utils/hooks/useStorageData";
+import { set } from "react-hook-form";
 
 interface StorageAssignmentModalProps {
   selectedSlot: StorageData | null;
@@ -45,6 +47,7 @@ interface StorageAssignmentModalProps {
   onAssign: (slotId: string, updates: Partial<StorageData>) => void;
   setSelectedSlot: (slot: StorageData | null) => void;
   onUpdateFromHistory: (slotId: string, historyData: StorageData) => void;
+  assignFromManual: (slotId: string, manualData: State) => void;
 }
 
 export const StorageAssignmentModal = ({
@@ -54,6 +57,7 @@ export const StorageAssignmentModal = ({
   onAssign,
   setSelectedSlot,
   onUpdateFromHistory,
+  assignFromManual,
 }: StorageAssignmentModalProps) => {
   const [pendingTasks, setPendingTasks] = useState<TaskInput[]>([]);
   const [manualData, setManualData] = useState<State | null>(null);
@@ -183,6 +187,32 @@ export const StorageAssignmentModal = ({
       other_inspection: manualData?.other_inspection || "",
     };
 
+    if (!manualData?.id) {
+      setAlertMessage({
+        type: "error",
+        message: "整備データを入力してください",
+      });
+      return;
+    }
+
+    if (!manualData?.assigner || manualData?.assigner.trim() === "") {
+      setAlertMessage({
+        type: "error",
+        message: "整備士が指定されていません",
+      });
+      return;
+    }
+
+    if (!manualData?.next_theme || manualData?.next_theme.trim() === "") {
+      setAlertMessage({
+        type: "error",
+        message: "次のテーマが指定されていません",
+      });
+      return;
+    }
+
+    assignFromManual(selectedSlot.id, manualData);
+
     setAlertMessage({
       type: "success",
       message: "データが正常に設定されました",
@@ -301,24 +331,44 @@ export const StorageAssignmentModal = ({
                         <div className="flex items-start justify-between">
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center space-x-2">
-                              <h3 className="font-medium text-lg">タスク #{task.id}</h3>
+                              <h3 className="font-medium text-lg">
+                                タスク #{task.id}
+                              </h3>
                               <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
                                 保留中
                               </span>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* 顧客情報 */}
                               <div className="space-y-2">
                                 <div className="flex items-center space-x-2">
                                   <User className="w-4 h-4 text-gray-500" />
-                                  <h4 className="font-medium text-sm">顧客情報</h4>
+                                  <h4 className="font-medium text-sm">
+                                    顧客情報
+                                  </h4>
                                 </div>
                                 <div className="text-sm text-gray-600 space-y-1 ml-6">
-                                  <p><span className="font-medium">お名前:</span> {task.client?.client_name ?? "-"}</p>
-                                  <p><span className="font-medium">住所:</span> {task.client?.address ?? "-"}</p>
-                                  <p><span className="font-medium">電話番号:</span> {task.client?.phone ?? "-"}</p>
-                                  <p><span className="font-medium">郵便番号:</span> {task.client?.post_number ?? "-"}</p>
+                                  <p>
+                                    <span className="font-medium">お名前:</span>{" "}
+                                    {task.client?.client_name ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">住所:</span>{" "}
+                                    {task.client?.address ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      電話番号:
+                                    </span>{" "}
+                                    {task.client?.phone ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      郵便番号:
+                                    </span>{" "}
+                                    {task.client?.post_number ?? "-"}
+                                  </p>
                                 </div>
                               </div>
 
@@ -326,44 +376,96 @@ export const StorageAssignmentModal = ({
                               <div className="space-y-2">
                                 <div className="flex items-center space-x-2">
                                   <Package className="w-4 h-4 text-gray-500" />
-                                  <h4 className="font-medium text-sm">車両情報</h4>
+                                  <h4 className="font-medium text-sm">
+                                    車両情報
+                                  </h4>
                                 </div>
                                 <div className="text-sm text-gray-600 space-y-1 ml-6">
-                                  <p><span className="font-medium">車種:</span> {task.car?.car_model ?? "-"}</p>
-                                  <p><span className="font-medium">ナンバープレート:</span> {task.car?.car_number ?? "-"}</p>
-                                  <p><span className="font-medium">年式:</span> {task.car?.model_year ?? "-"}</p>
+                                  <p>
+                                    <span className="font-medium">車種:</span>{" "}
+                                    {task.car?.car_model ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      ナンバープレート:
+                                    </span>{" "}
+                                    {task.car?.car_number ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">年式:</span>{" "}
+                                    {task.car?.model_year ?? "-"}
+                                  </p>
                                 </div>
                               </div>
 
                               {/* タイヤ情報 */}
                               <div className="space-y-2">
-                                <h4 className="font-medium text-sm">タイヤ情報</h4>
+                                <h4 className="font-medium text-sm">
+                                  タイヤ情報
+                                </h4>
                                 <div className="text-sm text-gray-600 space-y-1">
-                                  <p><span className="font-medium">メーカー:</span> {task.tire_state?.tire_maker ?? "-"}</p>
-                                  <p><span className="font-medium">パターン:</span> {task.tire_state?.tire_pattern ?? "-"}</p>
-                                  <p><span className="font-medium">サイズ:</span> {task.tire_state?.tire_size ?? "-"}</p>
-                                  <p><span className="font-medium">製造年:</span> {task.tire_state?.manufacture_year ?? "-"}</p>
+                                  <p>
+                                    <span className="font-medium">
+                                      メーカー:
+                                    </span>{" "}
+                                    {task.tire_state?.tire_maker ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      パターン:
+                                    </span>{" "}
+                                    {task.tire_state?.tire_pattern ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">サイズ:</span>{" "}
+                                    {task.tire_state?.tire_size ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">製造年:</span>{" "}
+                                    {task.tire_state?.manufacture_year ?? "-"}
+                                  </p>
                                 </div>
                               </div>
 
                               {/* 整備データ */}
                               <div className="space-y-2">
-                                <h4 className="font-medium text-sm">整備データ</h4>
+                                <h4 className="font-medium text-sm">
+                                  整備データ
+                                </h4>
                                 <div className="text-sm text-gray-600 space-y-1">
-                                  <p><span className="font-medium">空気圧:</span> {task.tire_state?.air_pressure ?? "-"} kPa</p>
-                                  <p><span className="font-medium">走行距離:</span> {task.tire_state?.drive_distance ?? "-"} km</p>
-                                  <p><span className="font-medium">担当者:</span> {task.tire_state?.assigner ?? "-"}</p>
-                                  <p><span className="font-medium">点検日:</span> {
-                                    task.tire_state?.inspection_date 
-                                      ? new Date(task.tire_state.inspection_date).toLocaleDateString("ja-JP")
-                                      : "-"
-                                  }</p>
-                                  <p><span className="font-medium">次回テーマ:</span> {task.tire_state?.next_theme ?? "-"}</p>
+                                  <p>
+                                    <span className="font-medium">空気圧:</span>{" "}
+                                    {task.tire_state?.air_pressure ?? "-"} kPa
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      走行距離:
+                                    </span>{" "}
+                                    {task.tire_state?.drive_distance ?? "-"} km
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">担当者:</span>{" "}
+                                    {task.tire_state?.assigner ?? "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">点検日:</span>{" "}
+                                    {task.tire_state?.inspection_date
+                                      ? new Date(
+                                          task.tire_state.inspection_date
+                                        ).toLocaleDateString("ja-JP")
+                                      : "-"}
+                                  </p>
+                                  <p>
+                                    <span className="font-medium">
+                                      次回テーマ:
+                                    </span>{" "}
+                                    {task.tire_state?.next_theme ?? "-"}
+                                  </p>
                                 </div>
                               </div>
                             </div>
                           </div>
-                          
+
                           <Button
                             size="sm"
                             onClick={() => handleTaskAssign(task)}
