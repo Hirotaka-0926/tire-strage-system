@@ -3,6 +3,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import TireMakerCombobox from "./TireMakerCombobox";
+import TirePatternCombobox from "./TirePatternCombobox";
+import TireSizeCombobox from "./TireSizeCombobox";
 import { State } from "@/utils/interface";
 
 interface TireBasicInfoFormProps {
@@ -25,32 +28,23 @@ const TireBasicInfoForm = ({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label>タイヤメーカー</Label>
-            <Input
-              value={formData?.tire_maker || ""}
-              onChange={(e) => updateField("tire_maker", e.target.value)}
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label>タイヤパターン</Label>
-            <Input
-              value={formData?.tire_pattern || ""}
-              onChange={(e) => updateField("tire_pattern", e.target.value)}
-              disabled={loading}
-            />
-          </div>
+          <TireMakerCombobox
+            value={formData?.tire_maker || ""}
+            onChange={(v) => updateField("tire_maker", v)}
+            disabled={loading}
+          />
+          <TirePatternCombobox
+            value={formData?.tire_pattern || ""}
+            onChange={(v) => updateField("tire_pattern", v)}
+            disabled={loading}
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label>タイヤサイズ</Label>
-            <Input
-              value={formData?.tire_size || ""}
-              onChange={(e) => updateField("tire_size", e.target.value)}
-              disabled={loading}
-            />
-          </div>
+          <TireSizeCombobox
+            value={formData?.tire_size || ""}
+            onChange={(v) => updateField("tire_size", v)}
+            disabled={loading}
+          />
           <div>
             <Label>製造年</Label>
             <Input

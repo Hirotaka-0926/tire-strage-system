@@ -708,6 +708,49 @@ export const clearStorageIdFromTask = async (
   return data;
 };
 
+// tire_price から候補値取得（重複排除）
+export const getTireMakersFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("manufacturer")
+    .not("manufacturer", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.manufacturer?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
+};
+
+export const getTirePatternsFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("pattern")
+    .not("pattern", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.pattern?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
+};
+
+export const getTireSizesFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("size")
+    .not("size", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.size?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
+};
+
 // export const getStorageByKeyValue = async(key:string, value : string|number) : Promise<StorageInput> => {
 
 // }
