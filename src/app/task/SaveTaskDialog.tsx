@@ -51,7 +51,7 @@ const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen} modal>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-50">
+      <DialogContent className="max-w-3xl max-h-[80dvh] overflow-y-auto bg-gray-50">
         <DialogHeader>
           <DialogTitle>以下のデータを保管庫に保存しますか？</DialogTitle>
         </DialogHeader>

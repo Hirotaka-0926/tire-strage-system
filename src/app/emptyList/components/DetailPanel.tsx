@@ -372,20 +372,14 @@ export const DetailPanel = ({
                               PLACEHOLDER_VALUES.UNKNOWN}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>担当者</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.assigner ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
+                        <div className="flex justify-between"></div>
 
                         {/* Inspections */}
                         <div className="mt-2">
                           <h6 className="font-medium">点検・交換情報</h6>
                           <div className="space-y-1 text-sm mt-1">
                             <div className="flex justify-between">
-                              <span>タイヤ検査</span>
+                              <span>タイヤ溝</span>
                               <span className="font-medium">
                                 {currentStorageData.state?.tire_inspection
                                   ?.state || PLACEHOLDER_VALUES.UNKNOWN}

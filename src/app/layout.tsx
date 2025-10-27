@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "../components/base/Header";
 import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,11 +26,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const MobileViewportFix = dynamic(
+    () => import("../components/base/MobileViewportFix"),
+    { ssr: false }
+  );
   return (
     <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50`}
       >
+        <MobileViewportFix />
         <Header />
         {children}
         <Toaster />

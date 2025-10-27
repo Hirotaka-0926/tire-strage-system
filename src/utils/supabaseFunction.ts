@@ -393,6 +393,17 @@ export const getStorageByMasterStorageId = async (
     if (!data) {
       throw new Error("Storage not found");
     }
+    // state が存在する場合、inspection テーブルのデータも取得してマージする
+    if (data.state && data.state.id) {
+      try {
+        const enrichedState = await getInspectionData(data.state as State);
+        data.state = enrichedState;
+      } catch (inspectionErr) {
+        console.error("Failed to fetch inspections for state:", inspectionErr);
+        // inspection の取得失敗は致命的としない（呼び出し側でハンドリングできるように）
+      }
+    }
+
     return data;
   } catch (error) {
     console.error("Error fetching storage by master storage ID:", error);
