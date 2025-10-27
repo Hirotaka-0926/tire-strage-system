@@ -27,8 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const MobileViewportFix = dynamic(
-    () => import("../components/base/MobileViewportFix"),
-    { ssr: false }
+    () => import("../components/base/MobileViewportFix")
   );
   return (
     <html lang="ja">

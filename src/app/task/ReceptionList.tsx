@@ -34,6 +34,7 @@ import {
 import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
 import SaveTaskDialog from "./SaveTaskDialog";
+import DeleteTaskDialog from "./DeleteTaskDialog";
 import { PDFPreviewModal } from "../emptyList/components/PDFPreviewModal";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ const ReceptionList = ({ tasks }: Props) => {
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPDFPreviewOpen, setIsPDFPreviewOpen] = useState(false);
   const [pdfData, setPdfData] = useState<any>(null);
   const [taskList, setTaskList] = useState<TaskInput[]>(() => tasks);
@@ -110,6 +112,11 @@ const ReceptionList = ({ tasks }: Props) => {
     setIsSaveDialogOpen(true);
   };
 
+  const handleDeleteTask = (item: TaskInput) => {
+    setSelectedItem(item);
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleStorageAssign = (storageId: string) => {
     if (!selectedItem) return;
     setTaskList((prev) =>
@@ -134,6 +141,13 @@ const ReceptionList = ({ tasks }: Props) => {
             onClick={() => handleMaintenanceEdit(item)}
           >
             整備データ入力
+          </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
           </Button>
         </div>
       );
@@ -160,6 +174,13 @@ const ReceptionList = ({ tasks }: Props) => {
             <Save className="mr-2 h-4 w-4" />
             保存
           </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
+          </Button>
         </div>
       );
     } else if (item.status === "pending") {
@@ -176,6 +197,13 @@ const ReceptionList = ({ tasks }: Props) => {
           <Button size="default" onClick={() => handleStorageAssignOpen(item)}>
             <MapPin className="mr-2 h-4 w-4" />
             保管庫割当
+          </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
           </Button>
         </div>
       );
@@ -238,6 +266,19 @@ const ReceptionList = ({ tasks }: Props) => {
             setIsSaveDialogOpen(false);
             setSelectedItem(null);
             router.refresh(); // Refresh the page to reflect changes
+          }}
+        />
+
+        <DeleteTaskDialog
+          open={isDeleteDialogOpen}
+          setOpen={setIsDeleteDialogOpen}
+          selectedItem={selectedItem}
+          onDeleted={() => {
+            if (selectedItem?.id) {
+              setTaskList((prev) => prev.filter((t) => t.id !== selectedItem.id));
+            }
+            setSelectedItem(null);
+            router.refresh();
           }}
         />
 

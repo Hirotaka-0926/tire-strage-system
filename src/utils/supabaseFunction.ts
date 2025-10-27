@@ -661,6 +661,20 @@ export const updateTaskStatus = async (taskId: number, status: string) => {
   return data;
 };
 
+// タスクを予約リスト(task_list)から削除
+export const deleteTask = async (taskId: number) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .delete()
+    .eq("id", taskId)
+    .select("*");
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
 export const getLogsByClientId = async (
   clientId: number
 ): Promise<StorageLogInput[]> => {
