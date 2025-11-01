@@ -10,17 +10,17 @@ export const Header = () => {
 
   const navigationItems = [
     { href: "/", icon: Home, label: "ホーム", exactMatch: true },
-    { href: "/customer", icon: Users, label: "顧客リスト", exactMatch: false },
+    { href: "/customer", icon: Users, label: "受付", exactMatch: false },
     {
       href: "/task",
       icon: Calendar,
-      label: "予約リスト",
+      label: "ピット",
       exactMatch: false,
     },
     {
       href: "/storageLogs",
       icon: Database,
-      label: "過去データ",
+      label: "履歴",
       exactMatch: false,
     },
     {

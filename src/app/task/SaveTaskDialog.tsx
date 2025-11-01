@@ -21,26 +21,16 @@ import {
 import useSaveTask from "@/utils/hooks/useSaveTask";
 import { OverwriteWarning } from "./OverWriteWarning";
 
+import { toast } from "sonner";
+
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   selectedData: TaskInput | null;
   onSave: () => void;
-  setNotification: React.Dispatch<
-    React.SetStateAction<{
-      type: "error" | "success" | "info";
-      message: string;
-    } | null>
-  >;
 }
 
-const SaveTaskDialog = ({
-  open,
-  setOpen,
-  selectedData,
-  onSave,
-  setNotification,
-}: Props) => {
+const SaveTaskDialog = ({ open, setOpen, selectedData, onSave }: Props) => {
   const { saveTaskData, prevStorage } = useSaveTask(selectedData);
   if (!selectedData) return null;
 
@@ -53,7 +43,7 @@ const SaveTaskDialog = ({
   const handleOnSave = async () => {
     if (!selectedData) return;
     const message = await saveTaskData();
-    setNotification(message);
+
     onSave();
   };
 
@@ -61,10 +51,21 @@ const SaveTaskDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen} modal>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-50">
+      <DialogContent className="max-w-3xl max-h-[80dvh] overflow-y-auto bg-gray-50">
         <DialogHeader>
           <DialogTitle>以下のデータを保管庫に保存しますか？</DialogTitle>
         </DialogHeader>
+
+        {/* 担当者情報を上部に表示 */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <p className="text-sm font-semibold text-blue-800">担当者</p>
+          </div>
+          <p className="text-lg font-bold text-blue-900 mt-1">
+            {selectedData.tire_state?.assigner || "担当者無し"}
+          </p>
+        </div>
 
         <div className="space-y-6 py-4">
           {/*保管庫情報 */}

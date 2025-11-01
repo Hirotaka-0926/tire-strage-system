@@ -60,6 +60,7 @@ const TABLE_COLUMNS = [
   { key: "client.client_name", label: "顧客名", visible: true },
   { key: "car.car_model", label: "車種", visible: true },
   { key: "car.car_number", label: "ナンバー", visible: true },
+  { key: "state.assigner", label: "担当者", visible: true },
   { key: "state.tire_maker", label: "タイヤメーカー", visible: false },
   { key: "state.tire_size", label: "タイヤサイズ", visible: false },
   { key: "state.tire_pattern", label: "タイヤパターン", visible: false },
@@ -302,6 +303,10 @@ const LogTable: React.FC<Props> = ({
                             ? row[column.key] === "summer"
                               ? "夏"
                               : "冬"
+                            : column.key === "state.assigner"
+                            ? getNestedValue(column.key, row) === "-" || !getNestedValue(column.key, row)
+                              ? "担当者無し"
+                              : getNestedValue(column.key, row)
                             : getNestedValue(column.key, row)}
                         </TableCell>
                       )

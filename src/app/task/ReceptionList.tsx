@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -20,14 +20,25 @@ import {
   Save,
   FilePenLine,
   MapPin,
+  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import EditForm from "./EditForm";
 import AssignStorageDialog from "./AssignStorageDialog";
 import SaveTaskDialog from "./SaveTaskDialog";
+import DeleteTaskDialog from "./DeleteTaskDialog";
+import { PDFPreviewModal } from "../emptyList/components/PDFPreviewModal";
 import { useRouter } from "next/navigation";
-import { useNotification } from "@/utils/hooks/useNotification";
+import { toast } from "sonner";
+import { getYearAndSeason } from "@/utils/globalFunctions";
 
 interface Props {
   tasks: TaskInput[];
@@ -38,22 +49,56 @@ const ReceptionList = ({ tasks }: Props) => {
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [taskList, setTaskList] = useState<TaskInput[]>(tasks);
-  const [notification, setNotification] = useState<{
-    type: "error" | "success" | "info";
-    message: string;
-  } | null>(null);
-  const router = useRouter();
-  const { showNotification, NotificationComponent } = useNotification();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPDFPreviewOpen, setIsPDFPreviewOpen] = useState(false);
+  const [pdfData, setPdfData] = useState<any>(null);
+  const [taskList, setTaskList] = useState<TaskInput[]>(() => tasks);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const router = useRouter();
+  const { year, season } = getYearAndSeason();
+
+  // TaskInputをPDF用データに変換
+  const convertTaskToPdfData = (task: TaskInput) => {
+    return {
+      id: task.id || 0,
+      year: year,
+      season: season,
+      car: task.car || {},
+      client: task.client || {},
+      state: task.tire_state || {},
+      storage: {
+        id: task.storage_id || "",
+        car_id: task.car?.id || null,
+        client_id: task.client?.id || null,
+        tire_state_id: task.tire_state?.id || null,
+      },
+    };
+  };
+
+  // IDを安定的にフォーマットするヘルパー関数
+  const formatTaskId = (id: number | undefined) => {
+    return id ? `#${id.toString().padStart(3, "0")}` : "#未割当";
+  };
+
+  // propsのtasksが変更された時に状態を同期
   useEffect(() => {
-    if (notification) {
-      showNotification(notification.type, notification.message);
-    }
-  }, [notification]);
+    setTaskList(tasks);
+  }, [tasks]);
+
+  // ステータスごとにグループ化されたタスクリスト
+  const groupedTasks = useMemo(() => {
+    const groups = {
+      incomplete: taskList.filter((task) => task.status === "incomplete"),
+      complete: taskList.filter((task) => task.status === "complete"),
+      pending: taskList.filter((task) => task.status === "pending"),
+    };
+    return groups;
+  }, [taskList]);
 
   const handleMaintenanceEdit = (item: TaskInput) => {
     setSelectedItem(item);
+    console.log("Selected Item for Edit:", item);
     setIsMaintenanceDialogOpen(true);
   };
 
@@ -65,6 +110,11 @@ const ReceptionList = ({ tasks }: Props) => {
   const handleSaveDialogOpen = (item: TaskInput) => {
     setSelectedItem(item);
     setIsSaveDialogOpen(true);
+  };
+
+  const handleDeleteTask = (item: TaskInput) => {
+    setSelectedItem(item);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleStorageAssign = (storageId: string) => {
@@ -79,7 +129,6 @@ const ReceptionList = ({ tasks }: Props) => {
 
     setIsStorageDialogOpen(false);
     setSelectedItem(null);
-    router.refresh(); // Refresh the page to reflect changes
   };
 
   const getActionButton = (item: TaskInput) => {
@@ -92,6 +141,13 @@ const ReceptionList = ({ tasks }: Props) => {
             onClick={() => handleMaintenanceEdit(item)}
           >
             整備データ入力
+          </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
           </Button>
         </div>
       );
@@ -118,6 +174,13 @@ const ReceptionList = ({ tasks }: Props) => {
             <Save className="mr-2 h-4 w-4" />
             保存
           </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
+          </Button>
         </div>
       );
     } else if (item.status === "pending") {
@@ -135,6 +198,13 @@ const ReceptionList = ({ tasks }: Props) => {
             <MapPin className="mr-2 h-4 w-4" />
             保管庫割当
           </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={() => handleDeleteTask(item)}
+          >
+            削除
+          </Button>
         </div>
       );
     }
@@ -149,9 +219,21 @@ const ReceptionList = ({ tasks }: Props) => {
         return "bg-blue-50 text-blue-700";
     }
   };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "incomplete":
+        return "未完了";
+      case "complete":
+        return "完了";
+      case "pending":
+        return "保留中";
+      default:
+        return status;
+    }
+  };
   return (
     <Card>
-      <NotificationComponent />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
@@ -176,92 +258,273 @@ const ReceptionList = ({ tasks }: Props) => {
           setOpen={setIsSaveDialogOpen}
           selectedData={selectedItem}
           onSave={() => {
+            if (selectedItem) {
+              const pdfDataForPreview = convertTaskToPdfData(selectedItem);
+              setPdfData(pdfDataForPreview);
+              setIsPDFPreviewOpen(true);
+            }
             setIsSaveDialogOpen(false);
             setSelectedItem(null);
             router.refresh(); // Refresh the page to reflect changes
           }}
-          setNotification={setNotification}
         />
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">受付No.</TableHead>
-                <TableHead className="min-w-[120px]">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    顧客名
-                  </div>
-                </TableHead>
-                <TableHead className="min-w-[150px]">
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4" />
-                    車ナンバー
-                  </div>
-                </TableHead>
-                <TableHead className="min-w-[140px]">
-                  <div className="flex items-center gap-2">
-                    <Car className="h-4 w-4" />
-                    車種
-                  </div>
-                </TableHead>
-                <TableHead className="min-w-[120px]">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    受付時間
-                  </div>
-                </TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    保管庫ID
-                  </div>
-                </TableHead>
-                <TableHead>ステータス</TableHead>
-                <TableHead className="w-[400px]">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {taskList.map((item) => (
-                <TableRow key={item.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">
-                    #{item.id?.toString().padStart(3, "0") || "未割当"}
-                  </TableCell>
-                  <TableCell className="font-medium text-gray-900">
-                    {item.client?.client_name || "未登録"}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {item.car?.car_number || "未登録"}
-                  </TableCell>
-                  <TableCell>{item.car?.car_model || "未登録"}</TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {/* {formatTime(item.receptionTime)} */}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {item.storage_id ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700"
+
+        <DeleteTaskDialog
+          open={isDeleteDialogOpen}
+          setOpen={setIsDeleteDialogOpen}
+          selectedItem={selectedItem}
+          onDeleted={() => {
+            if (selectedItem?.id) {
+              setTaskList((prev) => prev.filter((t) => t.id !== selectedItem.id));
+            }
+            setSelectedItem(null);
+            router.refresh();
+          }}
+        />
+
+        {/* PDFプレビューモーダル */}
+        {pdfData && (
+          <PDFPreviewModal
+            storageData={pdfData}
+            fileName={`予約_${
+              pdfData.id?.toString().padStart(3, "0") || "未割当"
+            }_${pdfData.client?.client_name || "不明"}.pdf`}
+            open={isPDFPreviewOpen}
+            onOpenChange={setIsPDFPreviewOpen}
+          />
+        )}
+
+        <div className="space-y-6">
+          {/* 未完了のタスク */}
+          {groupedTasks.incomplete.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-3">
+                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 text-base px-4 py-2">
+                  未完了 ({groupedTasks.incomplete.length}件)
+                </Badge>
+              </h3>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">受付No.</TableHead>
+                      <TableHead className="min-w-[120px]">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          顧客名
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          車ナンバー
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[140px]">
+                        <div className="flex items-center gap-2">
+                          <Car className="h-4 w-4" />
+                          車種
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[100px]">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          保管庫ID
+                        </div>
+                      </TableHead>
+                      <TableHead className="w-[400px]">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupedTasks.incomplete.map((item) => (
+                      <TableRow
+                        key={`incomplete-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
                       >
-                        {item.storage_id}
-                      </Badge>
-                    ) : (
-                      <span className="text-gray-400">未割当</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={getStatusColor(item.status)}
-                    >
-                      {item.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{getActionButton(item)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        <TableCell className="font-medium">
+                          {formatTaskId(item.id)}
+                        </TableCell>
+                        <TableCell className="font-medium text-gray-900">
+                          {item.client?.client_name || "未登録"}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.car?.car_number || "未登録"}
+                        </TableCell>
+                        <TableCell>{item.car?.car_model || "未登録"}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.storage_id ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700"
+                            >
+                              {item.storage_id}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">未割当</span>
+                          )}
+                        </TableCell>
+                        <TableCell>{getActionButton(item)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {/* 完了のタスク */}
+          {groupedTasks.complete.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-3">
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-base px-4 py-2">
+                  完了 ({groupedTasks.complete.length}件)
+                </Badge>
+              </h3>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">受付No.</TableHead>
+                      <TableHead className="min-w-[120px]">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          顧客名
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          車ナンバー
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[140px]">
+                        <div className="flex items-center gap-2">
+                          <Car className="h-4 w-4" />
+                          車種
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[100px]">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          保管庫ID
+                        </div>
+                      </TableHead>
+                      <TableHead className="w-[400px]">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupedTasks.complete.map((item) => (
+                      <TableRow
+                        key={`complete-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
+                      >
+                        <TableCell className="font-medium">
+                          {formatTaskId(item.id)}
+                        </TableCell>
+                        <TableCell className="font-medium text-gray-900">
+                          {item.client?.client_name || "未登録"}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.car?.car_number || "未登録"}
+                        </TableCell>
+                        <TableCell>{item.car?.car_model || "未登録"}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.storage_id ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700"
+                            >
+                              {item.storage_id}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">未割当</span>
+                          )}
+                        </TableCell>
+                        <TableCell>{getActionButton(item)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {/* 保留中のタスク */}
+          {groupedTasks.pending.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-3">
+                <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-base px-4 py-2">
+                  保留中 ({groupedTasks.pending.length}件)
+                </Badge>
+              </h3>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">受付No.</TableHead>
+                      <TableHead className="min-w-[120px]">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          顧客名
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[150px]">
+                        <div className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          車ナンバー
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[140px]">
+                        <div className="flex items-center gap-2">
+                          <Car className="h-4 w-4" />
+                          車種
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[100px]">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4" />
+                          保管庫ID
+                        </div>
+                      </TableHead>
+                      <TableHead className="w-[400px]">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupedTasks.pending.map((item) => (
+                      <TableRow
+                        key={`pending-${item.id || "unknown"}`}
+                        className="hover:bg-gray-50"
+                      >
+                        <TableCell className="font-medium">
+                          {formatTaskId(item.id)}
+                        </TableCell>
+                        <TableCell className="font-medium text-gray-900">
+                          {item.client?.client_name || "未登録"}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.car?.car_number || "未登録"}
+                        </TableCell>
+                        <TableCell>{item.car?.car_model || "未登録"}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {item.storage_id ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700"
+                            >
+                              {item.storage_id}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">未割当</span>
+                          )}
+                        </TableCell>
+                        <TableCell>{getActionButton(item)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

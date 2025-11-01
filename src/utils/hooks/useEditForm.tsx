@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { TaskInput, State } from "@/utils/interface";
 import {
   getInspectionData,
-  upsertTire,
   updateTaskStatus,
+  upsertTireWithTask,
 } from "@/utils/supabaseFunction";
-import { useNotification } from "./useNotification";
+import { toast } from "sonner";
 
 interface UseEditFormProps {
   selectedItem: TaskInput | null;
@@ -35,7 +35,6 @@ export const useEditForm = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showNotification } = useNotification();
   const sideEffect = selectedItem?.id || 0;
 
   // 初期データの取得とセットアップ
@@ -141,11 +140,11 @@ export const useEditForm = ({
       const errorMessage =
         err instanceof Error ? err.message : "初期データの取得に失敗しました";
       setError(errorMessage);
-      showNotification("error", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedItem, showNotification]);
+  }, [selectedItem]);
 
   // selectedItemが変更されたときに初期化
   useEffect(() => {
@@ -187,8 +186,24 @@ export const useEditForm = ({
   };
   // フォーム送信処理
   const handleSubmit = useCallback(async () => {
+    if (!selectedItem) return;
+
+    if (!selectedItem.id) {
+      setError("IDが不明です");
+      return;
+    }
     if (!formData) {
       setError("未入力の項目があります");
+      return;
+    }
+
+    if (formData.assigner?.trim() === "") {
+      setError("担当者名は必須です");
+      return;
+    }
+
+    if (formData.next_theme?.trim() === "") {
+      setError("次回のテーマは必須です");
       return;
     }
 
@@ -198,7 +213,11 @@ export const useEditForm = ({
       // タイヤデータを更新
       console.log("Submitting form data:", formData);
       if (formData) {
-        await upsertTire(formData);
+        await upsertTireWithTask(formData, selectedItem.id);
+      }
+
+      if (selectedItem?.tire_state == null && selectedItem?.id) {
+        await updateTaskStatus(selectedItem.id, "incomplete");
       }
 
       if (
@@ -223,11 +242,11 @@ export const useEditForm = ({
           ? err.message + "保存に失敗しました"
           : "保存に失敗しました";
       setError(errorMessage);
-      showNotification("error", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, onSuccess, showNotification]);
+  }, [formData, onSuccess]);
 
   // フォームのリセット
   const resetForm = useCallback(() => {

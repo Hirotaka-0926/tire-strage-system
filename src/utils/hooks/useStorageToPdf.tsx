@@ -10,6 +10,7 @@ import {
   BlobProvider,
 } from "@react-pdf/renderer";
 import { StorageLogInput } from "@/utils/interface";
+import { Button } from "@/components/ui/button";
 
 // PDFのスタイル定義
 
@@ -194,7 +195,7 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
         <View style={pdfStyles.infoItem}>
           <Text style={pdfStyles.infoLabel}>シーズン:</Text>
           <Text style={pdfStyles.infoValue}>
-            {storage.season === "summer" ? "夏タイヤ" : "冬タイヤ"}
+            {storage.season === "summer" ? "夏" : "冬"}
           </Text>
         </View>
       </View>
@@ -241,29 +242,13 @@ const StoragePage: React.FC<{ storage: StorageLogInput }> = ({
       )}
     </View>
 
-    {/* キャンペーン情報 */}
-    <View style={pdfStyles.campaignSection}>
-      <Text style={pdfStyles.campaignTitle}>
-        サマータイヤ早期購入キャンペーンのご案内
-      </Text>
-      <Text style={pdfStyles.campaignText}>
-        キャンペーン期間 〜 3月24日までのご購入で
-      </Text>
-      <Text style={pdfStyles.campaignText}>
-        対象車 タイヤ4本、バランス、脱着 通常価格
-      </Text>
-      <Text style={pdfStyles.campaignText}>9,900円（税込）</Text>
-      <Text style={pdfStyles.campaignText}>※ご利用ください</Text>
-    </View>
-
     {/* フッター */}
     <Text style={pdfStyles.footer}>
-      タイヤの保管期間について：保管期間は原則として6ヶ月間とさせていただきます。
-      期間を過ぎた場合は処分させていただく場合がございますので、予めご了承ください。（仮）
+      いつもTAKEUCHI PARTSをご利用いただき誠にありがとうございます。
+      これからもご利用していただくと社長の機嫌が良くなります。
     </Text>
   </Page>
 );
-
 // 複数のストレージに対応するPDF文書コンポーネント
 const StoragePDFDocument: React.FC<{
   storages: StorageLogInput | StorageLogInput[];
@@ -335,18 +320,27 @@ export const useStorageToPdf = (): UseStorageToPdfReturn => {
     if (isLoading || error) return null;
 
     return (
-      <PDFDownloadLink
-        document={<StoragePDFDocument storages={storages} />}
-        fileName={fileName}
-      >
-        {({ loading, error }) =>
-          loading
-            ? "PDF生成中..."
-            : error
-            ? `エラーが発生しました: ${error.message}`
-            : linkText
-        }
-      </PDFDownloadLink>
+      <BlobProvider document={<StoragePDFDocument storages={storages} />}>
+        {({ blob, url, loading, error }) => (
+          <Button
+            onClick={() => {
+              if (url) {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = fileName;
+                link.click();
+              }
+            }}
+            disabled={loading || !!error}
+          >
+            {loading
+              ? "PDF生成中..."
+              : error
+              ? `エラーが発生しました: ${error.message}`
+              : linkText}
+          </Button>
+        )}
+      </BlobProvider>
     );
   };
 

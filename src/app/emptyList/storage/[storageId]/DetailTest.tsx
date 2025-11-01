@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import EditForm from "./EditForm";
-import { useNotification } from "@/utils/hooks/useNotification";
 
 import { useParams } from "next/navigation";
 import { useStorageManagement } from "@/utils/hooks/useStorageManagement";
@@ -60,7 +59,6 @@ export const Detail = ({
   initialPendingTasks,
   initialLogs,
 }: DetailProps) => {
-  const { NotificationComponent } = useNotification();
   const params = useParams();
   const storageId = params.storageId as string;
 
@@ -79,8 +77,6 @@ export const Detail = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NotificationComponent />
-
       <div className="flex flex-col lg:flex-row gap-6 p-6 max-w-7xl mx-auto">
         <div className="lg:w-1/3">
           <Card className="shadow-lg">
@@ -99,6 +95,20 @@ export const Detail = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
+              {/* 担当者情報を上部に表示 */}
+              {currentStorage?.state && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <p className="text-sm font-semibold text-blue-800">
+                      担当者
+                    </p>
+                  </div>
+                  <p className="text-lg font-bold text-blue-900 mt-1">
+                    {currentStorage.state?.assigner || "担当者無し"}
+                  </p>
+                </div>
+              )}
               {currentStorage?.client ||
               currentStorage?.car ||
               currentStorage?.state ? (
@@ -182,8 +192,7 @@ export const Detail = ({
                       <div className="flex justify-between">
                         <span className="text-gray-600">製造年:</span>
                         <span className="font-semibold">
-                          {currentStorage.state?.manufacture_year ||
-                            PLACEHOLDER_VALUES.UNKNOWN}
+                          {currentStorage.state?.manufacture_year ?? 0}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -320,7 +329,7 @@ export const Detail = ({
                                     PLACEHOLDER_VALUES.UNKNOWN}
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                  {log.client.address ||
+                                  {log.client?.address ||
                                     PLACEHOLDER_VALUES.UNKNOWN}
                                 </div>
                                 <div className="text-sm text-gray-600">
@@ -457,7 +466,8 @@ export const Detail = ({
                                 車両モデル
                               </span>
                               <span className="font-medium">
-                                {task.car.car_model}
+                                {task.car?.car_model ||
+                                  PLACEHOLDER_VALUES.UNKNOWN}
                               </span>
                             </div>
                             <div>
@@ -465,7 +475,8 @@ export const Detail = ({
                                 ナンバープレート
                               </span>
                               <span className="font-medium">
-                                {task.car.car_number}
+                                {task.car?.car_number ||
+                                  PLACEHOLDER_VALUES.UNKNOWN}
                               </span>
                             </div>
                           </div>

@@ -44,6 +44,12 @@ export const AddStorageModal = ({
 
   const handleAddNewArea = () => {
     if (newAreaName && newAreaSlots) {
+      // Check if area name contains underscore
+      if (newAreaName.includes("_")) {
+        alert("エリア名にアンダースコア（_）を含めることはできません。");
+        return;
+      }
+      
       const slots = Number.parseInt(newAreaSlots);
       if (slots > 0) {
         onAddArea(newAreaName.toUpperCase(), slots);

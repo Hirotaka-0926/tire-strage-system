@@ -135,6 +135,23 @@ export const getSpecificClient = async (
   return data;
 };
 
+export const upsertTireWithTask = async (data: State, taskId: number) => {
+  const tireData = await upsertTire(data);
+  console.log(tireData);
+  const tireStateId = tireData[0].id;
+
+  if (tireData && tireData.length > 0) {
+    const tireId = tireData[0].id;
+    const { error: taskError } = await supabase
+      .from("task_list")
+      .update({ tire_state_id: tireId })
+      .eq("id", taskId);
+    if (taskError) {
+      throw taskError;
+    }
+  }
+};
+
 export const upsertTire = async (data: State) => {
   const {
     tire_inspection,
@@ -168,23 +185,17 @@ export const upsertTire = async (data: State) => {
   if (battery_inspection) battery_inspection.tire_state_id = tireStateId;
   if (wiper_inspection) wiper_inspection.tire_state_id = tireStateId;
 
-  const { error: inspectionError } = await supabase
-    .from("inspection")
-    .upsert(inspectionArray);
-  if (inspectionError) {
-    throw inspectionError;
-  }
-
-  if (tireData && tireData.length > 0) {
-    const tireId = tireData[0].id;
-    const { error: taskError } = await supabase
-      .from("task_list")
-      .update({ tire_state_id: tireId })
-      .eq("id", tireStateId);
-    if (taskError) {
-      throw taskError;
+  console.log(inspectionArray);
+  for (const inspection of inspectionArray) {
+    const { error: inspectionError } = await supabase
+      .from("inspection")
+      .upsert(inspection);
+    if (inspectionError) {
+      throw inspectionError;
     }
   }
+
+  return tireData;
 };
 
 export const pushNewState = async (car_id: number) => {
@@ -382,6 +393,17 @@ export const getStorageByMasterStorageId = async (
     if (!data) {
       throw new Error("Storage not found");
     }
+    // state が存在する場合、inspection テーブルのデータも取得してマージする
+    if (data.state && data.state.id) {
+      try {
+        const enrichedState = await getInspectionData(data.state as State);
+        data.state = enrichedState;
+      } catch (inspectionErr) {
+        console.error("Failed to fetch inspections for state:", inspectionErr);
+        // inspection の取得失敗は致命的としない（呼び出し側でハンドリングできるように）
+      }
+    }
+
     return data;
   } catch (error) {
     console.error("Error fetching storage by master storage ID:", error);
@@ -485,7 +507,7 @@ export const pushNewStorageLog = async (newLog: StorageLogOutput) => {
   return data;
 };
 
-export const upsertStorage = async (upsertData: StorageData) => {
+export const upsertStorage = async (upsertData: Partial<StorageData>) => {
   const { data, error } = await supabase
     .from("storage_master")
     .update(upsertData)
@@ -639,6 +661,20 @@ export const updateTaskStatus = async (taskId: number, status: string) => {
   return data;
 };
 
+// タスクを予約リスト(task_list)から削除
+export const deleteTask = async (taskId: number) => {
+  const { data, error } = await supabase
+    .from("task_list")
+    .delete()
+    .eq("id", taskId)
+    .select("*");
+
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
 export const getLogsByClientId = async (
   clientId: number
 ): Promise<StorageLogInput[]> => {
@@ -655,17 +691,64 @@ export const getLogsByClientId = async (
   return data || [];
 };
 
-export const clearStorageIdFromTask = async (storageId: string) => {
+export const clearStorageIdFromTask = async (
+  storageId: string,
+  taskId: string
+) => {
   const { data, error } = await supabase
     .from("task_list")
     .update({ storage_id: null })
     .eq("storage_id", storageId)
+    .eq("id", taskId)
     .select();
 
   if (error) {
     throw error;
   }
   return data;
+};
+
+// tire_price から候補値取得（重複排除）
+export const getTireMakersFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("manufacturer")
+    .not("manufacturer", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.manufacturer?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
+};
+
+export const getTirePatternsFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("pattern")
+    .not("pattern", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.pattern?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
+};
+
+export const getTireSizesFromPrice = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from("tire_price")
+    .select("size")
+    .not("size", "is", null);
+  if (error) throw error;
+  const set = new Set<string>();
+  (data || []).forEach((row: any) => {
+    const v = row.size?.toString().trim();
+    if (v) set.add(v);
+  });
+  return Array.from(set).sort();
 };
 
 // export const getStorageByKeyValue = async(key:string, value : string|number) : Promise<StorageInput> => {
@@ -728,6 +811,339 @@ export const addNewStorage = async (
     .from("storage_master")
     .upsert(storageData)
     .select();
+
+  return error;
+};
+
+/**
+ * 安全なupsert関数 - idの有無で分けて処理
+ */
+export const safeUpsertStorages = async (
+  storageData: StorageData[]
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+  inserted?: number;
+  updated?: number;
+}> => {
+  try {
+    // idがあるもの（更新）とないもの（挿入）に分ける
+    const toUpdate = storageData.filter((item) => item.id);
+    const toInsert = storageData.filter((item) => !item.id);
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+
+    // 更新処理
+    if (toUpdate.length > 0) {
+      const { data: updateData, error: updateError } = await supabase
+        .from("storage_master")
+        .upsert(toUpdate)
+        .select();
+
+      if (updateError) {
+        return {
+          success: false,
+          error: `更新エラー: ${updateError.message}`,
+        };
+      }
+      updatedCount = toUpdate.length;
+    }
+
+    // 挿入処理
+    if (toInsert.length > 0) {
+      const { data: insertData, error: insertError } = await supabase
+        .from("storage_master")
+        .insert(toInsert)
+        .select();
+
+      if (insertError) {
+        return {
+          success: false,
+          error: `挿入エラー: ${insertError.message}`,
+        };
+      }
+      insertedCount = toInsert.length;
+    }
+
+    return {
+      success: true,
+      data: { inserted: insertedCount, updated: updatedCount },
+      inserted: insertedCount,
+      updated: updatedCount,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+};
+
+/**
+ * より安全なupsert関数 - 個別に処理
+ */
+export const safeUpsertStoragesIndividual = async (
+  storageData: StorageData[]
+): Promise<{
+  success: boolean;
+  results: Array<{ id: string; success: boolean; error?: string }>;
+}> => {
+  const results = [];
+
+  for (const storage of storageData) {
+    try {
+      if (storage.id) {
+        // 更新
+        const { error } = await supabase
+          .from("storage_master")
+          .update({
+            car_id: storage.car_id,
+            client_id: storage.client_id,
+            tire_state_id: storage.tire_state_id,
+          })
+          .eq("id", storage.id);
+
+        results.push({
+          id: storage.id,
+          success: !error,
+          error: error?.message,
+        });
+      } else {
+        // 挿入
+        const { error } = await supabase.from("storage_master").insert({
+          car_id: storage.car_id,
+          client_id: storage.client_id,
+          tire_state_id: storage.tire_state_id,
+        });
+
+        results.push({
+          id: "new",
+          success: !error,
+          error: error?.message,
+        });
+      }
+    } catch (error) {
+      results.push({
+        id: storage.id || "new",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  const success = results.every((result) => result.success);
+
+  return {
+    success,
+    results,
+  };
+};
+
+export const adjustStorageSlots = async (
+  areaName: string,
+  targetCount: number
+): Promise<{
+  success: boolean;
+  message: string;
+  deletedStorages?: string[];
+  error?: string;
+}> => {
+  try {
+    // 指定エリアの全保管庫を取得（番号順でソート）
+    const { data: storages, error: fetchError } = await supabase
+      .from("storage_master")
+      .select("id, car_id, client_id, tire_state_id")
+      .like("id", `${areaName}_%`)
+      .order("id", { ascending: true });
+
+    if (fetchError) {
+      return {
+        success: false,
+        error: fetchError.message,
+        message: "保管庫データの取得に失敗しました",
+      };
+    }
+
+    if (!storages) {
+      return {
+        success: false,
+        message: `エリア${areaName}に保管庫が見つかりません`,
+        error: "No storages found",
+      };
+    }
+
+    const currentCount = storages.length;
+
+    // 現在の数量が目標と同じまたは少ない場合は何もしない
+    if (currentCount <= targetCount) {
+      return {
+        success: true,
+        message: `エリア${areaName}の現在の保管庫数（${currentCount}個）は目標数（${targetCount}個）以下です。削除は不要です。`,
+      };
+    }
+
+    const deleteCount = currentCount - targetCount;
+
+    // 番号の大きい順（降順）で削除対象を選択
+    const storagesSortedDesc = [...storages].sort((a, b) =>
+      b.id.localeCompare(a.id)
+    );
+    const toDelete = storagesSortedDesc.slice(0, deleteCount);
+
+    // 使用中の保管庫が削除対象に含まれていないかチェック
+    const inUseStorages = toDelete.filter(
+      (storage) => storage.car_id || storage.client_id || storage.tire_state_id
+    );
+
+    if (inUseStorages.length > 0) {
+      return {
+        success: false,
+        message: `削除対象に使用中の保管庫が含まれています: ${inUseStorages
+          .map((s) => s.id)
+          .join(", ")}`,
+        error: "Cannot delete storages in use",
+      };
+    }
+
+    // 削除実行
+    const storageIdsToDelete = toDelete.map((s) => s.id);
+    const { error: deleteError } = await supabase
+      .from("storage_master")
+      .delete()
+      .in("id", storageIdsToDelete);
+
+    if (deleteError) {
+      return {
+        success: false,
+        error: deleteError.message,
+        message: "保管庫の削除に失敗しました",
+      };
+    }
+
+    return {
+      success: true,
+      message: `エリア${areaName}の保管庫を${currentCount}個から${targetCount}個に調整しました`,
+      deletedStorages: storageIdsToDelete,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "予期しないエラーが発生しました",
+    };
+  }
+};
+
+export const deleteSpecificStorage = async (
+  storageId: string
+): Promise<{
+  success: boolean;
+  message: string;
+  error?: string;
+}> => {
+  try {
+    // 保管庫の存在と使用状況を確認
+    const { data: storage, error: fetchError } = await supabase
+      .from("storage_master")
+      .select("id, car_id, client_id, tire_state_id")
+      .eq("id", storageId)
+      .single();
+
+    if (fetchError) {
+      return {
+        success: false,
+        error: fetchError.message,
+        message: "保管庫が見つかりません",
+      };
+    }
+
+    // 使用中チェック
+    if (storage.car_id || storage.client_id || storage.tire_state_id) {
+      return {
+        success: false,
+        message: `保管庫${storageId}は使用中のため削除できません`,
+        error: "Storage is in use",
+      };
+    }
+
+    // 削除実行
+    const { error: deleteError } = await supabase
+      .from("storage_master")
+      .delete()
+      .eq("id", storageId);
+
+    if (deleteError) {
+      return {
+        success: false,
+        error: deleteError.message,
+        message: "保管庫の削除に失敗しました",
+      };
+    }
+
+    return {
+      success: true,
+      message: `保管庫${storageId}を削除しました`,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      message: "予期しないエラーが発生しました",
+    };
+  }
+};
+
+export const getPendingTasks = async (): Promise<TaskInput[]> => {
+  try {
+    console.log("Supabase client created for pending tasks");
+
+    const { data, error } = await supabase
+      .from("task_list")
+      .select(
+        "*, tire_state:tire_state(*), car:car_table(*), client:client_data(*)"
+      )
+      .eq("status", "pending");
+
+    console.log("Pending tasks query result:", {
+      dataLength: data?.length,
+      error: error?.message,
+    });
+
+    if (error) {
+      console.error("Pending tasks error details:", error);
+      throw error;
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Error in getPendingTasks:", error);
+    throw error;
+  }
+};
+
+export const getStateByID = async (state_id: string): Promise<State> => {
+  const { data, error } = await supabase
+    .from("tire_state")
+    .select("*")
+    .eq("id", state_id)
+    .single();
+  if (error) {
+    throw error;
+  }
+  return data;
+};
+
+export const clearStorage = async (storage_id: string) => {
+  const { error } = await supabase
+    .from("storage_master")
+    .update({ car_id: null, client_id: null, tire_state_id: null })
+    .eq("id", storage_id);
+
+  if (error) {
+    console.error("Error clearing storage:", error);
+    throw error;
+  }
 
   return error;
 };

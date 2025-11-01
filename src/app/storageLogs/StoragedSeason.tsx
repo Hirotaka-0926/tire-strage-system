@@ -73,11 +73,11 @@ const StoragedSeason: React.FC<Props> = ({
       >
         <div className="flex items-center space-x-2">
           <RadioGroupItem id="summer" value="summer" />
-          <Label htmlFor="summer">夏タイヤ</Label>
+          <Label htmlFor="summer">夏</Label>
         </div>
         <div className="flex items-center space-x-2">
           <RadioGroupItem id="winter" value="winter" />
-          <Label htmlFor="winter">冬タイヤ</Label>
+          <Label htmlFor="winter">冬</Label>
         </div>
       </RadioGroup>
     </div>
