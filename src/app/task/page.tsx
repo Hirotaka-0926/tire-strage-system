@@ -18,7 +18,7 @@ const TaskPage = async () => {
           </p>
         </div>
 
-        <NumberOfStatus />
+        <NumberOfStatus taskList={tasks} />
         <ReceptionList tasks={tasks} />
       </div>
     </div>

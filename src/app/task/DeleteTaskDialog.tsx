@@ -21,7 +21,12 @@ interface Props {
   onDeleted: () => void;
 }
 
-const DeleteTaskDialog = ({ open, setOpen, selectedItem, onDeleted }: Props) => {
+const DeleteTaskDialog = ({
+  open,
+  setOpen,
+  selectedItem,
+  onDeleted,
+}: Props) => {
   if (!selectedItem) return null;
 
   const close = () => setOpen(false);
@@ -30,12 +35,12 @@ const DeleteTaskDialog = ({ open, setOpen, selectedItem, onDeleted }: Props) => 
     try {
       if (!selectedItem?.id) return;
       await deleteTask(selectedItem.id);
-      toast.success("予約を削除しました");
+      toast.success("予約を取消しました");
       onDeleted();
       setOpen(false);
     } catch (error) {
       console.error("Error deleting task:", error);
-      toast.error("予約の削除に失敗しました");
+      toast.error("予約の取消に失敗しました");
     }
   };
 
@@ -43,35 +48,45 @@ const DeleteTaskDialog = ({ open, setOpen, selectedItem, onDeleted }: Props) => 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>予約を削除しますか？</DialogTitle>
+          <DialogTitle>予約を取消しますか？</DialogTitle>
           <DialogDescription>
-            この操作は取り消せません。選択中の予約をリストから削除します。
+            選択中の予約をリストから取消します。
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 py-2">
           <div className="text-sm text-gray-600">受付No.</div>
           <div className="font-semibold text-lg">
-            {selectedItem.id ? `#${selectedItem.id.toString().padStart(3, "0")}` : "#未割当"}
+            {selectedItem.id
+              ? `#${selectedItem.id.toString().padStart(3, "0")}`
+              : "#未割当"}
           </div>
           <div className="grid grid-cols-1 gap-2 text-sm mt-2">
             <div>
               <span className="text-gray-600">顧客名: </span>
-              <span className="font-medium">{selectedItem.client?.client_name ?? "-"}</span>
+              <span className="font-medium">
+                {selectedItem.client?.client_name ?? "-"}
+              </span>
             </div>
             <div>
               <span className="text-gray-600">車種: </span>
-              <span className="font-medium">{selectedItem.car?.car_model ?? "-"}</span>
+              <span className="font-medium">
+                {selectedItem.car?.car_model ?? "-"}
+              </span>
             </div>
             <div>
               <span className="text-gray-600">ナンバー: </span>
-              <span className="font-medium">{selectedItem.car?.car_number ?? "-"}</span>
+              <span className="font-medium">
+                {selectedItem.car?.car_number ?? "-"}
+              </span>
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={close}>キャンセル</Button>
+          <Button variant="outline" onClick={close}>
+            キャンセル
+          </Button>
           <Button variant="destructive" onClick={handleConfirmDelete}>
             削除
           </Button>
@@ -82,4 +97,3 @@ const DeleteTaskDialog = ({ open, setOpen, selectedItem, onDeleted }: Props) => 
 };
 
 export default DeleteTaskDialog;
-

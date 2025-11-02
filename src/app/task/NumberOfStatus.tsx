@@ -1,7 +1,20 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TaskInput } from "@/utils/interface";
 
-const NumberOfStatus = () => {
+interface Props {
+  taskList: TaskInput[];
+}
+
+const NumberOfStatus = ({ taskList }: Props) => {
+  const groupedTasks = useMemo(() => {
+    const groups = {
+      incomplete: taskList.filter((task) => task.status === "incomplete"),
+      complete: taskList.filter((task) => task.status === "complete"),
+      pending: taskList.filter((task) => task.status === "pending"),
+    };
+    return groups;
+  }, [taskList]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <Card>
@@ -9,7 +22,7 @@ const NumberOfStatus = () => {
           <CardTitle>整備データ未入力</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">{/*ここにデータ数を入力 */}2件</p>
+          <p className="text-gray-600">{groupedTasks.incomplete.length}件</p>
         </CardContent>
       </Card>
       <Card>
@@ -17,7 +30,7 @@ const NumberOfStatus = () => {
           <CardTitle>保管庫ID未入力</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">{/*ここにデータ数を入力 */}2件</p>
+          <p className="text-gray-600">{groupedTasks.pending.length}件</p>
         </CardContent>
       </Card>
       <Card>
@@ -25,7 +38,7 @@ const NumberOfStatus = () => {
           <CardTitle>作業完了</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">{/*ここにデータ数を入力 */}2件</p>
+          <p className="text-gray-600">{groupedTasks.complete.length}件</p>
         </CardContent>
       </Card>
     </div>
