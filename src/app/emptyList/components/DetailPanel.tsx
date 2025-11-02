@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import { getStorageByMasterStorageId } from "@/utils/supabaseFunction";
 import { PDFPreviewModal } from "./PDFPreviewModal";
 import { StorageAssignmentModal } from "./StorageAssignmentModal";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { StorageData } from "@/utils/interface";
 import type {
   StorageLogInput,
@@ -240,7 +241,8 @@ export const DetailPanel = ({
               {showMore && currentStorageData && (
                 <div className="mt-4 bg-white border border-gray-100 rounded-lg p-4">
                   <h4 className="font-semibold mb-2">詳細情報（拡張）</h4>
-                  <div className="grid gap-3 text-sm text-gray-700">
+                  <ScrollArea className="h-64 pr-2">
+                    <div className="grid gap-3 text-sm text-gray-700">
                     {/* Client */}
                     <div className="border p-3 rounded">
                       <h5 className="font-medium mb-2">顧客情報</h5>
@@ -306,13 +308,6 @@ export const DetailPanel = ({
                           <span>車番</span>
                           <span className="font-medium">
                             {currentStorageData.car?.car_number ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>年式</span>
-                          <span className="font-medium">
-                            {currentStorageData.car?.model_year ??
                               PLACEHOLDER_VALUES.UNKNOWN}
                           </span>
                         </div>
@@ -428,7 +423,8 @@ export const DetailPanel = ({
                         </div>
                       </div>
                     </div>
-                  </div>
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
               {/* iPad Mini最適化: コンパクトなボタンレイアウト */}

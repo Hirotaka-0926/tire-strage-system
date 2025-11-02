@@ -59,7 +59,6 @@ export default function CustomerManage({
   const [selectedCar, setSelectedCar] = useState<Car>({
     car_model: "",
     car_number: "",
-    model_year: 0,
   });
   const [newCustomer, setNewCustomer] = useState<Client>({
     client_name: "",
@@ -289,12 +288,7 @@ export default function CustomerManage({
     if (!selectedCustomer || isLoading) return;
 
     // 車が選択されていない場合はエラー表示
-    if (
-      !selectedCar ||
-      !selectedCar.car_model ||
-      !selectedCar.car_number ||
-      selectedCar.model_year === 0
-    ) {
+    if (!selectedCar || !selectedCar.car_model || !selectedCar.car_number) {
       setIsExchangeDialogOpen(false);
       toast.error("車の情報を入力してください");
       return;
@@ -332,7 +326,7 @@ export default function CustomerManage({
       await upsertTask(newTask);
 
       // リセット
-      setSelectedCar({ car_model: "", car_number: "", model_year: 2003 });
+      setSelectedCar({ car_model: "", car_number: "" });
       setIsExchangeDialogOpen(false);
       setSelectedCustomer(null);
 

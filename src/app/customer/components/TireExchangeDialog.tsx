@@ -91,17 +91,6 @@ const TireExchangeDialog = ({
                   }));
                 }}
               />
-              <Input
-                placeholder="年式"
-                type="number"
-                value={selectedCar.model_year}
-                onChange={(e) => {
-                  setSelectedCar((prev) => ({
-                    ...prev,
-                    model_year: Number(e.target.value),
-                  }));
-                }}
-              />
             </div>
 
             <p>この顧客のタイヤ交換を受付しますか？</p>

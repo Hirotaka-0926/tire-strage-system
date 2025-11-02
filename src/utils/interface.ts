@@ -80,7 +80,6 @@ export interface Car {
   id?: number;
   car_model: string;
   car_number: string;
-  model_year: number;
 }
 
 import { FieldValues } from "react-hook-form";
