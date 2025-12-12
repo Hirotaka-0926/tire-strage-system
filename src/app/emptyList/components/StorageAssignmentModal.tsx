@@ -391,10 +391,6 @@ export const StorageAssignmentModal = ({
                                     </span>{" "}
                                     {task.car?.car_number ?? "-"}
                                   </p>
-                                  <p>
-                                    <span className="font-medium">年式:</span>{" "}
-                                    {task.car?.model_year ?? "-"}
-                                  </p>
                                 </div>
                               </div>
 
@@ -881,7 +877,7 @@ export const StorageAssignmentModal = ({
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm text-yellow-800">
                     <strong>注意:</strong> この操作により、保管庫{" "}
-                    {selectedSlot?.id} のすべてのデータがクリアされます。
+                    {selectedSlot?.id} が空になります。
                   </p>
                 </div>
                 <Button

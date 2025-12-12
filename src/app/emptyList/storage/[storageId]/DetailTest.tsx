@@ -152,13 +152,6 @@ export const Detail = ({
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">年式:</span>
-                        <span className="font-semibold">
-                          {currentStorage.car?.model_year ||
-                            PLACEHOLDER_VALUES.UNKNOWN}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-gray-600">ナンバープレート:</span>
                         <span className="font-semibold">
                           {currentStorage.car?.car_number ||

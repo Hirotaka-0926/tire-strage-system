@@ -147,7 +147,7 @@ const ReceptionList = ({ tasks }: Props) => {
             size="default"
             onClick={() => handleDeleteTask(item)}
           >
-            削除
+            取消
           </Button>
         </div>
       );
@@ -179,7 +179,7 @@ const ReceptionList = ({ tasks }: Props) => {
             size="default"
             onClick={() => handleDeleteTask(item)}
           >
-            削除
+            取消
           </Button>
         </div>
       );
@@ -203,7 +203,7 @@ const ReceptionList = ({ tasks }: Props) => {
             size="default"
             onClick={() => handleDeleteTask(item)}
           >
-            削除
+            取消
           </Button>
         </div>
       );
@@ -275,7 +275,9 @@ const ReceptionList = ({ tasks }: Props) => {
           selectedItem={selectedItem}
           onDeleted={() => {
             if (selectedItem?.id) {
-              setTaskList((prev) => prev.filter((t) => t.id !== selectedItem.id));
+              setTaskList((prev) =>
+                prev.filter((t) => t.id !== selectedItem.id)
+              );
             }
             setSelectedItem(null);
             router.refresh();

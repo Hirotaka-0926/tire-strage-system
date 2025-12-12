@@ -86,7 +86,7 @@ export const useStorageToCSV = (): UseStorageToCSVReturn => {
           item.client?.phone || "",
           item.car?.car_model || "",
           item.car?.car_number || "",
-          item.car?.model_year?.toString() || "",
+
           item.state?.tire_maker || "",
           item.state?.tire_pattern || "",
           item.state?.tire_size || "",

@@ -64,7 +64,7 @@ const TireBasicInfoForm = ({
               type="number"
               value={formData?.air_pressure || ""}
               onChange={(e) =>
-                updateField("air_pressure", parseInt(e.target.value) || 0)
+                updateField("air_pressure", parseFloat(e.target.value) || 0)
               }
               disabled={loading}
             />
