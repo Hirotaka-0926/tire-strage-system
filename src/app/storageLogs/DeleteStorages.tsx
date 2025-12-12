@@ -52,7 +52,7 @@ const DeleteStorages: React.FC<Props> = ({ selectedStorages }) => {
   if (selectedStorages.length === 0) {
     return (
       <Button variant="destructive" className="m-4" disabled>
-        Delete
+        消去
       </Button>
     );
   }
@@ -61,12 +61,12 @@ const DeleteStorages: React.FC<Props> = ({ selectedStorages }) => {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="destructive" className="m-4">
-          Delete
+          削除
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete Storage</DialogTitle>
+          <DialogTitle>ストレージ削除</DialogTitle>
           <DialogDescription>
             紐づいてるデータを削除しますか？
           </DialogDescription>
@@ -123,7 +123,7 @@ const DeleteStorages: React.FC<Props> = ({ selectedStorages }) => {
             onClick={handleDelete}
             className="w-full"
           >
-            Delete
+            削除
           </Button>
         </DialogFooter>
       </DialogContent>
