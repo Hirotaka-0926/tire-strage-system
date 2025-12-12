@@ -19,13 +19,13 @@ export const createCustomerReceptionService = () => {
       if (!customer.id) {
         return;
       }
-      map[customer.id] = {
-        ...customer,
-        cars: customer.cars ? [...customer.cars] : undefined,
-        exchangeHistory: customer.exchangeHistory
-          ? [...customer.exchangeHistory]
-          : undefined,
-      };
+      // map[customer.id] = {
+      //   ...customer,
+      //   cars: customer.cars ? [...customer.cars] : undefined,
+      //   exchangeHistory: customer.exchangeHistory
+      //     ? [...customer.exchangeHistory]
+      //     : undefined,
+      // };
     });
     return map;
   };
