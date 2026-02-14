@@ -1,7 +1,10 @@
 import React from "react";
-import CustomerReception from "@/app/refactor/prezentation/reseption/CustomerReception";
+import CustomerReception from "@/app/refactor/presentation/reception/CustomerReception";
 import { getAllClients, getAllStorages } from "@/utils/supabaseServerFunction";
-import { Client, StorageLogSummary } from "@/app/refactor/domain/type/reseption";
+import {
+  Client,
+  StorageLogSummary,
+} from "@/app/refactor/domain/type/reseption";
 
 const RefactorPage = async () => {
   const customers = await getAllClients();

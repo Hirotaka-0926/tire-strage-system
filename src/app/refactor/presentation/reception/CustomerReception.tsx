@@ -16,14 +16,14 @@ import { toast } from "sonner";
 import { createCustomerReceptionApplication } from "@/app/refactor/application/reseption/customerReceptionApplication";
 
 // 既存のUIコンポーネントをそのまま利用
-import SearchAndFilter from "@/app/refactor/prezentation/reseption/components/SearchAndFilter";
-import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
-import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
-import CustomerDetailDialog from "@/app/refactor/prezentation/reseption/components/CustomerDetailDialog";
-import EditCustomerDialog from "@/app/refactor/prezentation/reseption/components/EditCustomerDialog";
-import TireExchangeDialog from "@/app/refactor/prezentation/reseption/components/TireExchangeDialog";
-import Pagination from "@/app/refactor/prezentation/reseption/components/Pagination";
-import CustomerStats from "@/app/refactor/prezentation/reseption/components/CustomerStats";
+import SearchAndFilter from "@/app/refactor/presentation/reception/components/SearchAndFilter";
+import CreateCustomerDialog from "@/app/refactor/presentation/reception/components/CreateCustomerDialog";
+import CustomerTable from "@/app/refactor/presentation/reception/components/CustomerTable";
+import CustomerDetailDialog from "@/app/refactor/presentation/reception/components/CustomerDetailDialog";
+import EditCustomerDialog from "@/app/refactor/presentation/reception/components/EditCustomerDialog";
+import TireExchangeDialog from "@/app/refactor/presentation/reception/components/TireExchangeDialog";
+import Pagination from "@/app/refactor/presentation/reception/components/Pagination";
+import CustomerStats from "@/app/refactor/presentation/reception/components/CustomerStats";
 
 interface Props {
   initialCustomers: Client[];
@@ -49,18 +49,18 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
   });
   const thisSeason = useMemo(() => getYearAndSeason(), []);
   const lastSeason = useMemo(
-    () => getYearAndSeason(new Date(new Date().setMonth(new Date().getMonth() - 6))),
-    []
+    () =>
+      getYearAndSeason(
+        new Date(new Date().setMonth(new Date().getMonth() - 6)),
+      ),
+    [],
   );
 
   const router = useRouter();
 
-  const app = useMemo(
-    () => createCustomerReceptionApplication(),
-    []
-  );
+  const app = useMemo(() => createCustomerReceptionApplication(), []);
   const [newCustomer, setNewCustomer] = useState<Client>(() =>
-    app.createEmptyCustomer()
+    app.createEmptyCustomer(),
   );
 
   useEffect(() => {
@@ -68,19 +68,19 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
       initialCustomers,
       initialStorageLogs,
       thisSeason,
-      lastSeason
+      lastSeason,
     );
     setCustomers(mapped);
   }, [app, initialCustomers, initialStorageLogs, lastSeason, thisSeason]);
 
   const filteredCustomers = useMemo(
     () => app.filterCustomers(customers, searchTerm, filterStatus),
-    [app, customers, filterStatus, searchTerm]
+    [app, customers, filterStatus, searchTerm],
   );
 
   const { totalPages, startIndex, endIndex, currentCustomers } = useMemo(
     () => app.paginateCustomers(filteredCustomers, currentPage, itemsPerPage),
-    [app, currentPage, filteredCustomers, itemsPerPage]
+    [app, currentPage, filteredCustomers, itemsPerPage],
   );
 
   const handleCreateCustomer = async () => {
@@ -147,10 +147,10 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     try {
       const { finalCar } = await app.registerTireExchange(
         selectedCustomer,
-        selectedCar
+        selectedCar,
       );
       setCustomers((prev) =>
-        app.attachCarToCustomer(prev, selectedCustomer.id!, finalCar)
+        app.attachCarToCustomer(prev, selectedCustomer.id!, finalCar),
       );
       setSelectedCar({ car_model: "", car_number: "" });
       setIsExchangeDialogOpen(false);
@@ -267,6 +267,3 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
 };
 
 export default CustomerReception;
-
-
-
