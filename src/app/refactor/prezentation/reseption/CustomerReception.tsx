@@ -20,9 +20,9 @@ import SearchAndFilter from "@/app/refactor/prezentation/reseption/components/Se
 import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
 import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
 import CustomerDetailDialog from "@/app/refactor/prezentation/reseption/components/CustomerDetailDialog";
+import EditCustomerDialog from "@/app/refactor/prezentation/reseption/components/EditCustomerDialog";
 import Pagination from "@/app/refactor/prezentation/reseption/components/Pagination";
 import CustomerStats from "@/app/refactor/prezentation/reseption/components/CustomerStats";
-import EditCustomerDialog from "@/app/customer/components/EditCustomerDialog";
 import TireExchangeDialog from "@/app/customer/components/TireExchangeDialog";
 
 interface Props {
@@ -248,7 +248,7 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
           isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           customer={selectedCustomer}
-          onCustomerChange={setSelectedCustomer}
+          onCustomerChange={(customer) => setSelectedCustomer(customer)}
           onUpdateCustomer={handleEditCustomer}
           isLoading={isLoading}
         />
