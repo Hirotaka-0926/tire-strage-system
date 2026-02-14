@@ -20,7 +20,7 @@ import SearchAndFilter from "@/app/refactor/prezentation/reseption/components/Se
 import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
 import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
 import CustomerDetailDialog from "@/app/refactor/prezentation/reseption/components/CustomerDetailDialog";
-import Pagination from "@/app/customer/components/Pagination";
+import Pagination from "@/app/refactor/prezentation/reseption/components/Pagination";
 import CustomerStats from "@/app/customer/components/CustomerStats";
 import EditCustomerDialog from "@/app/customer/components/EditCustomerDialog";
 import TireExchangeDialog from "@/app/customer/components/TireExchangeDialog";
