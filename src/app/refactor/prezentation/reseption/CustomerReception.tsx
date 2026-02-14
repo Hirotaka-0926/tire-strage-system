@@ -21,9 +21,9 @@ import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/componen
 import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
 import CustomerDetailDialog from "@/app/refactor/prezentation/reseption/components/CustomerDetailDialog";
 import EditCustomerDialog from "@/app/refactor/prezentation/reseption/components/EditCustomerDialog";
+import TireExchangeDialog from "@/app/refactor/prezentation/reseption/components/TireExchangeDialog";
 import Pagination from "@/app/refactor/prezentation/reseption/components/Pagination";
 import CustomerStats from "@/app/refactor/prezentation/reseption/components/CustomerStats";
-import TireExchangeDialog from "@/app/customer/components/TireExchangeDialog";
 
 interface Props {
   initialCustomers: Client[];
