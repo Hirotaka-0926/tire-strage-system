@@ -19,9 +19,9 @@ import { createCustomerReceptionApplication } from "@/app/refactor/application/r
 import SearchAndFilter from "@/app/refactor/prezentation/reseption/components/SearchAndFilter";
 import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
 import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
+import CustomerDetailDialog from "@/app/refactor/prezentation/reseption/components/CustomerDetailDialog";
 import Pagination from "@/app/customer/components/Pagination";
 import CustomerStats from "@/app/customer/components/CustomerStats";
-import CustomerDetailDialog from "@/app/customer/components/CustomerDetailDialog";
 import EditCustomerDialog from "@/app/customer/components/EditCustomerDialog";
 import TireExchangeDialog from "@/app/customer/components/TireExchangeDialog";
 
