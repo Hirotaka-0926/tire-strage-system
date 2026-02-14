@@ -2,9 +2,10 @@ import {
   Car,
   Client,
   ClientWithExchangeHistory,
+  CustomerFilterStatus,
   CustomerMap,
   StorageLogSummary,
-} from "@/app/refactor/type";
+} from "@/app/refactor/domain/type/reseption";
 import {
   createCustomerReceptionService,
   EMPTY_CUSTOMER,
@@ -34,7 +35,7 @@ export const createCustomerReceptionApplication = (
   const filterCustomers = (
     customers: CustomerMap,
     searchTerm: string,
-    filterStatus: string
+    filterStatus: CustomerFilterStatus
   ) => service.filterCustomers(customers, searchTerm, filterStatus);
 
   const paginateCustomers = (

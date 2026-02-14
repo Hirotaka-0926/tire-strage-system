@@ -1,4 +1,4 @@
-import { Car, Client, TaskOutput } from "@/app/refactor/type";
+import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reseption";
 
 export const mapClientToSupabase = (client: Client) => ({
   ...client,
@@ -27,3 +27,4 @@ export const mapCarFromSupabase = (car: any): Car => ({
 export const mapTaskToSupabase = (task: TaskOutput) => ({
   ...task,
 });
+

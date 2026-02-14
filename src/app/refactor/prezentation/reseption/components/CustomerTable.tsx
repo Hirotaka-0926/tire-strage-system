@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
-import { ClientWithExchangeHistory } from "@/app/refactor/type";
-import { Button } from "@/components/ui/button";
+import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reseption";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ const getCustomerStatus = (customer: ClientWithExchangeHistory) => {
       icon: CheckCircle,
     };
   }
+
   if (customer.lastSeasonExchange && !customer.thisSeasonExchange) {
     return {
       type: "warning" as const,
@@ -44,6 +45,7 @@ const getCustomerStatus = (customer: ClientWithExchangeHistory) => {
       icon: AlertTriangle,
     };
   }
+
   return {
     type: "danger" as const,
     label: "長期未利用",
@@ -52,9 +54,7 @@ const getCustomerStatus = (customer: ClientWithExchangeHistory) => {
 };
 
 const getRowColor = (customer: ClientWithExchangeHistory) => {
-  if (customer.thisSeasonExchange) {
-    return "bg-green-50";
-  }
+  if (customer.thisSeasonExchange) return "bg-green-50";
   if (customer.lastSeasonExchange && !customer.thisSeasonExchange) {
     return "bg-yellow-50";
   }
@@ -62,12 +62,8 @@ const getRowColor = (customer: ClientWithExchangeHistory) => {
 };
 
 const getBadgeClass = (type: "success" | "warning" | "danger") => {
-  if (type === "success") {
-    return "bg-green-100 text-green-800";
-  }
-  if (type === "warning") {
-    return "bg-yellow-100 text-yellow-800";
-  }
+  if (type === "success") return "bg-green-100 text-green-800";
+  if (type === "warning") return "bg-yellow-100 text-yellow-800";
   return "bg-red-100 text-red-800";
 };
 

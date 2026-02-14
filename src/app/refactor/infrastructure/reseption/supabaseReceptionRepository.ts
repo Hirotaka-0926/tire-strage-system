@@ -1,5 +1,5 @@
 import { supabase } from "@/utils/supabase";
-import { Car, Client, TaskOutput } from "@/app/refactor/type";
+import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reseption";
 import { CustomerReceptionRepository } from "@/app/refactor/application/reseption/customerReceptionRepository";
 import {
   mapCarFromSupabase,
@@ -68,3 +68,4 @@ export const createSupabaseReceptionRepository =
       saveTask,
     };
   };
+

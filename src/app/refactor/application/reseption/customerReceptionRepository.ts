@@ -1,4 +1,4 @@
-import { Car, Client, TaskStatus } from "@/app/refactor/type";
+import { Car, Client, TaskStatus } from "@/app/refactor/domain/type/reseption";
 
 export interface CustomerReceptionRepository {
   saveCustomer: (client: Client) => Promise<Client>;

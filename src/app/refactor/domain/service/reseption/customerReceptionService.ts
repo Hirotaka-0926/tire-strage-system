@@ -2,6 +2,7 @@ import {
   Car,
   Client,
   ClientWithExchangeHistory,
+  CustomerFilterStatus,
   CustomerMap,
   StorageLogSummary,
   Season,
@@ -22,6 +23,8 @@ export const EMPTY_CUSTOMER: Client = {
 };
 
 const normalizeText = (value: string): string => value.trim();
+const asSafeString = (value: unknown): string =>
+  typeof value === "string" ? value : "";
 
 const normalizeCustomer = (customer: Client): Client => ({
   ...customer,
@@ -93,7 +96,7 @@ const buildCustomersWithLogs = (
 const filterCustomers = (
   customers: CustomerMap,
   searchTerm: string,
-  filterStatus: string
+  filterStatus: CustomerFilterStatus
 ): ClientWithExchangeHistory[] => {
   return Object.values(customers)
     .filter((customer, index, array) => {
@@ -101,11 +104,15 @@ const filterCustomers = (
     })
     .filter((customer) => {
       const loweredTerm = searchTerm.toLowerCase();
+      const name = asSafeString(customer.client_name).toLowerCase();
+      const kana = asSafeString(customer.client_name_kana).toLowerCase();
+      const postNumber = asSafeString(customer.post_number);
+      const address = asSafeString(customer.address).toLowerCase();
       const matchesSearch =
-        customer.client_name.toLowerCase().includes(loweredTerm) ||
-        customer.client_name_kana.toLowerCase().includes(loweredTerm) ||
-        customer.post_number.includes(searchTerm) ||
-        customer.address.toLowerCase().includes(loweredTerm);
+        name.includes(loweredTerm) ||
+        kana.includes(loweredTerm) ||
+        postNumber.includes(searchTerm) ||
+        address.includes(loweredTerm);
 
       if (filterStatus === "this-season") {
         return matchesSearch && customer.thisSeasonExchange;

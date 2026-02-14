@@ -49,3 +49,11 @@ export interface StorageLogSummary {
 }
 
 export type CustomerMap = Record<CustomerId, ClientWithExchangeHistory>;
+
+export interface TaskOutput {
+  id?: number;
+  car_id: CarId;
+  client_id: CustomerId;
+  tire_state_id?: number;
+  status: TaskStatus;
+}

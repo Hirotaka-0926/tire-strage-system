@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { Client } from "@/app/refactor/type";
+import { Client } from "@/app/refactor/domain/type/reseption";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

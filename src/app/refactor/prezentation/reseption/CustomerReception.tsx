@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,16 +6,17 @@ import {
   Client,
   Car,
   ClientWithExchangeHistory,
+  CustomerFilterStatus,
   CustomerMap,
   StorageLogSummary,
-} from "@/app/refactor/type";
+} from "@/app/refactor/domain/type/reseption";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createCustomerReceptionApplication } from "@/app/refactor/application/reseption/customerReceptionApplication";
 
 // 既存のUIコンポーネントをそのまま利用
-import SearchAndFilter from "@/app/customer/components/SearchAndFilter";
+import SearchAndFilter from "@/app/refactor/prezentation/reseption/components/SearchAndFilter";
 import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
 import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
 import Pagination from "@/app/customer/components/Pagination";
@@ -32,7 +33,7 @@ interface Props {
 const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
   const [customers, setCustomers] = useState<CustomerMap>({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<CustomerFilterStatus>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -266,3 +267,6 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
 };
 
 export default CustomerReception;
+
+
+
