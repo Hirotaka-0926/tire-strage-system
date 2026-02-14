@@ -7,6 +7,7 @@ import {
 } from "@/app/refactor/type";
 import {
   createCustomerReceptionService,
+  EMPTY_CUSTOMER,
   SeasonSnapshot,
 } from "@/app/refactor/domain/service/reseption/customerReceptionService";
 import { CustomerReceptionRepository } from "./customerReceptionRepository";
@@ -43,10 +44,10 @@ export const createCustomerReceptionApplication = (
   ) => service.paginateCustomers(customers, currentPage, itemsPerPage);
 
   const createCustomer = async (customer: Client) =>
-    repository.saveCustomer(customer);
+    repository.saveCustomer(service.normalizeCustomer(customer));
 
   const updateCustomer = async (customer: ClientWithExchangeHistory) =>
-    repository.saveCustomer(customer);
+    repository.saveCustomer(service.normalizeCustomer(customer));
 
   const deleteCustomer = async (customerId: number) =>
     repository.deleteCustomer(customerId);
@@ -77,6 +78,8 @@ export const createCustomerReceptionApplication = (
     return { finalCar: carRecord };
   };
 
+  const createEmptyCustomer = (): Client => ({ ...EMPTY_CUSTOMER });
+
   const mergeCustomer = (map: CustomerMap, customer: ClientWithExchangeHistory) =>
     service.mergeCustomer(map, customer);
 
@@ -94,6 +97,7 @@ export const createCustomerReceptionApplication = (
     updateCustomer,
     deleteCustomer,
     registerTireExchange,
+    createEmptyCustomer,
     mergeCustomer,
     removeCustomer,
     attachCarToCustomer,

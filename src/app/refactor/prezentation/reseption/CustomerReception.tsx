@@ -16,8 +16,8 @@ import { createCustomerReceptionApplication } from "@/app/refactor/application/r
 
 // 既存のUIコンポーネントをそのまま利用
 import SearchAndFilter from "@/app/customer/components/SearchAndFilter";
-import CreateCustomerDialog from "@/app/customer/components/CreateCustomerDialog";
-import CustomerTable from "@/app/customer/components/CustomerTable";
+import CreateCustomerDialog from "@/app/refactor/prezentation/reseption/components/CreateCustomerDialog";
+import CustomerTable from "@/app/refactor/prezentation/reseption/components/CustomerTable";
 import Pagination from "@/app/customer/components/Pagination";
 import CustomerStats from "@/app/customer/components/CustomerStats";
 import CustomerDetailDialog from "@/app/customer/components/CustomerDetailDialog";
@@ -46,18 +46,10 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     car_model: "",
     car_number: "",
   });
-  const [newCustomer, setNewCustomer] = useState<Client>({
-    client_name: "",
-    client_name_kana: "",
-    post_number: "",
-    address: "",
-    phone: "",
-    notes: "",
-  });
-
-  const thisSeason = getYearAndSeason();
-  const lastSeason = getYearAndSeason(
-    new Date(new Date().setMonth(new Date().getMonth() - 6))
+  const thisSeason = useMemo(() => getYearAndSeason(), []);
+  const lastSeason = useMemo(
+    () => getYearAndSeason(new Date(new Date().setMonth(new Date().getMonth() - 6))),
+    []
   );
 
   const router = useRouter();
@@ -65,6 +57,9 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
   const app = useMemo(
     () => createCustomerReceptionApplication(),
     []
+  );
+  const [newCustomer, setNewCustomer] = useState<Client>(() =>
+    app.createEmptyCustomer()
   );
 
   useEffect(() => {
@@ -93,14 +88,7 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     try {
       const savedCustomer = await app.createCustomer(newCustomer);
       setCustomers((prev) => app.mergeCustomer(prev, savedCustomer));
-      setNewCustomer({
-        client_name: "",
-        client_name_kana: "",
-        post_number: "",
-        address: "",
-        phone: "",
-        notes: "",
-      });
+      setNewCustomer(app.createEmptyCustomer());
       setIsCreateDialogOpen(false);
       toast.success("顧客を正常に作成しました");
       router.refresh();
