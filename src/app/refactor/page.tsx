@@ -1,14 +1,20 @@
 import React from "react";
 import CustomerReception from "@/app/refactor/presentation/reception/CustomerReception";
-import { getAllClients, getAllStorages } from "@/utils/supabaseServerFunction";
+import {
+  getAllClients,
+  getAllStorages,
+  getStorages,
+} from "@/utils/supabaseServerFunction";
 import {
   Client,
+  StorageAssignmentSummary,
   StorageLogSummary,
 } from "@/app/refactor/domain/type/reception";
 
 const RefactorPage = async () => {
   const customers = await getAllClients();
   const storageLogs = await getAllStorages();
+  const storageAssignments = await getStorages();
 
   const initialCustomers: Client[] = customers.map((customer) => ({
     id: customer.id,
@@ -22,6 +28,7 @@ const RefactorPage = async () => {
 
   const initialStorageLogs: StorageLogSummary[] = storageLogs.map((log) => ({
     id: log.id,
+    storage_id: log.storage?.id ?? "",
     client_id: log.client?.id ?? null,
     year: log.year,
     season: log.season,
@@ -35,10 +42,19 @@ const RefactorPage = async () => {
     next_theme: log.state?.next_theme ?? "未設定",
   }));
 
+  const initialStorageAssignments: StorageAssignmentSummary[] =
+    storageAssignments.map((assignment) => ({
+      id: assignment.id,
+      client_id: assignment.client_id,
+      car_id: assignment.car_id,
+      tire_state_id: assignment.tire_state_id,
+    }));
+
   return (
     <CustomerReception
       initialCustomers={initialCustomers}
       initialStorageLogs={initialStorageLogs}
+      initialStorageAssignments={initialStorageAssignments}
     />
   );
 };

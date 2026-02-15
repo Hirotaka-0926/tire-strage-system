@@ -41,11 +41,19 @@ export interface ClientWithExchangeHistory extends Client {
 
 export interface StorageLogSummary {
   id: number;
+  storage_id: string;
   client_id: CustomerId | null;
   year: number;
   season: Season;
   car: Car | null;
   next_theme: string;
+}
+
+export interface StorageAssignmentSummary {
+  id: string;
+  client_id: CustomerId | null;
+  car_id: CarId | null;
+  tire_state_id: number | null;
 }
 
 export type CustomerMap = Record<CustomerId, ClientWithExchangeHistory>;

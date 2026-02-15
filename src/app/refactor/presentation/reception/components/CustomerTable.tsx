@@ -25,7 +25,7 @@ interface CustomerTableProps {
   customers: ClientWithExchangeHistory[];
   onViewDetails: (customer: ClientWithExchangeHistory) => void;
   onEditCustomer: (customer: ClientWithExchangeHistory) => void;
-  onDeleteCustomer: (customerId: number) => void;
+  onDeleteCustomer: (customer: ClientWithExchangeHistory) => void;
   onTireExchange: (customer: ClientWithExchangeHistory) => void;
 }
 
@@ -140,9 +140,7 @@ const CustomerTable = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        customer.id && onDeleteCustomer(customer.id)
-                      }
+                      onClick={() => onDeleteCustomer(customer)}
                       title="削除"
                     >
                       <Trash2 className="h-3 w-3" />

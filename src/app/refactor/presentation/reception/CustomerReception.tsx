@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,12 +8,23 @@ import {
   ClientWithExchangeHistory,
   CustomerFilterStatus,
   CustomerMap,
+  StorageAssignmentSummary,
   StorageLogSummary,
 } from "@/app/refactor/domain/type/reception";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createCustomerReceptionApplication } from "@/app/refactor/application/reception/customerReceptionApplication";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // 既存のUIコンポーネントをそのまま利用
 import SearchAndFilter from "@/app/refactor/presentation/reception/components/SearchAndFilter";
@@ -28,9 +39,14 @@ import CustomerStats from "@/app/refactor/presentation/reception/components/Cust
 interface Props {
   initialCustomers: Client[];
   initialStorageLogs: StorageLogSummary[];
+  initialStorageAssignments: StorageAssignmentSummary[];
 }
 
-const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
+const CustomerReception = ({
+  initialCustomers,
+  initialStorageLogs,
+  initialStorageAssignments,
+}: Props) => {
   const [customers, setCustomers] = useState<CustomerMap>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<CustomerFilterStatus>("all");
@@ -40,7 +56,10 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isExchangeDialogOpen, setIsExchangeDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] =
+    useState<ClientWithExchangeHistory | null>(null);
+  const [pendingDeleteCustomer, setPendingDeleteCustomer] =
     useState<ClientWithExchangeHistory | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car>({
@@ -82,6 +101,29 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     () => app.paginateCustomers(filteredCustomers, currentPage, itemsPerPage),
     [app, currentPage, filteredCustomers, itemsPerPage],
   );
+
+  const pendingDeleteStorageAssignments = useMemo(() => {
+    if (!pendingDeleteCustomer?.id) {
+      return [] as StorageAssignmentSummary[];
+    }
+    return initialStorageAssignments.filter(
+      (assignment) => assignment.client_id === pendingDeleteCustomer.id,
+    );
+  }, [initialStorageAssignments, pendingDeleteCustomer?.id]);
+
+  const pendingDeleteStorageIds = useMemo(
+    () => pendingDeleteStorageAssignments.map((assignment) => assignment.id),
+    [pendingDeleteStorageAssignments],
+  );
+
+  const pendingDeleteHistoryCount = useMemo(() => {
+    if (!pendingDeleteCustomer?.id) {
+      return 0;
+    }
+    return initialStorageLogs.filter(
+      (log) => log.client_id === pendingDeleteCustomer.id,
+    ).length;
+  }, [initialStorageLogs, pendingDeleteCustomer?.id]);
 
   useEffect(() => {
     const safeTotalPages = Math.max(
@@ -129,19 +171,41 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     }
   };
 
-  const handleDeleteCustomer = async (customerId: number) => {
-    if (isLoading) return;
+  const handleDeleteCustomer = async (customerId: number): Promise<boolean> => {
+    if (isLoading) return false;
     setIsLoading(true);
     try {
       await app.deleteCustomer(customerId);
       setCustomers((prev) => app.removeCustomer(prev, customerId));
       toast.success("顧客を削除しました");
       router.refresh();
+      return true;
     } catch (error) {
-      console.error("Error deleting customer:", error);
-      toast.error("顧客の削除に失敗しました");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : `unknown error: ${JSON.stringify(error)}`;
+      console.error("Error deleting customer:", { customerId, errorMessage, error });
+      toast.error(errorMessage);
+      return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const requestDeleteCustomer = (customer: ClientWithExchangeHistory) => {
+    setPendingDeleteCustomer(customer);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!pendingDeleteCustomer?.id || isLoading) {
+      return;
+    }
+    const deleted = await handleDeleteCustomer(pendingDeleteCustomer.id);
+    if (deleted) {
+      setIsDeleteDialogOpen(false);
+      setPendingDeleteCustomer(null);
     }
   };
 
@@ -219,7 +283,7 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
                 setSelectedCustomer(customer);
                 setIsEditDialogOpen(true);
               }}
-              onDeleteCustomer={handleDeleteCustomer}
+              onDeleteCustomer={requestDeleteCustomer}
             />
 
             <Pagination
@@ -271,6 +335,61 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
           setSelectedCar={setSelectedCar}
           onTireExchange={handleTireExchange}
         />
+
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            if (!open) {
+              setPendingDeleteCustomer(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>顧客データを削除しますか？</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>
+                  顧客「{pendingDeleteCustomer?.client_name ?? "不明"}」を削除すると、
+                  このお客さんの過去の交換記録と車の情報は削除されます。
+                  </p>
+                  <p>この操作は取り消せません。</p>
+                  {pendingDeleteHistoryCount > 0 && (
+                    <p>
+                      削除対象の交換記録: {pendingDeleteHistoryCount}
+                      件
+                    </p>
+                  )}
+                  {pendingDeleteStorageIds.length > 0 && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-3 text-red-900">
+                      <p className="font-medium">
+                        以下の保管庫に顧客データがあります:
+                      </p>
+                      <p>{pendingDeleteStorageIds.join(", ")}</p>
+                      <p className="mt-1">
+                        該当する保管庫データも削除されます。
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isLoading}>キャンセル</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(event) => {
+                  event.preventDefault();
+                  void confirmDeleteCustomer();
+                }}
+                disabled={isLoading}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isLoading ? "削除中..." : "削除する"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
