@@ -17,6 +17,7 @@ interface PitTaskTableProps {
   label: string;
   badgeClassName: string;
   formatTaskId: (id?: number) => string;
+  onEditTask: (task: PitTask) => void;
 }
 
 const PitTaskTable = ({
@@ -24,6 +25,7 @@ const PitTaskTable = ({
   label,
   badgeClassName,
   formatTaskId,
+  onEditTask,
 }: PitTaskTableProps) => {
   if (tasks.length === 0) {
     return null;
@@ -66,6 +68,7 @@ const PitTaskTable = ({
                   保管庫ID
                 </div>
               </TableHead>
+              <TableHead className="min-w-[160px]">操作</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -90,6 +93,15 @@ const PitTaskTable = ({
                   ) : (
                     <span className="text-gray-400">未割当</span>
                   )}
+                </TableCell>
+                <TableCell>
+                  <button
+                    type="button"
+                    className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:bg-gray-700"
+                    onClick={() => onEditTask(task)}
+                  >
+                    {task.status === "incomplete" ? "整備データ入力" : "整備データ編集"}
+                  </button>
                 </TableCell>
               </TableRow>
             ))}

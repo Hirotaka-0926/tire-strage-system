@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/select";
 import { Filter, Wrench } from "lucide-react";
 import { useMemo, useState } from "react";
+import PitMaintenanceDialog from "@/app/refactor/presentation/pit/components/PitMaintenanceDialog";
+import { useRouter } from "next/navigation";
+import { PitTaskInput } from "@/app/refactor/domain/type/pit";
 
 interface PitTaskListProps {
   tasks: PitTask[];
@@ -21,7 +24,10 @@ interface PitTaskListProps {
 
 const PitTaskList = ({ tasks }: PitTaskListProps) => {
   const app = useMemo(() => createPitTaskApplication(), []);
+  const router = useRouter();
   const [filterStatus, setFilterStatus] = useState<PitFilterStatus>("all");
+  const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<PitTaskInput | null>(null);
 
   const groupedAllTasks = useMemo(() => app.groupTasksByStatus(tasks), [app, tasks]);
   const filteredTasks = useMemo(
@@ -68,18 +74,46 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
           label="未完了"
           badgeClassName="bg-yellow-100 px-4 py-2 text-base text-yellow-800 hover:bg-yellow-100"
           formatTaskId={app.formatTaskId}
+          onEditTask={(task) => {
+            setSelectedTask(task.sourceTask);
+            setIsMaintenanceDialogOpen(true);
+          }}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.complete}
           label="完了"
           badgeClassName="bg-green-100 px-4 py-2 text-base text-green-800 hover:bg-green-100"
           formatTaskId={app.formatTaskId}
+          onEditTask={(task) => {
+            setSelectedTask(task.sourceTask);
+            setIsMaintenanceDialogOpen(true);
+          }}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.pending}
           label="保留中"
           badgeClassName="bg-blue-100 px-4 py-2 text-base text-blue-800 hover:bg-blue-100"
           formatTaskId={app.formatTaskId}
+          onEditTask={(task) => {
+            setSelectedTask(task.sourceTask);
+            setIsMaintenanceDialogOpen(true);
+          }}
+        />
+
+        <PitMaintenanceDialog
+          open={isMaintenanceDialogOpen}
+          onOpenChange={(open) => {
+            setIsMaintenanceDialogOpen(open);
+            if (!open) {
+              setSelectedTask(null);
+            }
+          }}
+          selectedTask={selectedTask}
+          onSaved={() => {
+            setIsMaintenanceDialogOpen(false);
+            setSelectedTask(null);
+            router.refresh();
+          }}
         />
       </CardContent>
     </Card>

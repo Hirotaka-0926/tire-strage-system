@@ -1,25 +1,9 @@
 import PitTaskList from "@/app/refactor/presentation/pit/PitTaskList";
-import { PitTask } from "@/app/refactor/domain/type/pit";
-import { getAllTasks } from "@/utils/supabaseServerFunction";
-
-const toPitStatus = (status: string): PitTask["status"] => {
-  if (status === "complete" || status === "pending") {
-    return status;
-  }
-  return "incomplete";
-};
+import { createPitTaskQueryApplication } from "@/app/refactor/application/pit/pitTaskQueryApplication";
 
 const PitPage = async () => {
-  const tasks = await getAllTasks();
-
-  const pitTasks: PitTask[] = tasks.map((task) => ({
-    id: task.id,
-    status: toPitStatus(task.status),
-    clientName: task.client?.client_name ?? "",
-    carNumber: task.car?.car_number ?? "",
-    carModel: task.car?.car_model ?? "",
-    storageId: task.storage_id ?? "",
-  }));
+  const app = createPitTaskQueryApplication();
+  const pitTasks = await app.getPitTasks();
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
