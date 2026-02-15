@@ -52,16 +52,67 @@ export const createSupabaseReceptionRepository =
       );
     };
 
-    const saveCustomer = async (client: Client): Promise<Client> => {
-      const payload = mapClientToSupabase(client);
+    const getNextCustomerId = async (): Promise<number> => {
       const { data, error } = await supabase
         .from("client_data")
-        .upsert(payload)
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(
+          `顧客ID採番の取得に失敗しました: ${toErrorMessage(
+            error,
+            "unknown select error",
+          )}`,
+        );
+      }
+
+      const maxId = typeof data?.id === "number" ? data.id : 0;
+      return maxId + 1;
+    };
+
+    const saveCustomer = async (client: Client): Promise<Client> => {
+      const payload = mapClientToSupabase(client);
+
+      // 新規作成は upsert を使わず、最大ID + 1 を明示して insert する
+      // （既存データの上書き防止）
+      if (typeof payload.id !== "number") {
+        const nextId = await getNextCustomerId();
+        const insertPayload = { ...payload, id: nextId };
+        const { data, error } = await supabase
+          .from("client_data")
+          .insert(insertPayload)
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(
+            `顧客作成に失敗しました: ${toErrorMessage(
+              error,
+              "unknown insert error",
+            )}`,
+          );
+        }
+
+        return mapClientFromSupabase(data);
+      }
+
+      const { data, error } = await supabase
+        .from("client_data")
+        .update(payload)
+        .eq("id", payload.id)
         .select()
         .single();
 
       if (error) {
-        throw error;
+        throw new Error(
+          `顧客更新に失敗しました: ${toErrorMessage(
+            error,
+            "unknown update error",
+          )}`,
+        );
       }
 
       return mapClientFromSupabase(data);
