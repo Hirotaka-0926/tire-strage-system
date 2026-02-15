@@ -14,6 +14,7 @@ import PitTaskTable from "@/app/refactor/presentation/pit/components/PitTaskTabl
 import PitMaintenanceDialog from "@/app/refactor/presentation/pit/components/PitMaintenanceDialog";
 import PitAssignStorageDialog from "@/app/refactor/presentation/pit/components/PitAssignStorageDialog";
 import PitSaveTaskDialog from "@/app/refactor/presentation/pit/components/PitSaveTaskDialog";
+import PitDeleteTaskDialog from "@/app/refactor/presentation/pit/components/PitDeleteTaskDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -35,11 +36,15 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
   const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedMaintenanceTask, setSelectedMaintenanceTask] =
     useState<PitTaskInput | null>(null);
   const [selectedStorageTask, setSelectedStorageTask] =
     useState<PitTaskInput | null>(null);
   const [selectedSaveTask, setSelectedSaveTask] = useState<PitTaskInput | null>(null);
+  const [selectedDeleteTask, setSelectedDeleteTask] = useState<PitTaskInput | null>(
+    null,
+  );
 
   const groupedAllTasks = useMemo(() => app.groupTasksByStatus(tasks), [app, tasks]);
   const filteredTasks = useMemo(
@@ -64,6 +69,11 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
   const openSaveDialog = (task: PitTask) => {
     setSelectedSaveTask(task.sourceTask);
     setIsSaveDialogOpen(true);
+  };
+
+  const openDeleteDialog = (task: PitTask) => {
+    setSelectedDeleteTask(task.sourceTask);
+    setIsDeleteDialogOpen(true);
   };
 
   return (
@@ -104,6 +114,7 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
           onEditTask={openMaintenanceDialog}
           onAssignStorage={openStorageDialog}
           onSaveTask={openSaveDialog}
+          onDeleteTask={openDeleteDialog}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.complete}
@@ -113,6 +124,7 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
           onEditTask={openMaintenanceDialog}
           onAssignStorage={openStorageDialog}
           onSaveTask={openSaveDialog}
+          onDeleteTask={openDeleteDialog}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.pending}
@@ -122,6 +134,7 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
           onEditTask={openMaintenanceDialog}
           onAssignStorage={openStorageDialog}
           onSaveTask={openSaveDialog}
+          onDeleteTask={openDeleteDialog}
         />
 
         <PitMaintenanceDialog
@@ -171,10 +184,25 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
             router.refresh();
           }}
         />
+
+        <PitDeleteTaskDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            if (!open) {
+              setSelectedDeleteTask(null);
+            }
+          }}
+          selectedTask={selectedDeleteTask}
+          onDeleted={() => {
+            setIsDeleteDialogOpen(false);
+            setSelectedDeleteTask(null);
+            router.refresh();
+          }}
+        />
       </CardContent>
     </Card>
   );
 };
 
 export default PitTaskList;
-

@@ -11,7 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Car, FilePenLine, Hash, MapPin, Package, Save, User } from "lucide-react";
+import {
+  Car,
+  FilePenLine,
+  Hash,
+  MapPin,
+  Package,
+  Save,
+  Trash2,
+  User,
+} from "lucide-react";
 
 interface PitTaskTableProps {
   tasks: PitTask[];
@@ -21,6 +30,7 @@ interface PitTaskTableProps {
   onEditTask: (task: PitTask) => void;
   onAssignStorage: (task: PitTask) => void;
   onSaveTask: (task: PitTask) => void;
+  onDeleteTask: (task: PitTask) => void;
 }
 
 const PitTaskTable = ({
@@ -31,6 +41,7 @@ const PitTaskTable = ({
   onEditTask,
   onAssignStorage,
   onSaveTask,
+  onDeleteTask,
 }: PitTaskTableProps) => {
   if (tasks.length === 0) {
     return null;
@@ -119,6 +130,14 @@ const PitTaskTable = ({
                         保管庫へ保存
                       </Button>
                     )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => onDeleteTask(task)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      削除
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -131,4 +150,3 @@ const PitTaskTable = ({
 };
 
 export default PitTaskTable;
-
