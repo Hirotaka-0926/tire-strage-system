@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reseption";
+import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reception";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,7 +75,9 @@ const CustomerDetailDialog = ({
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
             <div>
-              <Label className="text-sm font-medium text-gray-600">顧客名</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                顧客名
+              </Label>
               <p className="text-lg font-semibold">{customer.client_name}</p>
             </div>
             <div>
@@ -85,7 +87,9 @@ const CustomerDetailDialog = ({
               <p>{customer.client_name_kana}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-600">郵便番号</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                郵便番号
+              </Label>
               <p>{customer.post_number}</p>
             </div>
             <div>
@@ -93,12 +97,16 @@ const CustomerDetailDialog = ({
               <p>{customer.address}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-600">電話番号</Label>
+              <Label className="text-sm font-medium text-gray-600">
+                電話番号
+              </Label>
               <p>{customer.phone}</p>
             </div>
             {customer.notes && (
               <div className="col-span-2">
-                <Label className="text-sm font-medium text-gray-600">備考</Label>
+                <Label className="text-sm font-medium text-gray-600">
+                  備考
+                </Label>
                 <p>{customer.notes}</p>
               </div>
             )}
@@ -109,7 +117,10 @@ const CustomerDetailDialog = ({
               現在のステータス
             </Label>
             <div className="mt-2">
-              <Badge variant="secondary" className={getStatusClass(status.type)}>
+              <Badge
+                variant="secondary"
+                className={getStatusClass(status.type)}
+              >
                 <StatusIcon className="mr-2 h-4 w-4" />
                 {status.label}
               </Badge>
@@ -121,7 +132,10 @@ const CustomerDetailDialog = ({
             {customer.exchangeHistory && customer.exchangeHistory.length > 0 ? (
               <div className="space-y-3">
                 {customer.exchangeHistory.map((record) => (
-                  <div key={record.id} className="rounded-lg border bg-white p-4">
+                  <div
+                    key={record.id}
+                    className="rounded-lg border bg-white p-4"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="mb-2 flex items-center space-x-2">
@@ -154,7 +168,11 @@ const CustomerDetailDialog = ({
               <Calendar className="mr-2 h-4 w-4" />
               タイヤ交換受付
             </Button>
-            <Button variant="outline" onClick={onEditCustomer} className="flex-1">
+            <Button
+              variant="outline"
+              onClick={onEditCustomer}
+              className="flex-1"
+            >
               <Edit className="mr-2 h-4 w-4" />
               編集
             </Button>

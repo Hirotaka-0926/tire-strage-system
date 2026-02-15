@@ -1,6 +1,6 @@
 import { supabase } from "@/utils/supabase";
-import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reseption";
-import { CustomerReceptionRepository } from "@/app/refactor/application/reseption/customerReceptionRepository";
+import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reception";
+import { CustomerReceptionRepository } from "@/app/refactor/application/reception/customerReceptionRepository";
 import {
   mapCarFromSupabase,
   mapCarToSupabase,

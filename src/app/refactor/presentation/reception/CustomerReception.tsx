@@ -9,11 +9,11 @@ import {
   CustomerFilterStatus,
   CustomerMap,
   StorageLogSummary,
-} from "@/app/refactor/domain/type/reseption";
+} from "@/app/refactor/domain/type/reception";
 import { getYearAndSeason } from "@/utils/globalFunctions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createCustomerReceptionApplication } from "@/app/refactor/application/reseption/customerReceptionApplication";
+import { createCustomerReceptionApplication } from "@/app/refactor/application/reception/customerReceptionApplication";
 
 // 既存のUIコンポーネントをそのまま利用
 import SearchAndFilter from "@/app/refactor/presentation/reception/components/SearchAndFilter";
@@ -82,6 +82,16 @@ const CustomerReception = ({ initialCustomers, initialStorageLogs }: Props) => {
     () => app.paginateCustomers(filteredCustomers, currentPage, itemsPerPage),
     [app, currentPage, filteredCustomers, itemsPerPage],
   );
+
+  useEffect(() => {
+    const safeTotalPages = Math.max(
+      1,
+      Math.ceil(filteredCustomers.length / itemsPerPage),
+    );
+    if (currentPage > safeTotalPages) {
+      setCurrentPage(safeTotalPages);
+    }
+  }, [currentPage, filteredCustomers.length, itemsPerPage]);
 
   const handleCreateCustomer = async () => {
     if (isLoading) return;

@@ -5,14 +5,14 @@ import {
   CustomerFilterStatus,
   CustomerMap,
   StorageLogSummary,
-} from "@/app/refactor/domain/type/reseption";
+} from "@/app/refactor/domain/type/reception";
 import {
   createCustomerReceptionService,
   EMPTY_CUSTOMER,
   SeasonSnapshot,
-} from "@/app/refactor/domain/service/reseption/customerReceptionService";
+} from "@/app/refactor/domain/service/reception/customerReceptionService";
 import { CustomerReceptionRepository } from "./customerReceptionRepository";
-import { createSupabaseReceptionRepository } from "@/app/refactor/infrastructure/reseption/supabaseReceptionRepository";
+import { createSupabaseReceptionRepository } from "@/app/refactor/infrastructure/reception/supabaseReceptionRepository";
 
 export const createCustomerReceptionApplication = (
   repository: CustomerReceptionRepository = createSupabaseReceptionRepository()

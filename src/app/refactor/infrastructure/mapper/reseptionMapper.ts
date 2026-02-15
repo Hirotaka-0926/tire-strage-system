@@ -1,4 +1,4 @@
-import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reseption";
+import { Car, Client, TaskOutput } from "@/app/refactor/domain/type/reception";
 
 export const mapClientToSupabase = (client: Client) => ({
   ...client,

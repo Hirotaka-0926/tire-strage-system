@@ -6,7 +6,7 @@ import {
   CustomerMap,
   StorageLogSummary,
   Season,
-} from "@/app/refactor/domain/type/reseption";
+} from "@/app/refactor/domain/type/reception";
 
 export type SeasonSnapshot = {
   year: number;

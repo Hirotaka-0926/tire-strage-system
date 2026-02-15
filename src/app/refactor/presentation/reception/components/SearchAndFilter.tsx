@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { CustomerFilterStatus } from "@/app/refactor/domain/type/reseption";
+import { CustomerFilterStatus } from "@/app/refactor/domain/type/reception";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -45,7 +45,9 @@ const SearchAndFilter = ({
         <SelectContent>
           <SelectItem value="all">すべて</SelectItem>
           <SelectItem value="this-season">今シーズン交換済み</SelectItem>
-          <SelectItem value="needs-contact">要連絡（前シーズンのみ）</SelectItem>
+          <SelectItem value="needs-contact">
+            要連絡（前シーズンのみ）
+          </SelectItem>
           <SelectItem value="not-used">長期未利用</SelectItem>
         </SelectContent>
       </Select>

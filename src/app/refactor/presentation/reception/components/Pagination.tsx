@@ -36,6 +36,11 @@ const Pagination = ({
   onPageChange,
   onItemsPerPageChange,
 }: PaginationProps) => {
+  const isEmpty = totalItems === 0;
+  const displayFrom = isEmpty ? 0 : startIndex + 1;
+  const displayTo = isEmpty ? 0 : Math.min(endIndex, totalItems);
+  const canMove = totalPages > 1;
+
   const getPageNumbers = () => {
     const pages: number[] = [];
     const maxVisiblePages = 5;
@@ -62,7 +67,7 @@ const Pagination = ({
   return (
     <div className="mt-6 flex items-center justify-between">
       <div className="text-sm text-gray-600">
-        {startIndex + 1} - {Math.min(endIndex, totalItems)} / {totalItems} 件
+        {displayFrom} - {displayTo} / {totalItems} 件
       </div>
 
       <div className="flex items-center space-x-2">
@@ -70,7 +75,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(1)}
-          disabled={currentPage === 1}
+          disabled={!canMove || currentPage === 1}
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
@@ -78,7 +83,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={!canMove || currentPage === 1}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -98,7 +103,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={!canMove || currentPage === totalPages}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -106,7 +111,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(totalPages)}
-          disabled={currentPage === totalPages}
+          disabled={!canMove || currentPage === totalPages}
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>

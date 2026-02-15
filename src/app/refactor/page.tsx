@@ -4,7 +4,7 @@ import { getAllClients, getAllStorages } from "@/utils/supabaseServerFunction";
 import {
   Client,
   StorageLogSummary,
-} from "@/app/refactor/domain/type/reseption";
+} from "@/app/refactor/domain/type/reception";
 
 const RefactorPage = async () => {
   const customers = await getAllClients();

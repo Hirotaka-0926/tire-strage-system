@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reseption";
+import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reception";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -96,12 +96,17 @@ const CustomerTable = ({
             return (
               <TableRow key={customer.id} className={getRowColor(customer)}>
                 <TableCell className="font-medium">{customer.id}</TableCell>
-                <TableCell className="font-medium">{customer.client_name}</TableCell>
+                <TableCell className="font-medium">
+                  {customer.client_name}
+                </TableCell>
                 <TableCell>{customer.client_name_kana}</TableCell>
                 <TableCell>{customer.post_number}</TableCell>
                 <TableCell>{customer.address}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className={getBadgeClass(status.type)}>
+                  <Badge
+                    variant="secondary"
+                    className={getBadgeClass(status.type)}
+                  >
                     <StatusIcon className="mr-1 h-3 w-3" />
                     {status.label}
                   </Badge>
@@ -135,7 +140,9 @@ const CustomerTable = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => customer.id && onDeleteCustomer(customer.id)}
+                      onClick={() =>
+                        customer.id && onDeleteCustomer(customer.id)
+                      }
                       title="削除"
                     >
                       <Trash2 className="h-3 w-3" />

@@ -4,7 +4,7 @@ import React from "react";
 import {
   Car,
   ClientWithExchangeHistory,
-} from "@/app/refactor/domain/type/reseption";
+} from "@/app/refactor/domain/type/reception";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,7 +47,9 @@ const TireExchangeDialog = ({
               <p className="text-sm text-gray-600">
                 {selectedCustomer.client_name_kana}
               </p>
-              <p className="text-sm text-gray-600">{selectedCustomer.address}</p>
+              <p className="text-sm text-gray-600">
+                {selectedCustomer.address}
+              </p>
             </div>
 
             {selectedCustomer.cars && selectedCustomer.cars.length > 0 && (

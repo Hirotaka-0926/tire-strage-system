@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reseption";
+import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reception";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, CheckCircle, Users, XCircle } from "lucide-react";
 
@@ -11,10 +11,10 @@ interface CustomerStatsProps {
 const CustomerStats = ({ customers }: CustomerStatsProps) => {
   const thisSeasonCount = customers.filter((c) => c.thisSeasonExchange).length;
   const needsContactCount = customers.filter(
-    (c) => c.lastSeasonExchange && !c.thisSeasonExchange
+    (c) => c.lastSeasonExchange && !c.thisSeasonExchange,
   ).length;
   const longTermUnusedCount = customers.filter(
-    (c) => !c.lastSeasonExchange && !c.thisSeasonExchange
+    (c) => !c.lastSeasonExchange && !c.thisSeasonExchange,
   ).length;
   const totalCount = customers.length;
 
@@ -26,7 +26,9 @@ const CustomerStats = ({ customers }: CustomerStatsProps) => {
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div>
               <p className="text-sm text-gray-600">今シーズン交換済み</p>
-              <p className="text-2xl font-bold text-green-600">{thisSeasonCount}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {thisSeasonCount}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -38,7 +40,9 @@ const CustomerStats = ({ customers }: CustomerStatsProps) => {
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             <div>
               <p className="text-sm text-gray-600">要連絡</p>
-              <p className="text-2xl font-bold text-yellow-600">{needsContactCount}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {needsContactCount}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -50,7 +54,9 @@ const CustomerStats = ({ customers }: CustomerStatsProps) => {
             <XCircle className="h-5 w-5 text-red-600" />
             <div>
               <p className="text-sm text-gray-600">長期未利用</p>
-              <p className="text-2xl font-bold text-red-600">{longTermUnusedCount}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {longTermUnusedCount}
+              </p>
             </div>
           </div>
         </CardContent>

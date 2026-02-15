@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Client } from "@/app/refactor/domain/type/reseption";
+import { Client } from "@/app/refactor/domain/type/reception";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -122,7 +122,11 @@ const CreateCustomerDialog = ({
               }
             />
           </div>
-          <Button className="w-full" onClick={onCreateCustomer} disabled={isLoading}>
+          <Button
+            className="w-full"
+            onClick={onCreateCustomer}
+            disabled={isLoading}
+          >
             {isLoading ? "作成中..." : "作成"}
           </Button>
         </div>

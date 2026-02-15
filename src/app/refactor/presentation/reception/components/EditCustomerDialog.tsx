@@ -1,6 +1,6 @@
 "use client";
 
-import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reseption";
+import { ClientWithExchangeHistory } from "@/app/refactor/domain/type/reception";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
