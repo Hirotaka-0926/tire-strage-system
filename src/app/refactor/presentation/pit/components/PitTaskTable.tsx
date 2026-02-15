@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Car, FilePenLine, Hash, MapPin, Package, User } from "lucide-react";
+import { Car, FilePenLine, Hash, MapPin, Package, Save, User } from "lucide-react";
 
 interface PitTaskTableProps {
   tasks: PitTask[];
@@ -20,6 +20,7 @@ interface PitTaskTableProps {
   formatTaskId: (id?: number) => string;
   onEditTask: (task: PitTask) => void;
   onAssignStorage: (task: PitTask) => void;
+  onSaveTask: (task: PitTask) => void;
 }
 
 const PitTaskTable = ({
@@ -29,6 +30,7 @@ const PitTaskTable = ({
   formatTaskId,
   onEditTask,
   onAssignStorage,
+  onSaveTask,
 }: PitTaskTableProps) => {
   if (tasks.length === 0) {
     return null;
@@ -71,7 +73,7 @@ const PitTaskTable = ({
                   保管庫ID
                 </div>
               </TableHead>
-              <TableHead className="min-w-[220px]">操作</TableHead>
+              <TableHead className="min-w-[280px]">操作</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -109,6 +111,12 @@ const PitTaskTable = ({
                       <Button type="button" onClick={() => onAssignStorage(task)}>
                         <MapPin className="mr-2 h-4 w-4" />
                         {task.storageId ? "保管庫変更" : "保管庫割り当て"}
+                      </Button>
+                    )}
+                    {task.status === "complete" && (
+                      <Button type="button" onClick={() => onSaveTask(task)}>
+                        <Save className="mr-2 h-4 w-4" />
+                        保管庫へ保存
                       </Button>
                     )}
                   </div>
