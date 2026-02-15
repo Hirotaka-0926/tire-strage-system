@@ -68,3 +68,25 @@ export interface GroupedPitTasks {
   complete: PitTask[];
   pending: PitTask[];
 }
+
+export interface PitStorage {
+  id: string;
+  car?: PitCar;
+  client?: PitClient;
+  state?: PitState;
+}
+
+export interface PitStorageLog {
+  year: number;
+  season: string;
+  storage: PitStorage;
+  car?: PitCar;
+  client?: PitClient;
+  state?: PitState;
+}
+
+export interface PitStorageAssignmentOptions {
+  emptyOptions: PitStorage[];
+  occupiedOptions: PitStorage[];
+  customerHistory: PitStorageLog[];
+}

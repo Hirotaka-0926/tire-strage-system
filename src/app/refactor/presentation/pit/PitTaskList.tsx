@@ -1,9 +1,18 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Filter, Wrench } from "lucide-react";
 import { createPitTaskApplication } from "@/app/refactor/application/pit/pitTaskApplication";
-import { PitFilterStatus, PitTask } from "@/app/refactor/domain/type/pit";
+import {
+  PitFilterStatus,
+  PitTask,
+  PitTaskInput,
+} from "@/app/refactor/domain/type/pit";
 import PitStatusCards from "@/app/refactor/presentation/pit/components/PitStatusCards";
 import PitTaskTable from "@/app/refactor/presentation/pit/components/PitTaskTable";
+import PitMaintenanceDialog from "@/app/refactor/presentation/pit/components/PitMaintenanceDialog";
+import PitAssignStorageDialog from "@/app/refactor/presentation/pit/components/PitAssignStorageDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -12,11 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter, Wrench } from "lucide-react";
-import { useMemo, useState } from "react";
-import PitMaintenanceDialog from "@/app/refactor/presentation/pit/components/PitMaintenanceDialog";
-import { useRouter } from "next/navigation";
-import { PitTaskInput } from "@/app/refactor/domain/type/pit";
 
 interface PitTaskListProps {
   tasks: PitTask[];
@@ -25,9 +29,14 @@ interface PitTaskListProps {
 const PitTaskList = ({ tasks }: PitTaskListProps) => {
   const app = useMemo(() => createPitTaskApplication(), []);
   const router = useRouter();
+
   const [filterStatus, setFilterStatus] = useState<PitFilterStatus>("all");
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<PitTaskInput | null>(null);
+  const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
+  const [selectedMaintenanceTask, setSelectedMaintenanceTask] =
+    useState<PitTaskInput | null>(null);
+  const [selectedStorageTask, setSelectedStorageTask] =
+    useState<PitTaskInput | null>(null);
 
   const groupedAllTasks = useMemo(() => app.groupTasksByStatus(tasks), [app, tasks]);
   const filteredTasks = useMemo(
@@ -39,12 +48,22 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
     [app, filteredTasks],
   );
 
+  const openMaintenanceDialog = (task: PitTask) => {
+    setSelectedMaintenanceTask(task.sourceTask);
+    setIsMaintenanceDialogOpen(true);
+  };
+
+  const openStorageDialog = (task: PitTask) => {
+    setSelectedStorageTask(task.sourceTask);
+    setIsStorageDialogOpen(true);
+  };
+
   return (
     <Card>
       <CardHeader className="space-y-4">
         <CardTitle className="flex items-center gap-2">
           <Wrench className="h-5 w-5" />
-          ピット整備項目一覧 ({tasks.length}件)
+          ピット整備一覧 ({tasks.length}件)
         </CardTitle>
 
         <div className="flex items-center gap-2">
@@ -58,9 +77,9 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">すべて</SelectItem>
-              <SelectItem value="incomplete">未完了のみ</SelectItem>
-              <SelectItem value="complete">完了のみ</SelectItem>
-              <SelectItem value="pending">保留中のみ</SelectItem>
+              <SelectItem value="incomplete">未対応のみ</SelectItem>
+              <SelectItem value="complete">対応済みのみ</SelectItem>
+              <SelectItem value="pending">保管庫待ちのみ</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -71,33 +90,27 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
 
         <PitTaskTable
           tasks={groupedFilteredTasks.incomplete}
-          label="未完了"
+          label="未対応"
           badgeClassName="bg-yellow-100 px-4 py-2 text-base text-yellow-800 hover:bg-yellow-100"
           formatTaskId={app.formatTaskId}
-          onEditTask={(task) => {
-            setSelectedTask(task.sourceTask);
-            setIsMaintenanceDialogOpen(true);
-          }}
+          onEditTask={openMaintenanceDialog}
+          onAssignStorage={openStorageDialog}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.complete}
-          label="完了"
+          label="対応済み"
           badgeClassName="bg-green-100 px-4 py-2 text-base text-green-800 hover:bg-green-100"
           formatTaskId={app.formatTaskId}
-          onEditTask={(task) => {
-            setSelectedTask(task.sourceTask);
-            setIsMaintenanceDialogOpen(true);
-          }}
+          onEditTask={openMaintenanceDialog}
+          onAssignStorage={openStorageDialog}
         />
         <PitTaskTable
           tasks={groupedFilteredTasks.pending}
-          label="保留中"
+          label="保管庫待ち"
           badgeClassName="bg-blue-100 px-4 py-2 text-base text-blue-800 hover:bg-blue-100"
           formatTaskId={app.formatTaskId}
-          onEditTask={(task) => {
-            setSelectedTask(task.sourceTask);
-            setIsMaintenanceDialogOpen(true);
-          }}
+          onEditTask={openMaintenanceDialog}
+          onAssignStorage={openStorageDialog}
         />
 
         <PitMaintenanceDialog
@@ -105,13 +118,29 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
           onOpenChange={(open) => {
             setIsMaintenanceDialogOpen(open);
             if (!open) {
-              setSelectedTask(null);
+              setSelectedMaintenanceTask(null);
             }
           }}
-          selectedTask={selectedTask}
+          selectedTask={selectedMaintenanceTask}
           onSaved={() => {
             setIsMaintenanceDialogOpen(false);
-            setSelectedTask(null);
+            setSelectedMaintenanceTask(null);
+            router.refresh();
+          }}
+        />
+
+        <PitAssignStorageDialog
+          open={isStorageDialogOpen}
+          onOpenChange={(open) => {
+            setIsStorageDialogOpen(open);
+            if (!open) {
+              setSelectedStorageTask(null);
+            }
+          }}
+          selectedTask={selectedStorageTask}
+          onAssigned={() => {
+            setIsStorageDialogOpen(false);
+            setSelectedStorageTask(null);
             router.refresh();
           }}
         />
@@ -121,3 +150,4 @@ const PitTaskList = ({ tasks }: PitTaskListProps) => {
 };
 
 export default PitTaskList;
+

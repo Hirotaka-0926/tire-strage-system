@@ -1,6 +1,10 @@
 import {
+  PitCar,
+  PitClient,
   PitInspection,
   PitState,
+  PitStorage,
+  PitStorageLog,
   PitTaskInput,
 } from "@/app/refactor/domain/type/pit";
 
@@ -132,4 +136,54 @@ export const mapPitTaskInputFromSupabase = (task: any): PitTaskInput => ({
         assigner: task.tire_state.assigner ?? "",
       }
     : undefined,
+});
+
+const mapPitClientFromSupabase = (client: any): PitClient => ({
+  id: client?.id,
+  client_name: client?.client_name ?? "",
+  client_name_kana: client?.client_name_kana ?? "",
+  address: client?.address ?? "",
+  post_number: client?.post_number ?? "",
+  phone: client?.phone ?? "",
+  notes: client?.notes ?? "",
+});
+
+const mapPitCarFromSupabase = (car: any): PitCar => ({
+  id: car?.id,
+  car_model: car?.car_model ?? "",
+  car_number: car?.car_number ?? "",
+});
+
+const mapPitStateFromSupabase = (state: any): PitState => ({
+  id: state?.id,
+  tire_maker: state?.tire_maker ?? "",
+  tire_pattern: state?.tire_pattern ?? "",
+  tire_size: state?.tire_size ?? "",
+  manufacture_year: state?.manufacture_year ?? 0,
+  air_pressure: state?.air_pressure ?? 0,
+  other_inspection: state?.other_inspection ?? "",
+  inspection_date: state?.inspection_date
+    ? new Date(state.inspection_date)
+    : undefined,
+  drive_distance: state?.drive_distance ?? 0,
+  next_theme: state?.next_theme ?? "",
+  assigner: state?.assigner ?? "",
+});
+
+export const mapPitStorageFromSupabase = (storage: any): PitStorage => ({
+  id: storage?.id ?? "",
+  car: storage?.car ? mapPitCarFromSupabase(storage.car) : undefined,
+  client: storage?.client ? mapPitClientFromSupabase(storage.client) : undefined,
+  state: storage?.state ? mapPitStateFromSupabase(storage.state) : undefined,
+});
+
+export const mapPitStorageLogFromSupabase = (log: any): PitStorageLog => ({
+  year: log?.year ?? 0,
+  season: log?.season ?? "",
+  storage: log?.storage
+    ? mapPitStorageFromSupabase(log.storage)
+    : { id: "" },
+  car: log?.car ? mapPitCarFromSupabase(log.car) : undefined,
+  client: log?.client ? mapPitClientFromSupabase(log.client) : undefined,
+  state: log?.state ? mapPitStateFromSupabase(log.state) : undefined,
 });
