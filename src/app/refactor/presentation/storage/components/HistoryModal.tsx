@@ -16,7 +16,7 @@ interface HistoryModalProps {
   onOpenChange: (open: boolean) => void;
   onAssign: (slotId: string, log: StorageSlot) => void;
   setAlertMessage: (
-    message: { type: "success" | "error"; message: string } | null
+    message: { type: "success" | "error"; message: string } | null,
   ) => void;
 }
 
@@ -27,7 +27,10 @@ export const HistoryModal = ({
   onAssign,
   setAlertMessage,
 }: HistoryModalProps) => {
-  const storageDetailApplication = useMemo(() => createStorageDetailApplication(), []);
+  const storageDetailApplication = useMemo(
+    () => createStorageDetailApplication(),
+    [],
+  );
   const [logs, setLogs] = useState<StorageLogInput[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { renderPDFDownloadLink } = useStorageToPdf();
@@ -44,7 +47,8 @@ export const HistoryModal = ({
     setIsLoading(true);
     try {
       const storageId = selectedSlot.id;
-      const logsData = await storageDetailApplication.getLogsByStorageId(storageId);
+      const logsData =
+        await storageDetailApplication.getLogsByStorageId(storageId);
       setLogs(logsData || []);
     } catch (error) {
       console.error("履歴の取得に失敗しました:", error);
@@ -55,11 +59,11 @@ export const HistoryModal = ({
 
   const getSeasonBadge = (season: string) => {
     if (season === "summer") {
-      return <Badge className="bg-orange-500">��</Badge>;
+      return <Badge className="bg-orange-500">夏</Badge>;
     } else if (season === "winter") {
-      return <Badge className="bg-blue-500">�~</Badge>;
+      return <Badge className="bg-blue-500">冬</Badge>;
     }
-    return <Badge variant="outline">�s��</Badge>;
+    return <Badge variant="outline">季節不明</Badge>;
   };
 
   const assignHistory = (log: StorageLogInput) => {
@@ -71,7 +75,8 @@ export const HistoryModal = ({
     ) {
       setAlertMessage({
         type: "error",
-        message: "���Ƀf�[�^�������Ă��邽�߁A�����͓K�p�ł��܂���B",
+        message:
+          "選択したスロットには既にデータが存在しています。履歴を割り当てる前に、スロットを空にしてください。",
       });
       setTimeout(() => setAlertMessage(null), 3000);
 
@@ -86,7 +91,7 @@ export const HistoryModal = ({
     onAssign(selectedSlot.id, newSlot);
     setAlertMessage({
       type: "success",
-      message: "履歴からの割り当てが完亁E��ました",
+      message: "履歴からの割り当てが完了しました",
     });
     setTimeout(() => {
       onOpenChange(false);
@@ -132,7 +137,7 @@ export const HistoryModal = ({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {/* 顧客惁E�� */}
+                  {/* 顧客情報 */}
                   {log.client && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg">
                       <div>
@@ -150,7 +155,7 @@ export const HistoryModal = ({
                     </div>
                   )}
 
-                  {/* 車両惁E�� */}
+                  {/* 車両情報 */}
                   {log.car && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-blue-50 rounded-lg">
                       <div>
@@ -168,7 +173,7 @@ export const HistoryModal = ({
                     </div>
                   )}
 
-                  {/* タイヤ惁E�� */}
+                  {/* タイヤ情報 */}
                   {log.state && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 bg-green-50 rounded-lg">
                       <div>
@@ -198,7 +203,7 @@ export const HistoryModal = ({
                     </Button>
                     {renderPDFDownloadLink(
                       log,
-                      `${selectedSlot?.id}_${log.year}年_${log.season}.pdf`
+                      `${selectedSlot?.id}_${log.year}年_${log.season}.pdf`,
                     )}
                   </div>
                 </CardContent>
@@ -210,5 +215,3 @@ export const HistoryModal = ({
     </div>
   );
 };
-
-

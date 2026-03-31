@@ -25,7 +25,7 @@ import type {
   Client,
   State,
 } from "@/utils/interface";
-import { getYearAndSeason } from "@/utils/globalFunctions";
+import { getYearAndSeason } from "@/app/refactor/domain/service/common/globalFunctions";
 
 const PLACEHOLDER_VALUES = {
   UNKNOWN: "不明",
@@ -47,7 +47,10 @@ export const DetailPanel = ({
   assignFromManual,
 }: DetailPanelProps) => {
   const router = useRouter();
-  const storageDetailApplication = useMemo(() => createStorageDetailApplication(), []);
+  const storageDetailApplication = useMemo(
+    () => createStorageDetailApplication(),
+    [],
+  );
   const [showMore, setShowMore] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -77,7 +80,7 @@ export const DetailPanel = ({
 
   const handleStorageAssignment = (
     slotId: string,
-    updates: Partial<StorageSlot>
+    updates: Partial<StorageSlot>,
   ) => {
     onUpdateSlot(slotId, updates);
     setSelectedSlot({ ...selectedSlot, ...updates } as StorageSlot);
@@ -121,7 +124,10 @@ export const DetailPanel = ({
     const fetchStorageData = async () => {
       if (selectedSlot && selectedSlot.tire_state_id) {
         try {
-          const storageData = await storageDetailApplication.getStorageDetailBySlotId(selectedSlot.id);
+          const storageData =
+            await storageDetailApplication.getStorageDetailBySlotId(
+              selectedSlot.id,
+            );
           if (!storageData) {
             setCurrentStorageData(null);
           } else {
@@ -170,7 +176,7 @@ export const DetailPanel = ({
                 </h3>
                 <Badge
                   className={`${getStatusColor(
-                    selectedSlot
+                    selectedSlot,
                   )} text-sm px-3 py-1 rounded-md`}
                 >
                   {getStatusText(selectedSlot)}
@@ -242,186 +248,186 @@ export const DetailPanel = ({
                   <h4 className="font-semibold mb-2">詳細情報（拡張）</h4>
                   <ScrollArea className="h-64 pr-2">
                     <div className="grid gap-3 text-sm text-gray-700">
-                    {/* Client */}
-                    <div className="border p-3 rounded">
-                      <h5 className="font-medium mb-2">顧客情報</h5>
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <span>名前</span>
-                          <span className="font-medium">
-                            {currentStorageData.client?.client_name ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>名前（カナ）</span>
-                          <span className="font-medium">
-                            {currentStorageData.client?.client_name_kana ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>住所</span>
-                          <span className="font-medium">
-                            {currentStorageData.client?.address ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>郵便番号</span>
-                          <span className="font-medium">
-                            {currentStorageData.client?.post_number ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>電話</span>
-                          <span className="font-medium">
-                            {(currentStorageData.client as any)?.phone ||
-                              (currentStorageData.client as any)?.tel ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>備考</span>
-                          <span className="font-medium">
-                            {currentStorageData.client?.notes ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Car */}
-                    <div className="border p-3 rounded">
-                      <h5 className="font-medium mb-2">車両情報</h5>
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <span>車種</span>
-                          <span className="font-medium">
-                            {currentStorageData.car?.car_model ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>車番</span>
-                          <span className="font-medium">
-                            {currentStorageData.car?.car_number ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* State */}
-                    <div className="border p-3 rounded">
-                      <h5 className="font-medium mb-2">状態情報</h5>
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <span>タイヤメーカー</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.tire_maker ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>パターン</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.tire_pattern ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>サイズ</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.tire_size ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>製造年</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.manufacture_year ??
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>空気圧</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.air_pressure ??
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>走行距離</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.drive_distance ??
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>次回予定</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.next_theme ||
-                              PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
-                        </div>
-                        <div className="flex justify-between"></div>
-
-                        {/* Inspections */}
-                        <div className="mt-2">
-                          <h6 className="font-medium">点検・交換情報</h6>
-                          <div className="space-y-1 text-sm mt-1">
-                            <div className="flex justify-between">
-                              <span>タイヤ溝</span>
-                              <span className="font-medium">
-                                {currentStorageData.state?.tire_inspection
-                                  ?.state || PLACEHOLDER_VALUES.UNKNOWN}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>オイル検査</span>
-                              <span className="font-medium">
-                                {currentStorageData.state?.oil_inspection
-                                  ?.state || PLACEHOLDER_VALUES.UNKNOWN}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>バッテリー検査</span>
-                              <span className="font-medium">
-                                {currentStorageData.state?.battery_inspection
-                                  ?.state || PLACEHOLDER_VALUES.UNKNOWN}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>ワイパー検査</span>
-                              <span className="font-medium">
-                                {currentStorageData.state?.wiper_inspection
-                                  ?.state || PLACEHOLDER_VALUES.UNKNOWN}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>その他</span>
-                              <span className="font-medium">
-                                {currentStorageData.state?.other_inspection ||
-                                  PLACEHOLDER_VALUES.UNKNOWN}
-                              </span>
-                            </div>
+                      {/* Client */}
+                      <div className="border p-3 rounded">
+                        <h5 className="font-medium mb-2">顧客情報</h5>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span>名前</span>
+                            <span className="font-medium">
+                              {currentStorageData.client?.client_name ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>名前（カナ）</span>
+                            <span className="font-medium">
+                              {currentStorageData.client?.client_name_kana ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>住所</span>
+                            <span className="font-medium">
+                              {currentStorageData.client?.address ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>郵便番号</span>
+                            <span className="font-medium">
+                              {currentStorageData.client?.post_number ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>電話</span>
+                            <span className="font-medium">
+                              {(currentStorageData.client as any)?.phone ||
+                                (currentStorageData.client as any)?.tel ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>備考</span>
+                            <span className="font-medium">
+                              {currentStorageData.client?.notes ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="flex justify-between mt-2">
-                          <span>最終点検日</span>
-                          <span className="font-medium">
-                            {currentStorageData.state?.inspection_date
-                              ? new Date(
-                                  currentStorageData.state.inspection_date
-                                ).toLocaleDateString()
-                              : PLACEHOLDER_VALUES.UNKNOWN}
-                          </span>
+                      {/* Car */}
+                      <div className="border p-3 rounded">
+                        <h5 className="font-medium mb-2">車両情報</h5>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span>車種</span>
+                            <span className="font-medium">
+                              {currentStorageData.car?.car_model ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>車番</span>
+                            <span className="font-medium">
+                              {currentStorageData.car?.car_number ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+
+                      {/* State */}
+                      <div className="border p-3 rounded">
+                        <h5 className="font-medium mb-2">状態情報</h5>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span>タイヤメーカー</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.tire_maker ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>パターン</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.tire_pattern ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>サイズ</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.tire_size ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>製造年</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.manufacture_year ??
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>空気圧</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.air_pressure ??
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>走行距離</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.drive_distance ??
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>次回予定</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.next_theme ||
+                                PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                          <div className="flex justify-between"></div>
+
+                          {/* Inspections */}
+                          <div className="mt-2">
+                            <h6 className="font-medium">点検・交換情報</h6>
+                            <div className="space-y-1 text-sm mt-1">
+                              <div className="flex justify-between">
+                                <span>タイヤ溝</span>
+                                <span className="font-medium">
+                                  {currentStorageData.state?.tire_inspection
+                                    ?.state || PLACEHOLDER_VALUES.UNKNOWN}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>オイル検査</span>
+                                <span className="font-medium">
+                                  {currentStorageData.state?.oil_inspection
+                                    ?.state || PLACEHOLDER_VALUES.UNKNOWN}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>バッテリー検査</span>
+                                <span className="font-medium">
+                                  {currentStorageData.state?.battery_inspection
+                                    ?.state || PLACEHOLDER_VALUES.UNKNOWN}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>ワイパー検査</span>
+                                <span className="font-medium">
+                                  {currentStorageData.state?.wiper_inspection
+                                    ?.state || PLACEHOLDER_VALUES.UNKNOWN}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>その他</span>
+                                <span className="font-medium">
+                                  {currentStorageData.state?.other_inspection ||
+                                    PLACEHOLDER_VALUES.UNKNOWN}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between mt-2">
+                            <span>最終点検日</span>
+                            <span className="font-medium">
+                              {currentStorageData.state?.inspection_date
+                                ? new Date(
+                                    currentStorageData.state.inspection_date,
+                                  ).toLocaleDateString()
+                                : PLACEHOLDER_VALUES.UNKNOWN}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </ScrollArea>
                 </div>
