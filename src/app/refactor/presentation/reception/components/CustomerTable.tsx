@@ -89,12 +89,15 @@ const CustomerTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {customers.map((customer) => {
+          {customers.map((customer, index) => {
             const status = getCustomerStatus(customer);
             const StatusIcon = status.icon;
 
             return (
-              <TableRow key={customer.id} className={getRowColor(customer)}>
+              <TableRow
+                key={`${customer.id ?? "unknown"}-${customer.client_name}-${index}`}
+                className={getRowColor(customer)}
+              >
                 <TableCell className="font-medium">{customer.id}</TableCell>
                 <TableCell className="font-medium">
                   {customer.client_name}

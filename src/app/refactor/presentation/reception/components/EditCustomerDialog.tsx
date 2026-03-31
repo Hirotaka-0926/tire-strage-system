@@ -43,7 +43,7 @@ const EditCustomerDialog = ({
             <Label htmlFor="editCustomerName">顧客名</Label>
             <Input
               id="editCustomerName"
-              value={customer.client_name}
+              value={customer.client_name ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...customer,
@@ -57,7 +57,7 @@ const EditCustomerDialog = ({
             <Label htmlFor="editCustomerNameKana">顧客名（カナ）</Label>
             <Input
               id="editCustomerNameKana"
-              value={customer.client_name_kana}
+              value={customer.client_name_kana ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...customer,
@@ -71,7 +71,7 @@ const EditCustomerDialog = ({
             <Label htmlFor="editPostalCode">郵便番号</Label>
             <Input
               id="editPostalCode"
-              value={customer.post_number}
+              value={customer.post_number ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...customer,
@@ -85,7 +85,7 @@ const EditCustomerDialog = ({
             <Label htmlFor="editAddress">住所</Label>
             <Input
               id="editAddress"
-              value={customer.address}
+              value={customer.address ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...customer,

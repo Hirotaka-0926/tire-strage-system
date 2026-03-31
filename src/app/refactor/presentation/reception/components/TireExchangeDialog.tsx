@@ -58,9 +58,9 @@ const TireExchangeDialog = ({
                   車両情報を入力してください
                 </Label>
                 <div className="mt-2 flex flex-col gap-4 space-y-2 md:flex-row">
-                  {selectedCustomer.cars.map((car) => (
+                  {selectedCustomer.cars.map((car, index) => (
                     <div
-                      key={car.id}
+                      key={`${car.id ?? "unknown"}-${car.car_number}-${index}`}
                       className="cursor-pointer rounded border p-2 hover:bg-gray-50"
                       onClick={() => setSelectedCar(car)}
                     >

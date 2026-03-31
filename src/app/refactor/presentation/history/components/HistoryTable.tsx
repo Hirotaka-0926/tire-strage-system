@@ -111,8 +111,8 @@ const HistoryTable = ({ items }: HistoryTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentTableData.map((item) => (
-              <TableRow key={item.id}>
+            {currentTableData.map((item, index) => (
+              <TableRow key={`${item.id}-${item.year}-${item.storageId}-${index}`}>
                 {visibleColumns.year && <TableCell>{item.year}</TableCell>}
                 {visibleColumns.season && (
                   <TableCell>

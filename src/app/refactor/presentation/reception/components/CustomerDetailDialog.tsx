@@ -131,9 +131,9 @@ const CustomerDetailDialog = ({
             <Label className="text-lg font-semibold">タイヤ交換履歴</Label>
             {customer.exchangeHistory && customer.exchangeHistory.length > 0 ? (
               <div className="space-y-3">
-                {customer.exchangeHistory.map((record) => (
+                {customer.exchangeHistory.map((record, index) => (
                   <div
-                    key={record.id}
+                    key={`${record.id}-${record.year}-${record.season}-${index}`}
                     className="rounded-lg border bg-white p-4"
                   >
                     <div className="flex items-start justify-between">

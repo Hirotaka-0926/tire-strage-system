@@ -48,7 +48,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="customerName">顧客名</Label>
             <Input
               id="customerName"
-              value={newCustomer.client_name}
+              value={newCustomer.client_name ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
@@ -61,7 +61,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="customerNameKana">顧客名（カナ）</Label>
             <Input
               id="customerNameKana"
-              value={newCustomer.client_name_kana}
+              value={newCustomer.client_name_kana ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
@@ -74,7 +74,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="postNumber">郵便番号</Label>
             <Input
               id="postNumber"
-              value={newCustomer.post_number}
+              value={newCustomer.post_number ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
@@ -87,7 +87,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="address">住所</Label>
             <Input
               id="address"
-              value={newCustomer.address}
+              value={newCustomer.address ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
@@ -100,7 +100,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="phone">電話番号</Label>
             <Input
               id="phone"
-              value={newCustomer.phone}
+              value={newCustomer.phone ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
@@ -113,7 +113,7 @@ const CreateCustomerDialog = ({
             <Label htmlFor="notes">備考</Label>
             <Textarea
               id="notes"
-              value={newCustomer.notes}
+              value={newCustomer.notes ?? ""}
               onChange={(e) =>
                 onCustomerChange({
                   ...newCustomer,
