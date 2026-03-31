@@ -10,21 +10,21 @@ export const Header = () => {
 
   const navigationItems = [
     { href: "/", icon: Home, label: "ホーム", exactMatch: true },
-    { href: "/customer", icon: Users, label: "受付", exactMatch: false },
+    { href: "/reception", icon: Users, label: "受付", exactMatch: false },
     {
-      href: "/task",
+      href: "/pit",
       icon: Calendar,
       label: "ピット",
       exactMatch: false,
     },
     {
-      href: "/storageLogs",
+      href: "/history",
       icon: Database,
       label: "履歴",
       exactMatch: false,
     },
     {
-      href: "/emptyList",
+      href: "/storage",
       icon: Package,
       label: "保管庫",
       exactMatch: false,
@@ -56,7 +56,7 @@ export const Header = () => {
                       "relative flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ease-in-out group",
                       active
                         ? "text-white shadow-lg transform scale-105"
-                        : "hover:text-blue-300 hover:bg-zinc-600/50"
+                        : "hover:text-blue-300 hover:bg-zinc-600/50",
                     )}
                   >
                     {/* アクティブ時の背景グロー効果 */}
@@ -67,7 +67,7 @@ export const Header = () => {
                         "transition-colors duration-300",
                         active
                           ? "text-white"
-                          : "text-gray-300 group-hover:text-blue-300"
+                          : "text-gray-300 group-hover:text-blue-300",
                       )}
                     />
                     <span
@@ -75,7 +75,7 @@ export const Header = () => {
                         "font-medium transition-colors duration-300 hidden md:block ",
                         active
                           ? "text-white"
-                          : "text-gray-200 group-hover:text-blue-300"
+                          : "text-gray-200 group-hover:text-blue-300",
                       )}
                     >
                       {item.label}

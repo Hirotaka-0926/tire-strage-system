@@ -1,0 +1,20 @@
+﻿import { StorageMapData } from "@/app/domain/type/storage";
+import { StorageRepository } from "@/app/application/storage/storageRepository";
+import { createSupabaseStorageRepository } from "@/app/infrastructure/storage/supabaseStorageRepository";
+
+export const createStorageQueryApplication = (
+  repository: StorageRepository = createSupabaseStorageRepository(),
+) => {
+  const getStorageMapData = async (): Promise<StorageMapData> => {
+    const [areas, slots] = await Promise.all([
+      repository.getAreaConfigs(),
+      repository.getStorageSlots(),
+    ]);
+
+    return { areas, slots };
+  };
+
+  return {
+    getStorageMapData,
+  };
+};
