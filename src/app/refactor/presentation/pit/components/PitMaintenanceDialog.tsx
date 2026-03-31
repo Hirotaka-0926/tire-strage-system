@@ -10,10 +10,10 @@ import {
 import { AlertCircle, Loader2, Settings } from "lucide-react";
 import { PitState, PitTaskInput } from "@/app/refactor/domain/type/pit";
 import { createPitEditFormApplication } from "@/app/refactor/application/pit/pitEditFormApplication";
-import FormActions from "@/app/task/components/FormActions";
-import InspectionForm from "@/app/task/components/InspectionForm";
-import MemoForm from "@/app/task/components/MemoForm";
-import TireBasicInfoForm from "@/app/task/components/TireBasicInfoForm";
+import PitFormActions from "@/app/refactor/presentation/pit/components/PitFormActions";
+import PitInspectionForm from "@/app/refactor/presentation/pit/components/PitInspectionForm";
+import PitMemoForm from "@/app/refactor/presentation/pit/components/PitMemoForm";
+import PitTireBasicInfoForm from "@/app/refactor/presentation/pit/components/PitTireBasicInfoForm";
 import PitCustomerInfoCard from "@/app/refactor/presentation/pit/components/PitCustomerInfoCard";
 import { toast } from "sonner";
 
@@ -156,20 +156,20 @@ const PitMaintenanceDialog = ({
           <PitCustomerInfoCard selectedTask={selectedTask} />
 
           <form className="space-y-4">
-            <TireBasicInfoForm
+            <PitTireBasicInfoForm
               formData={formData}
               updateField={updateField}
               loading={loading}
             />
-            <InspectionForm
+            <PitInspectionForm
               formData={formData}
               updateField={updateField}
               loading={loading}
             />
-            <MemoForm formData={formData} updateField={updateField} loading={loading} />
+            <PitMemoForm formData={formData} updateField={updateField} loading={loading} />
           </form>
 
-          <FormActions loading={loading} onSave={handleSave} onCancel={handleCancel} />
+          <PitFormActions loading={loading} onSave={handleSave} onCancel={handleCancel} />
         </div>
       </DialogContent>
     </Dialog>
